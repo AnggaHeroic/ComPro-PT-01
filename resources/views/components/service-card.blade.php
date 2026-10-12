@@ -1,0 +1,55 @@
+@props([
+    'number' => null,
+    'icon',
+    'title',
+    'description',
+    'href' => null,
+])
+
+<a
+    href="{{ $href ?? '#' }}"
+    class="group relative flex min-h-[280px] flex-col border border-slate-300 bg-white p-6 transition-all duration-300 hover:border-primary hover:bg-primary-light"
+>
+    {{-- Service Content --}}
+    <div>
+        @if($number)
+            <span class="font-display text-xs font-bold text-primary">
+                {{ str_pad($number, 2, '0', STR_PAD_LEFT) }}
+            </span>
+        @endif
+
+        <h3
+            class="font-display mt-4 max-w-[240px] text-xl font-semibold leading-tight tracking-tight text-secondary-dark transition-colors duration-200 group-hover:text-primary sm:text-2xl"
+        >
+            {{ $title }}
+        </h3>
+
+        <p class="mt-3 max-w-[280px] text-sm leading-6 text-slate-500">
+            {{ $description }}
+        </p>
+    </div>
+
+    {{-- Service Footer --}}
+    <div class="mt-auto flex items-end justify-between pt-10">
+        {{-- Icon --}}
+        <div
+            @class([
+                'text-secondary-dark transition-transform duration-300',
+                'translate-y-1 group-hover:translate-y-0' => $icon === 'gearcog',
+                'group-hover:-translate-y-1' => $icon !== 'gearcog',
+            ])
+        >
+            <x-dynamic-component
+                :component="'icons.' . $icon"
+            />
+        </div>
+
+        {{-- Arrow --}}
+        <span
+            class="text-xl text-slate-400 transition-all duration-300 group-hover:translate-x-1 group-hover:text-primary"
+            aria-hidden="true"
+        >
+            →
+        </span>
+    </div>
+</a>
