@@ -7,6 +7,7 @@ use App\Models\BusinessActivity;
 use App\Models\ServiceCategory;
 use Database\Seeders\ServiceCatalogSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class PublicCatalogTest extends TestCase
@@ -146,7 +147,7 @@ class PublicCatalogTest extends TestCase
         BusinessActivity::factory()->count(8)->for($category, 'category')->create();
 
         $queries = 0;
-        \DB::listen(function () use (&$queries) {
+        DB::listen(function () use (&$queries) {
             $queries++;
         });
 
