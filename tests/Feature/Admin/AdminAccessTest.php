@@ -38,6 +38,24 @@ class AdminAccessTest extends TestCase
         $this->get('/forgot-password')->assertNotFound();
     }
 
+    public function test_admin_shortcut_adds_only_its_own_markup_and_does_not_touch_the_menu(): void
+    {
+        $normalize = fn (string $html) => preg_replace('/\s+/', ' ', preg_replace('/>\s+</', '><', $html));
+
+        foreach (['/', '/layanan-jasa', '/kontak-kami'] as $url) {
+            $guest = $normalize($this->get($url)->getContent());
+
+            $this->actingAs(User::factory()->create());
+            $admin = $normalize($this->get($url)->getContent());
+            auth()->logout();
+
+            // Buang hanya <a> tombol dashboard di desktop (header) dan menu mobile; sisanya harus sama.
+            $stripped = preg_replace('#<a href="[^"]*/admin"[^>]*>.*?</a>#', '', $admin);
+
+            $this->assertSame($guest, $stripped, "Markup selain tombol admin berubah di {$url}");
+        }
+    }
+
     public function test_admin_dashboard_link_is_only_visible_to_logged_in_admin_on_public_pages(): void
     {
         $dashboardUrl = route('admin.dashboard');
