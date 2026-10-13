@@ -108,7 +108,7 @@ class CategoryIconTest extends TestCase
         $this->admin()->get('/admin/categories/create')->assertOk();
 
         foreach (CategoryIcons::options() as $key => $label) {
-            $edit->assertSee('value="'.$key.'"', false)->assertSee($label);
+            $edit->assertSee('aria-label="'.$label.'"', false)->assertSee("choose('{$key}')", false);
         }
     }
 
