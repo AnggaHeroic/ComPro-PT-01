@@ -178,6 +178,17 @@
                     </div>
                 </div>
 
+                {{-- Dashboard Admin (hanya terlihat saat admin login) --}}
+                @auth
+                    <a
+                        href="{{ route('admin.dashboard') }}"
+                        class="font-display inline-flex items-center gap-2 rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-secondary-dark transition duration-200 hover:border-primary hover:text-primary"
+                    >
+                        <x-icons.arrow-left class="h-4 w-4" />
+                        Dashboard Admin
+                    </a>
+                @endauth
+
                 {{-- Kontak Kami --}}
                 <a
                     href="{{ route('contact') }}"
@@ -361,6 +372,17 @@
                             </a>
                         </div>
                     </div>
+
+                {{-- Dashboard Admin (hanya terlihat saat admin login) --}}
+                @auth
+                    <a
+                        href="{{ route('admin.dashboard') }}"
+                        class="font-display mt-4 flex items-center gap-2 border-t border-slate-100 px-4 py-4 text-sm font-semibold text-secondary-dark transition-colors hover:text-primary"
+                    >
+                        <x-icons.arrow-left class="h-4 w-4" />
+                        Dashboard Admin
+                    </a>
+                @endauth
 
                 {{-- Contact --}}
                 <a

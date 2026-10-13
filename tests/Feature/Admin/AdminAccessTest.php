@@ -37,4 +37,25 @@ class AdminAccessTest extends TestCase
         $this->post('/register', [])->assertNotFound();
         $this->get('/forgot-password')->assertNotFound();
     }
+
+    public function test_admin_dashboard_link_is_only_visible_to_logged_in_admin_on_public_pages(): void
+    {
+        $dashboardUrl = route('admin.dashboard');
+
+        foreach (['/', '/tentang-kami', '/layanan-jasa', '/kontak-kami'] as $url) {
+            $this->get($url)
+                ->assertOk()
+                ->assertDontSee('Dashboard Admin')
+                ->assertDontSee($dashboardUrl, false);
+        }
+
+        $this->actingAs(User::factory()->create());
+
+        foreach (['/', '/tentang-kami', '/layanan-jasa', '/kontak-kami'] as $url) {
+            $this->get($url)
+                ->assertOk()
+                ->assertSee('Dashboard Admin')
+                ->assertSee($dashboardUrl, false);
+        }
+    }
 }
