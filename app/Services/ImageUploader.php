@@ -21,12 +21,13 @@ class ImageUploader
      * Kolom yang menyimpan path gambar; dipakai untuk memeriksa referensi
      * sebelum file dihapus. Tambahkan di sini bila ada tabel baru.
      *
-     * @var array<string, string>
+     * @var list<array{0: string, 1: string}>
      */
     private const REFERENCES = [
-        'service_categories' => 'image_path',
-        'business_activities' => 'image_path',
-        'activity_images' => 'image_path',
+        ['service_categories', 'image_path'],
+        ['service_categories', 'icon_image_path'],
+        ['business_activities', 'image_path'],
+        ['activity_images', 'image_path'],
     ];
 
     /**
@@ -91,7 +92,7 @@ class ImageUploader
             return false;
         }
 
-        foreach (self::REFERENCES as $table => $column) {
+        foreach (self::REFERENCES as [$table, $column]) {
             if (DB::table($table)->where($column, $path)->exists()) {
                 return false;
             }

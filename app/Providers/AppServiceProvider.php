@@ -25,7 +25,7 @@ class AppServiceProvider extends ServiceProvider
         // query hanya sekali per request.
         $this->app->scoped(
             'nav.categories',
-            fn () => ServiceCategory::published()->ordered()->get(['id', 'name', 'slug', 'description'])
+            fn () => ServiceCategory::published()->ordered()->get(['id', 'name', 'slug', 'description', 'icon', 'icon_image_path'])
         );
 
         View::composer(['components.navbar', 'components.footer', 'pages.home'], function ($view) {

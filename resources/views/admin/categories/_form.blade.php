@@ -26,6 +26,29 @@
 
     <x-admin.image-field label="Gambar kategori" :current="$category->image_url" />
 
+    <div class="space-y-5 rounded-md border border-gray-200 bg-gray-50/60 p-5">
+        <div>
+            <h3 class="text-sm font-semibold text-gray-900">Ikon kartu di beranda</h3>
+            <p class="mt-0.5 text-xs text-gray-500">Pilih ikon dari daftar, atau unggah ikon sendiri. Ikon unggahan diutamakan bila ada.</p>
+        </div>
+
+        <x-admin.icon-picker
+            name="icon"
+            :selected="old('icon', $category->exists ? $category->resolved_icon : \App\Support\CategoryIcons::DEFAULT)"
+            :options="\App\Support\CategoryIcons::options()"
+        />
+
+        <x-admin.image-field
+            name="icon_image"
+            remove-name="remove_icon_image"
+            label="Ikon kustom (opsional)"
+            remove-label="Hapus ikon kustom"
+            :current="$category->icon_image_url"
+            :contain="true"
+            hint="PNG atau WebP transparan, disarankan persegi (mis. 256×256 px). SVG tidak diterima demi keamanan."
+        />
+    </div>
+
     <div class="grid gap-5 sm:grid-cols-2">
         <div>
             <x-input-label for="sort_order" value="Urutan tampil" />

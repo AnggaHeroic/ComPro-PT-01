@@ -16,6 +16,8 @@ class ServiceCategoryController extends Controller
 {
     use StoresUploadedImage;
 
+    private const UPLOAD_FIELDS = ['image', 'remove_image', 'icon_image', 'remove_icon_image'];
+
     public function index(Request $request): View
     {
         $search = trim((string) $request->query('q'));
@@ -48,12 +50,22 @@ class ServiceCategoryController extends Controller
         $path = $this->storeUploadedImage($request, $images, 'categories');
 
         try {
+            $iconPath = $this->storeUploadedImage($request, $images, 'category-icons', 'icon_image', 256);
+        } catch (Throwable $e) {
+            $images->release($path);
+
+            throw $e;
+        }
+
+        try {
             ServiceCategory::create([
-                ...$request->safe()->except(['image', 'remove_image']),
+                ...$request->safe()->except(self::UPLOAD_FIELDS),
                 'image_path' => $path,
+                'icon_image_path' => $iconPath,
             ]);
         } catch (Throwable $e) {
             $images->release($path);
+            $images->release($iconPath);
 
             throw $e;
         }
@@ -70,9 +82,18 @@ class ServiceCategoryController extends Controller
 
     public function update(ServiceCategoryRequest $request, ServiceCategory $category, ImageUploader $images): RedirectResponse
     {
-        $data = $request->safe()->except(['image', 'remove_image']);
+        $data = $request->safe()->except(self::UPLOAD_FIELDS);
         $oldPath = $category->image_path;
+        $oldIconPath = $category->icon_image_path;
         $newPath = $this->storeUploadedImage($request, $images, 'categories');
+
+        try {
+            $newIconPath = $this->storeUploadedImage($request, $images, 'category-icons', 'icon_image', 256);
+        } catch (Throwable $e) {
+            $images->release($newPath);
+
+            throw $e;
+        }
 
         if ($newPath !== null) {
             $data['image_path'] = $newPath;
@@ -80,16 +101,27 @@ class ServiceCategoryController extends Controller
             $data['image_path'] = null;
         }
 
+        if ($newIconPath !== null) {
+            $data['icon_image_path'] = $newIconPath;
+        } elseif ($request->boolean('remove_icon_image')) {
+            $data['icon_image_path'] = null;
+        }
+
         try {
             $category->update($data);
         } catch (Throwable $e) {
             $images->release($newPath);
+            $images->release($newIconPath);
 
             throw $e;
         }
 
         if (array_key_exists('image_path', $data)) {
             $images->release($oldPath);
+        }
+
+        if (array_key_exists('icon_image_path', $data)) {
+            $images->release($oldIconPath);
         }
 
         return redirect()
@@ -109,6 +141,7 @@ class ServiceCategoryController extends Controller
 
         $category->delete();
         $images->release($category->image_path);
+        $images->release($category->icon_image_path);
 
         return redirect()
             ->route('admin.categories.index')

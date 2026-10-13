@@ -1,6 +1,7 @@
 @props([
     'number' => null,
     'icon',
+    'iconUrl' => null,
     'title',
     'description',
     'href' => null,
@@ -39,9 +40,18 @@
                 'group-hover:-translate-y-1' => $icon !== 'gearcog',
             ])
         >
-            <x-dynamic-component
-                :component="'icons.' . $icon"
-            />
+            @if ($iconUrl)
+                <img
+                    src="{{ $iconUrl }}"
+                    alt=""
+                    class="h-11 w-11 object-contain"
+                    loading="lazy"
+                >
+            @else
+                <x-dynamic-component
+                    :component="'icons.' . $icon"
+                />
+            @endif
         </div>
 
         {{-- Arrow --}}

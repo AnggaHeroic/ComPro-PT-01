@@ -173,21 +173,11 @@
                 {{-- SERVICE GRID --}}
                 <div class="mt-16 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
 
-                    @php
-                        // Ikon per kategori (layout tetap); kategori baru memakai ikon default.
-                        $categoryIcons = [
-                            'technology-digital' => 'computer',
-                            'home-lifestyle' => 'house',
-                            'sports-music' => 'sports',
-                            'industrial-machinery' => 'gearcog',
-                            'construction-supplies' => 'warehouse',
-                        ];
-                    @endphp
-
                     @foreach ($navCategories as $serviceCategory)
                         <x-service-card
                             :number="$loop->iteration"
-                            :icon="$categoryIcons[$serviceCategory->slug] ?? 'warehouse'"
+                            :icon="$serviceCategory->resolved_icon"
+                            :icon-url="$serviceCategory->icon_image_url"
                             :title="$serviceCategory->name"
                             :description="\Illuminate\Support\Str::limit($serviceCategory->description, 140)"
                             :href="route('services.category', $serviceCategory->slug) . '#' . $serviceCategory->slug"

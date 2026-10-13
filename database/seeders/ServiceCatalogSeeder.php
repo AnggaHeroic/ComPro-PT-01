@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\BusinessActivity;
 use App\Models\ServiceCategory;
+use App\Support\CategoryIcons;
 use Illuminate\Database\Seeder;
 
 class ServiceCatalogSeeder extends Seeder
@@ -23,6 +24,7 @@ class ServiceCatalogSeeder extends Seeder
                     'name' => $data['name'],
                     'description' => $data['description'],
                     'image_path' => $data['image'],
+                    'icon' => CategoryIcons::forSlug($data['slug']),
                     'sort_order' => $categoryOrder + 1,
                     'is_published' => true,
                 ],
