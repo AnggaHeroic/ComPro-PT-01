@@ -41,6 +41,20 @@
         </div>
 
         <div>
+            <p class="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400">Konten</p>
+            <div class="space-y-1">
+                <x-side-link :href="route('admin.categories.index')" :active="request()->routeIs('admin.categories.*')">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 12l9 4 9-4"/><path d="M3 17l9 4 9-4"/></svg>
+                    Kategori
+                </x-side-link>
+                <x-side-link :href="route('admin.activities.index')" :active="request()->routeIs('admin.activities.*')">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg>
+                    Aktivitas Usaha
+                </x-side-link>
+            </div>
+        </div>
+
+        <div>
             <p class="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400">Akun</p>
             <div class="space-y-1">
                 <x-side-link :href="route('admin.profile.edit')" :active="request()->routeIs('admin.profile.*')">

@@ -1,0 +1,117 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Admin\Concerns\StoresUploadedImage;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\ServiceCategoryRequest;
+use App\Models\ServiceCategory;
+use App\Services\ImageUploader;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
+use Throwable;
+
+class ServiceCategoryController extends Controller
+{
+    use StoresUploadedImage;
+
+    public function index(Request $request): View
+    {
+        $search = trim((string) $request->query('q'));
+
+        $categories = ServiceCategory::query()
+            ->withCount('activities')
+            ->when($search !== '', fn ($query) => $query->where(function ($query) use ($search) {
+                $query->where('name', 'like', "%{$search}%")
+                    ->orWhere('slug', 'like', "%{$search}%");
+            }))
+            ->ordered()
+            ->paginate(15)
+            ->withQueryString();
+
+        return view('admin.categories.index', compact('categories', 'search'));
+    }
+
+    public function create(): View
+    {
+        $category = new ServiceCategory([
+            'sort_order' => (int) ServiceCategory::max('sort_order') + 1,
+            'is_published' => true,
+        ]);
+
+        return view('admin.categories.create', compact('category'));
+    }
+
+    public function store(ServiceCategoryRequest $request, ImageUploader $images): RedirectResponse
+    {
+        $path = $this->storeUploadedImage($request, $images, 'categories');
+
+        try {
+            ServiceCategory::create([
+                ...$request->safe()->except(['image', 'remove_image']),
+                'image_path' => $path,
+            ]);
+        } catch (Throwable $e) {
+            $images->release($path);
+
+            throw $e;
+        }
+
+        return redirect()
+            ->route('admin.categories.index')
+            ->with('success', 'Kategori berhasil ditambahkan.');
+    }
+
+    public function edit(ServiceCategory $category): View
+    {
+        return view('admin.categories.edit', compact('category'));
+    }
+
+    public function update(ServiceCategoryRequest $request, ServiceCategory $category, ImageUploader $images): RedirectResponse
+    {
+        $data = $request->safe()->except(['image', 'remove_image']);
+        $oldPath = $category->image_path;
+        $newPath = $this->storeUploadedImage($request, $images, 'categories');
+
+        if ($newPath !== null) {
+            $data['image_path'] = $newPath;
+        } elseif ($request->boolean('remove_image')) {
+            $data['image_path'] = null;
+        }
+
+        try {
+            $category->update($data);
+        } catch (Throwable $e) {
+            $images->release($newPath);
+
+            throw $e;
+        }
+
+        if (array_key_exists('image_path', $data)) {
+            $images->release($oldPath);
+        }
+
+        return redirect()
+            ->route('admin.categories.index')
+            ->with('success', 'Kategori berhasil diperbarui.');
+    }
+
+    public function destroy(ServiceCategory $category, ImageUploader $images): RedirectResponse
+    {
+        $count = $category->activities()->count();
+
+        if ($count > 0) {
+            return redirect()
+                ->route('admin.categories.index')
+                ->with('error', "Kategori \"{$category->name}\" masih memiliki {$count} aktivitas. Pindahkan atau hapus aktivitasnya terlebih dahulu.");
+        }
+
+        $category->delete();
+        $images->release($category->image_path);
+
+        return redirect()
+            ->route('admin.categories.index')
+            ->with('success', 'Kategori berhasil dihapus.');
+    }
+}

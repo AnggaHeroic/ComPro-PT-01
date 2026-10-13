@@ -32,6 +32,8 @@
                         </header>
                     @endisset
 
+                    <x-admin.flash />
+
                     {{ $slot }}
                 </main>
             </div>
