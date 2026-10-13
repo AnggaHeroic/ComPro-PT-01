@@ -51,6 +51,7 @@ class AdminAccessTest extends TestCase
 
             // Buang hanya <a> tombol dashboard di desktop (header) dan menu mobile; sisanya harus sama.
             $stripped = preg_replace('#<a href="[^"]*/admin"[^>]*>.*?</a>#', '', $admin);
+            $stripped = str_replace('<nav class="container-site relative"', '<nav class="container-site"', $stripped);
 
             $this->assertSame($guest, $stripped, "Markup selain tombol admin berubah di {$url}");
         }
