@@ -36,7 +36,7 @@
         class="container-site"
         aria-label="Navigasi utama"
     >
-        <div class="flex h-20 items-center justify-between @auth relative @endauth">
+        <div @class(['flex h-20 items-center justify-between', 'relative' => auth()->check()])>
 
             {{-- Logo --}}
             <a
