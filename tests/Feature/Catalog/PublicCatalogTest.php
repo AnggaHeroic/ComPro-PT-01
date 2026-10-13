@@ -54,6 +54,29 @@ class PublicCatalogTest extends TestCase
             ->assertSee('/layanan-jasa/kategori-baru-admin', false);
     }
 
+    public function test_home_service_cards_come_from_database_in_order_with_anchor_links(): void
+    {
+        ServiceCategory::factory()->create(['name' => 'Kartu Kedua', 'slug' => 'kartu-kedua', 'description' => 'Deskripsi kedua.', 'sort_order' => 2]);
+        ServiceCategory::factory()->create(['name' => 'Kartu Pertama', 'slug' => 'kartu-pertama', 'description' => 'Deskripsi pertama.', 'sort_order' => 1]);
+        ServiceCategory::factory()->create(['name' => 'Kartu Draft', 'slug' => 'kartu-draft', 'is_published' => false]);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSeeInOrder(['Kartu Pertama', 'Deskripsi pertama.', 'Kartu Kedua', 'Deskripsi kedua.'])
+            ->assertSee('/layanan-jasa/kartu-pertama#kartu-pertama', false)
+            ->assertDontSee('Kartu Draft');
+    }
+
+    public function test_home_service_cards_have_all_five_seeded_categories(): void
+    {
+        $this->seed(ServiceCatalogSeeder::class);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('/layanan-jasa/construction-supplies#construction-supplies', false)
+            ->assertSee('/layanan-jasa/technology-digital#technology-digital', false);
+    }
+
     public function test_category_page_shows_only_its_own_published_activities(): void
     {
         $category = ServiceCategory::factory()->create(['slug' => 'kat-a']);

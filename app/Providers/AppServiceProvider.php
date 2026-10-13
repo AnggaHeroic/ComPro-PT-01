@@ -21,13 +21,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Navbar dan footer memakai daftar kategori yang sama; query hanya sekali per request.
+        // Navbar, footer, dan kartu layanan beranda memakai daftar kategori yang sama;
+        // query hanya sekali per request.
         $this->app->scoped(
             'nav.categories',
-            fn () => ServiceCategory::published()->ordered()->get(['id', 'name', 'slug'])
+            fn () => ServiceCategory::published()->ordered()->get(['id', 'name', 'slug', 'description'])
         );
 
-        View::composer(['components.navbar', 'components.footer'], function ($view) {
+        View::composer(['components.navbar', 'components.footer', 'pages.home'], function ($view) {
             $view->with('navCategories', app('nav.categories'));
         });
     }

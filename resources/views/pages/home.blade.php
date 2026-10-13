@@ -173,50 +173,26 @@
                 {{-- SERVICE GRID --}}
                 <div class="mt-16 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
 
-                    {{-- Technology & Digital --}}
-                    <x-service-card
-                        number="01"
-                        icon="computer"
-                        title="Technology & Digital"
-                        description="Komputer, piranti lunak, jasa teknologi informasi, dan layanan internet."
-                        href="{{ route('services.category', 'technology-digital') }}#technology-digital"
-                    />
+                    @php
+                        // Ikon per kategori (layout tetap); kategori baru memakai ikon default.
+                        $categoryIcons = [
+                            'technology-digital' => 'computer',
+                            'home-lifestyle' => 'house',
+                            'sports-music' => 'sports',
+                            'industrial-machinery' => 'gearcog',
+                            'construction-supplies' => 'warehouse',
+                        ];
+                    @endphp
 
-                    {{-- Home & Lifestyle --}}
-                    <x-service-card
-                        number="02"
-                        icon="house"
-                        title="Home & Lifestyle"
-                        description="Peralatan masak, dapur, elektronik rumah tangga, perlengkapan rumah, dan mainan anak."
-                        href="{{ route('services.category', 'home-lifestyle') }}#home-lifestyle"
-                    />
-
-                    {{-- Sports & Music --}}
-                    <x-service-card
-                        number="03"
-                        icon="sports"
-                        title="Sports & Music"
-                        description="Peralatan dan perlengkapan olahraga serta berbagai alat musik."
-                        href="{{ route('services.category', 'sports-music') }}#sports-music"
-                    />
-
-                    {{-- Industrial & Machinery --}}
-                    <x-service-card
-                        number="04"
-                        icon="gearcog"
-                        title="Industrial & Machinery"
-                        description="Mesin, peralatan industri, mesin kantor, suku cadang, dan mesin pendingin."
-                        href="{{ route('services.category', 'industrial-machinery') }}#industrial-machinery"
-                    />
-
-                    {{-- Construction & Supplies --}}
-                    <x-service-card
-                        number="05"
-                        icon="warehouse"
-                        title="Construction & Supplies"
-                        description="Bahan konstruksi, alat tulis, alat gambar, dan berbagai perlengkapan lainnya."
-                        href="{{ route('services.category', 'construction-supplies') }}#construction-supplies"
-                    />
+                    @foreach ($navCategories as $serviceCategory)
+                        <x-service-card
+                            :number="$loop->iteration"
+                            :icon="$categoryIcons[$serviceCategory->slug] ?? 'warehouse'"
+                            :title="$serviceCategory->name"
+                            :description="\Illuminate\Support\Str::limit($serviceCategory->description, 140)"
+                            :href="route('services.category', $serviceCategory->slug) . '#' . $serviceCategory->slug"
+                        />
+                    @endforeach
                 </div>
             </div>
         </div>
