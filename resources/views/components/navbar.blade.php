@@ -32,6 +32,23 @@
     "
     class="sticky top-0 z-50 border-b border-slate-200 bg-white"
 >
+    {{-- Bar admin (hanya terlihat saat admin login, hanya desktop; di mobile ada di menu hamburger) --}}
+    @auth
+        <div class="hidden border-b border-slate-800 bg-slate-900 md:block">
+            <div class="container-site flex h-8 items-center justify-between text-xs">
+                <span class="font-display text-slate-400">Mode admin</span>
+
+                <a
+                    href="{{ route('admin.dashboard') }}"
+                    class="font-display inline-flex items-center gap-1.5 font-medium text-slate-200 transition-colors hover:text-white"
+                >
+                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+                    Dashboard Admin
+                </a>
+            </div>
+        </div>
+    @endauth
+
     <nav
         class="container-site"
         aria-label="Navigasi utama"
@@ -177,18 +194,6 @@
                         </div>
                     </div>
                 </div>
-
-                {{-- Dashboard Admin (hanya terlihat saat admin login) --}}
-                @auth
-                    <a
-                        href="{{ route('admin.dashboard') }}"
-                        title="Kembali ke Dashboard Admin"
-                        class="font-display inline-flex items-center gap-1.5 border-l border-slate-200 pl-6 text-xs font-medium text-slate-500 transition-colors duration-200 hover:text-primary"
-                    >
-                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
-                        Dashboard Admin
-                    </a>
-                @endauth
 
                 {{-- Kontak Kami --}}
                 <a
