@@ -182,9 +182,10 @@
                 @auth
                     <a
                         href="{{ route('admin.dashboard') }}"
-                        class="font-display inline-flex items-center gap-2 rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-secondary-dark transition duration-200 hover:border-primary hover:text-primary"
+                        title="Kembali ke Dashboard Admin"
+                        class="font-display inline-flex items-center gap-1.5 border-l border-slate-200 pl-6 text-xs font-medium text-slate-500 transition-colors duration-200 hover:text-primary"
                     >
-                        <x-icons.arrow-left class="h-4 w-4" />
+                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
                         Dashboard Admin
                     </a>
                 @endauth
@@ -377,9 +378,9 @@
                 @auth
                     <a
                         href="{{ route('admin.dashboard') }}"
-                        class="font-display mt-4 flex items-center gap-2 border-t border-slate-100 px-4 py-4 text-sm font-semibold text-secondary-dark transition-colors hover:text-primary"
+                        class="font-display mt-4 flex items-center gap-2 border-t border-slate-100 px-4 py-4 text-xs font-medium text-slate-500 transition-colors hover:text-primary"
                     >
-                        <x-icons.arrow-left class="h-4 w-4" />
+                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
                         Dashboard Admin
                     </a>
                 @endauth
