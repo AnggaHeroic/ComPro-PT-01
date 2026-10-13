@@ -128,46 +128,16 @@
                 </h3>
 
                 <ul class="mt-6 space-y-4">
-                    <li>
-                        <a
-                            href="{{ route('services.category', 'technology-digital') }}"
-                            class="font-body text-sm text-slate-400 transition hover:text-white"
-                        >
-                            Technology & Digital
-                        </a>
-                    </li>
-                    <li>
-                        <a
-                            href="{{ route('services.category', 'home-lifestyle') }}"
-                            class="font-body text-sm text-slate-400 transition hover:text-white"
-                        >
-                            Home & Lifestyle
-                        </a>
-                    </li>
-                    <li>
-                        <a
-                            href="{{ route('services.category', 'sports-music') }}"
-                            class="font-body text-sm text-slate-400 transition hover:text-white"
-                        >
-                            Sports & Music
-                        </a>
-                    </li>
-                    <li>
-                        <a
-                            href="{{ route('services.category', 'industrial-machinery') }}"
-                            class="font-body text-sm text-slate-400 transition hover:text-white"
-                        >
-                            Industrial & Machinery
-                        </a>
-                    </li>
-                    <li>
-                        <a
-                            href="{{ route('services.category', 'construction-supplies') }}"
-                            class="font-body text-sm text-slate-400 transition hover:text-white"
-                        >
-                            Construction & Supplies
-                        </a>
-                    </li>
+                    @foreach ($navCategories as $navCategory)
+                        <li>
+                            <a
+                                href="{{ route('services.category', $navCategory->slug) }}"
+                                class="font-body text-sm text-slate-400 transition hover:text-white"
+                            >
+                                {{ $navCategory->name }}
+                            </a>
+                        </li>
+                    @endforeach
                 </ul>
             </div>
         </div>

@@ -8,33 +8,14 @@
         ? request()->route('category')
         : null;
 
-    $serviceCategories = [
-        [
-            'name' => 'Technology & Digital',
-            'slug' => 'technology-digital',
-            'number' => '01',
-        ],
-        [
-            'name' => 'Home & Lifestyle',
-            'slug' => 'home-lifestyle',
-            'number' => '02',
-        ],
-        [
-            'name' => 'Sports & Music',
-            'slug' => 'sports-music',
-            'number' => '03',
-        ],
-        [
-            'name' => 'Industrial & Machinery',
-            'slug' => 'industrial-machinery',
-            'number' => '04',
-        ],
-        [
-            'name' => 'Construction & Supplies',
-            'slug' => 'construction-supplies',
-            'number' => '05',
-        ],
-    ];
+    $serviceCategories = $navCategories
+        ->values()
+        ->map(fn ($category, $index) => [
+            'name' => $category->name,
+            'slug' => $category->slug,
+            'number' => str_pad($index + 1, 2, '0', STR_PAD_LEFT),
+        ])
+        ->all();
 @endphp
 
 <header

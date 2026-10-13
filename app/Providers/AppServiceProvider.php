@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\ServiceCategory;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +21,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Navbar dan footer memakai daftar kategori yang sama; query hanya sekali per request.
+        $this->app->scoped(
+            'nav.categories',
+            fn () => ServiceCategory::published()->ordered()->get(['id', 'name', 'slug'])
+        );
+
+        View::composer(['components.navbar', 'components.footer'], function ($view) {
+            $view->with('navCategories', app('nav.categories'));
+        });
     }
 }

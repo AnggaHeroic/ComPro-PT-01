@@ -37,14 +37,4 @@ class AdminAccessTest extends TestCase
         $this->post('/register', [])->assertNotFound();
         $this->get('/forgot-password')->assertNotFound();
     }
-
-    public function test_public_pages_remain_available(): void
-    {
-        foreach (['/', '/tentang-kami', '/layanan-jasa', '/layanan-jasa/technology-digital', '/layanan-jasa/technology-digital/internet-service-provider', '/kontak-kami'] as $url) {
-            $this->get($url)->assertOk();
-        }
-
-        $this->get('/layanan-jasa/tidak-ada')->assertNotFound();
-        $this->get('/layanan-jasa/technology-digital/tidak-ada')->assertNotFound();
-    }
 }

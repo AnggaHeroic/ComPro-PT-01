@@ -8,7 +8,7 @@
 
             {{-- Background Image --}}
             <img
-                src="{{ $category['image'] }}"
+                src="{{ $category->image_url }}"
                 alt=""
                 class="absolute inset-0 h-full w-full object-cover"
                 aria-hidden="true"
@@ -51,14 +51,14 @@
                     <h1
                         class="font-display mt-5 max-w-3xl text-[3.25rem] font-bold leading-[0.96] tracking-[-0.05em] text-white sm:text-[3.75rem] lg:text-[4.25rem] xl:text-[4.5rem]"
                     >
-                        {{ $category['title'] }}
+                        {{ $category->name }}
                     </h1>
 
                     {{-- Description --}}
                     <p
                         class="font-body mt-7 max-w-xl text-sm leading-7 text-white/75 sm:text-base sm:leading-8"
                     >
-                        {{ $category['description'] }}
+                        {{ $category->description }}
                     </p>
                 </div>
             </div>
@@ -67,7 +67,7 @@
 
     {{-- BUSINESS ACTIVITIES --}}
     <section     
-        id="{{ $category['slug'] }}"
+        id="{{ $category->slug }}"
         class="bg-white"
     >
         <div class="container-site py-16 sm:py-20 lg:py-24">
@@ -87,7 +87,7 @@
                     <br>
                     dalam
                     <span class="text-primary">
-                        {{ $category['title'] }}.
+                        {{ $category->name }}.
                     </span>
                 </h2>
 
@@ -95,20 +95,20 @@
                     class="font-body mt-5 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base sm:leading-8"
                 >
                     Berikut aktivitas usaha yang termasuk dalam bidang
-                    {{ $category['title'] }}.
+                    {{ $category->name }}.
                 </p>
             </div>
 
             {{-- Activity Cards --}}
             <div class="mt-12 space-y-4 sm:mt-14 lg:mt-16">
-                @foreach ($category['activities'] as $activity)
+                @foreach ($category->activities as $activity)
                     <article
                         class="group relative overflow-hidden bg-black/90 sm:h-[380px] lg:h-[390px]"
                     >
                         {{-- Image --}}
                         <img
-                            src="{{ $activity['image'] }}"
-                            alt="{{ $activity['title'] }}"
+                            src="{{ $activity->image_url }}"
+                            alt="{{ $activity->name }}"
                             class="relative h-[220px] w-full object-cover transition-transform duration-700 group-hover:scale-[1.02] sm:absolute sm:inset-0 sm:h-full"
                         >
 
@@ -177,14 +177,14 @@
                                 <h3
                                     class="font-display mt-6 max-w-xl text-xl font-semibold leading-[1.08] tracking-[-0.025em] text-white sm:text-2xl lg:text-[1.65rem]"
                                 >
-                                    {{ $activity['title'] }}
+                                    {{ $activity->name }}
                                 </h3>
 
                                 {{-- Description --}}
                                 <p
                                     class="font-body mt-4 line-clamp-3  max-w-xl overflow-hidden text-sm leading-6 text-white/65 sm:text-[15px] sm:leading-7"
                                 >
-                                    {{ $activity['description'] }}
+                                    {{ $activity->short_description }}
                                 </p>
 
                             </div>
@@ -213,8 +213,8 @@
                                     {{-- Detail --}}
                                     <a
                                         href="{{ route('services.detail', [
-                                            'category' => $category['slug'],
-                                            'activity' => $activity['slug'],
+                                            'category' => $category->slug,
+                                            'activity' => $activity->slug,
                                         ]) }}"
                                         class="font-display shrink-0 text-[10px] font-bold uppercase tracking-[0.18em] text-primary-vibrant transition-colors duration-200 hover:text-white"
                                     >

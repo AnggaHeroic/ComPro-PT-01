@@ -71,8 +71,8 @@
                         {{-- IMAGE --}}
                         <div class="aspect-[16/9] shrink-0 overflow-hidden bg-slate-100">
                             <img
-                                src="{{ $category['image'] }}"
-                                alt="{{ $category['title'] }}"
+                                src="{{ $category->image_url }}"
+                                alt="{{ $category->name }}"
                                 class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                             >
                         </div>
@@ -84,19 +84,19 @@
                             <h3
                                 class="font-display text-xl font-semibold leading-tight tracking-[-0.02em] text-secondary-dark sm:text-2xl"
                             >
-                                {{ $category['title'] }}
+                                {{ $category->name }}
                             </h3>
 
                             {{-- DESCRIPTION --}}
                             <p
                                 class="font-body mt-3 line-clamp-3 text-sm leading-6 text-slate-500"
                             >
-                                {{ $category['description'] }}
+                                {{ $category->description }}
                             </p>
 
                             {{-- LINK --}}
                             <a
-                                href="{{ route('services.category', $category['slug']) }}"
+                                href="{{ route('services.category', $category->slug) }}"
                                 class="font-display mt-auto inline-flex items-center gap-2 pt-5 text-sm font-semibold text-primary transition-all duration-200 group-hover:gap-3"
                             >
                                 Lihat layanan
