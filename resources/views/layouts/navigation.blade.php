@@ -15,7 +15,7 @@
 
 <aside
     :class="sidebar ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
-    class="fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-secondary-dark text-white shadow-xl transition-transform duration-200 ease-out lg:shadow-none"
+    class="fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-linear-to-b from-secondary-dark to-[#242424] text-white shadow-xl transition-transform duration-200 ease-out lg:shadow-none"
     aria-label="Navigasi admin"
 >
     {{-- Brand --}}

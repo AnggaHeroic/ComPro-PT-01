@@ -5,7 +5,7 @@
     </x-slot>
 
     <x-slot name="actions">
-        <x-secondary-button :href="route('home')" target="_blank" rel="noopener">Lihat website &nearr;</x-secondary-button>
+        <x-secondary-button size="sm" :href="route('home')" target="_blank" rel="noopener">Lihat website &nearr;</x-secondary-button>
     </x-slot>
 
     {{-- Ringkasan --}}

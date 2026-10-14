@@ -5,10 +5,11 @@
     </x-slot>
 
     <x-slot name="actions">
-        <x-primary-button :href="route('admin.categories.create')">+ Tambah Kategori</x-primary-button>
+        <x-primary-button size="sm" :href="route('admin.categories.create')">+ Tambah Kategori</x-primary-button>
     </x-slot>
 
-    <form method="GET" action="{{ route('admin.categories.index') }}" class="mb-5 flex flex-wrap items-center gap-2">
+    <div class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+    <form method="GET" action="{{ route('admin.categories.index') }}" class="flex flex-wrap items-center gap-2 border-b border-gray-200 bg-gray-50 px-4 py-3">
         <x-admin.search :value="$search" placeholder="Cari nama atau slug..." />
 
         <x-secondary-button type="submit">Cari</x-secondary-button>
@@ -20,8 +21,7 @@
         <span class="ml-auto text-sm text-gray-500">{{ $categories->total() }} kategori</span>
     </form>
 
-    <div class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
-        <div class="overflow-x-auto">
+    <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200 text-sm">
                 <thead class="bg-gray-100 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
                     <tr>
@@ -84,9 +84,11 @@
                 </tbody>
             </table>
         </div>
-    </div>
 
-    <div class="mt-4">
-        {{ $categories->links() }}
+        @if ($categories->hasPages())
+            <div class="border-t border-gray-200 bg-gray-50 px-4 py-3">
+                {{ $categories->links() }}
+            </div>
+        @endif
     </div>
 </x-app-layout>

@@ -5,7 +5,7 @@
     </x-slot>
 
     <x-slot name="actions">
-        <x-secondary-button :href="route('admin.gallery.show', $activity)">Kelola galeri</x-secondary-button>
+        <x-secondary-button size="sm" :href="route('admin.gallery.show', $activity)">Kelola galeri</x-secondary-button>
         <x-admin.back :href="route('admin.activities.index', ['category' => $activity->service_category_id])" label="Kembali ke Aktivitas Usaha" />
     </x-slot>
 

@@ -4,7 +4,8 @@
         <p class="mt-1 text-sm text-gray-500">Pilih aktivitas usaha untuk mengelola foto dokumentasinya.</p>
     </x-slot>
 
-    <form method="GET" action="{{ route('admin.gallery.index') }}" class="mb-5 flex flex-wrap items-center gap-2">
+    <div class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+    <form method="GET" action="{{ route('admin.gallery.index') }}" class="flex flex-wrap items-center gap-2 border-b border-gray-200 bg-gray-50 px-4 py-3">
         <x-select name="category" class="w-full sm:w-56" onchange="this.form.submit()" aria-label="Filter kategori">
             <option value="">Semua kategori</option>
             @foreach ($categories as $category)
@@ -23,8 +24,7 @@
         <span class="ml-auto text-sm text-gray-500">{{ $activities->total() }} aktivitas</span>
     </form>
 
-    <div class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
-        <div class="overflow-x-auto">
+    <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200 text-sm">
                 <thead class="bg-gray-100 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
                     <tr>
@@ -86,9 +86,11 @@
                 </tbody>
             </table>
         </div>
-    </div>
 
-    <div class="mt-4">
-        {{ $activities->links() }}
+        @if ($activities->hasPages())
+            <div class="border-t border-gray-200 bg-gray-50 px-4 py-3">
+                {{ $activities->links() }}
+            </div>
+        @endif
     </div>
 </x-app-layout>

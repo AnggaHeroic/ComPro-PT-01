@@ -17,7 +17,7 @@
             @include('layouts.navigation')
 
             <div class="lg:pl-64">
-                {{-- Mobile top bar --}}
+                {{-- Mobile top bar (fixed) --}}
                 <div class="sticky top-0 z-30 flex h-14 items-center gap-3 border-b-[3px] border-primary bg-white px-4 shadow-sm lg:hidden">
                     <button type="button" @click="sidebar = true" aria-label="Buka menu" class="-ms-1 rounded-md p-2 text-gray-600 hover:bg-gray-100 focus:outline-none">
                         <x-icons.menu class="h-5 w-5" />
@@ -25,16 +25,16 @@
                     <x-application-logo class="h-8 w-auto mix-blend-multiply" />
                 </div>
 
-                {{-- Page header --}}
+                {{-- Page header (fixed, sejajar tinggi dengan strip logo sidebar) --}}
                 @isset($header)
-                    <div class="border-b border-gray-200 bg-white shadow-sm">
-                        <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-6 sm:px-6 lg:px-10">
-                            <div class="min-w-0 border-l-4 border-primary pl-4">
+                    <div class="sticky top-14 z-20 border-b border-gray-200 bg-white/95 shadow-sm backdrop-blur lg:top-0">
+                        <div class="mx-auto flex min-h-16 max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-2 sm:px-6 lg:px-10">
+                            <div class="min-w-0 flex-1 border-l-4 border-primary pl-3 [&_h1]:truncate [&_h1]:text-xl [&_h1]:leading-tight [&_p]:mt-0.5 [&_p]:truncate [&_p]:text-xs">
                                 {{ $header }}
                             </div>
 
                             @isset($actions)
-                                <div class="flex shrink-0 flex-wrap items-center gap-3">
+                                <div class="flex shrink-0 flex-wrap items-center gap-2">
                                     {{ $actions }}
                                 </div>
                             @endisset

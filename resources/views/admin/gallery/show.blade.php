@@ -10,18 +10,18 @@
 
 <x-app-layout>
     <x-slot name="header">
-        <p class="mb-1 text-xs font-semibold uppercase tracking-wider text-primary">{{ $activity->category->name }}</p>
-        <h1 class="font-display text-2xl font-bold text-gray-900">{{ $activity->name }}</h1>
-        <p class="mt-1 text-sm text-gray-500">
-            {{ $images->count() }} dari {{ $maxPerActivity }} foto
+        <h1 class="font-display font-bold text-gray-900" title="{{ $activity->name }}">{{ $activity->name }}</h1>
+        <p class="text-gray-500">
+            {{ $activity->category->name }}
+            &middot; {{ $images->count() }} dari {{ $maxPerActivity }} foto
             @if ($activity->kbli_code) &middot; KBLI <span class="font-mono">{{ $activity->kbli_code }}</span> @endif
         </p>
     </x-slot>
 
     <x-slot name="actions">
-        <x-secondary-button :href="route('admin.activities.edit', $activity)">Edit aktivitas</x-secondary-button>
+        <x-secondary-button size="sm" :href="route('admin.activities.edit', $activity)">Edit aktivitas</x-secondary-button>
         @if ($publicUrl)
-            <x-secondary-button :href="$publicUrl" target="_blank" rel="noopener">Lihat di website &nearr;</x-secondary-button>
+            <x-secondary-button size="sm" :href="$publicUrl" target="_blank" rel="noopener">Lihat di website &nearr;</x-secondary-button>
         @endif
         <x-admin.back :href="route('admin.gallery.index', ['category' => $activity->service_category_id])" label="Kembali ke Galeri" />
     </x-slot>
@@ -129,10 +129,10 @@
 
                             <div class="absolute right-2 top-2 flex gap-1">
                                 <button type="button" @click="move({{ $image->id }}, -1)" :disabled="ids.indexOf({{ $image->id }}) === 0" aria-label="Geser ke depan" class="flex h-7 w-7 items-center justify-center rounded-sm bg-white/90 text-gray-700 hover:bg-white disabled:opacity-40">
-                                    <x-icons.arrow-left class="h-3.5 w-3.5" />
+                                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5m7 7-7-7 7-7"/></svg>
                                 </button>
                                 <button type="button" @click="move({{ $image->id }}, 1)" :disabled="ids.indexOf({{ $image->id }}) === ids.length - 1" aria-label="Geser ke belakang" class="flex h-7 w-7 items-center justify-center rounded-sm bg-white/90 text-gray-700 hover:bg-white disabled:opacity-40">
-                                    <x-icons.arrow-right class="h-3.5 w-3.5" />
+                                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
                                 </button>
                             </div>
                         </div>
