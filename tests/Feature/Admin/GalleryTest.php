@@ -456,13 +456,16 @@ class GalleryTest extends TestCase
             // aksi berupa ikon: ganti (otomatis kirim), simpan caption, hapus lewat form terpisah
             ->assertSee('name="image"', false)
             ->assertSee('requestSubmit()', false)
-            ->assertSee('title="Simpan caption"', false)
+            ->assertSee('title="Simpan deskripsi"', false)
             ->assertSee('form="delete-'.$image->id.'"', false)
             ->assertSee('id="delete-'.$image->id.'"', false)
             // label panjang lama tidak ada lagi
             ->assertDontSee('Simpan perubahan')
             ->assertDontSee('Hapus foto</button>', false)
-            ->assertDontSee('Ganti foto (opsional)');
+            ->assertDontSee('Ganti foto (opsional)')
+            ->assertDontSee('Tambahkan caption')
+            ->assertSee('Deskripsi singkat foto...')
+            ->assertSee('<textarea', false);
     }
 
     public function test_gallery_without_photos_does_not_render_the_lightbox(): void

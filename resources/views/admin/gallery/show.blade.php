@@ -97,7 +97,7 @@
                 @csrf
                 @method('PUT')
 
-                <p class="text-sm text-gray-500">Klik foto untuk pratinjau. Seret foto atau gunakan tombol panah untuk mengurutkan; urutan ini dipakai di website. Ikon panah ke atas mengganti foto.</p>
+                <p class="text-sm text-gray-500">Klik foto untuk pratinjau. Seret foto atau gunakan tombol panah untuk mengurutkan; urutan ini dipakai di website.</p>
 
                 <template x-for="id in ids" :key="id">
                     <input type="hidden" name="order[]" :value="id">
@@ -162,38 +162,41 @@
                                 method="POST"
                                 action="{{ route('admin.gallery.update', [$activity, $image]) }}"
                                 enctype="multipart/form-data"
-                                class="flex items-center gap-1.5"
                             >
                                 @csrf
                                 @method('PATCH')
 
-                                <input
+                                <textarea
                                     name="caption"
-                                    type="text"
+                                    rows="2"
                                     maxlength="255"
-                                    value="{{ $bag->any() ? old('caption', $image->caption) : $image->caption }}"
-                                    placeholder="Tambahkan caption..."
-                                    aria-label="Caption foto {{ $loop->iteration }}"
+                                    placeholder="Deskripsi singkat foto..."
+                                    aria-label="Deskripsi singkat foto {{ $loop->iteration }}"
                                     @input="dirty = true"
-                                    class="min-w-0 flex-1 rounded border border-gray-300 bg-white px-2.5 py-1.5 text-[13px] text-gray-900 placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                                >
+                                    @keydown.ctrl.enter.prevent="$el.form.requestSubmit()"
+                                    class="block w-full resize-none rounded border border-gray-300 bg-white px-2.5 py-2 text-[13px] leading-snug text-gray-900 placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                >{{ $bag->any() ? old('caption', $image->caption) : $image->caption }}</textarea>
 
-                                {{-- Simpan caption: muncul hanya setelah caption diubah --}}
-                                <button type="submit" x-show="dirty" x-cloak title="Simpan caption" aria-label="Simpan caption" class="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-primary text-white transition hover:bg-primary-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1">
-                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg>
-                                </button>
+                                <div class="mt-2 flex items-center gap-1.5">
+                                    {{-- Ganti foto: pilih file lalu otomatis tersimpan --}}
+                                    <label class="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded border border-gray-300 bg-white px-2.5 text-xs font-semibold text-gray-600 transition focus-within:ring-2 focus-within:ring-primary hover:border-primary hover:text-primary">
+                                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L7 9m5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+                                        Ganti
+                                        <span class="sr-only">foto {{ $loop->iteration }}</span>
+                                        <input type="file" name="image" accept="image/jpeg,image/png,image/webp" class="sr-only" @change="$el.form.requestSubmit()">
+                                    </label>
 
-                                {{-- Ganti foto: pilih file lalu otomatis tersimpan --}}
-                                <label title="Ganti foto" class="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded border border-gray-300 bg-white text-gray-500 transition focus-within:ring-2 focus-within:ring-primary hover:border-primary hover:text-primary">
-                                    <span class="sr-only">Ganti foto {{ $loop->iteration }}</span>
-                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L7 9m5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
-                                    <input type="file" name="image" accept="image/jpeg,image/png,image/webp" class="sr-only" @change="$el.form.requestSubmit()">
-                                </label>
+                                    {{-- Hapus: mengirim form terpisah di bawah (atribut form) --}}
+                                    <button type="submit" form="delete-{{ $image->id }}" aria-label="Hapus foto {{ $loop->iteration }}" class="inline-flex h-8 items-center gap-1.5 rounded border border-gray-300 bg-white px-2.5 text-xs font-semibold text-gray-600 transition hover:border-primary hover:bg-primary-light hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12"/><path d="M9 7V4h6v3"/></svg>
+                                        Hapus
+                                    </button>
 
-                                {{-- Hapus: mengirim form terpisah di bawah (atribut form) --}}
-                                <button type="submit" form="delete-{{ $image->id }}" title="Hapus foto" aria-label="Hapus foto {{ $loop->iteration }}" class="flex h-8 w-8 shrink-0 items-center justify-center rounded border border-gray-300 bg-white text-gray-500 transition hover:border-primary hover:bg-primary-light hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12"/><path d="M9 7V4h6v3"/></svg>
-                                </button>
+                                    {{-- Simpan deskripsi: muncul hanya setelah deskripsi diubah --}}
+                                    <button type="submit" x-show="dirty" x-cloak title="Simpan deskripsi" aria-label="Simpan deskripsi" class="ml-auto inline-flex h-8 items-center gap-1.5 rounded bg-primary px-3 text-xs font-semibold text-white transition hover:bg-primary-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1">
+                                        Simpan
+                                    </button>
+                                </div>
                             </form>
 
                             <form id="delete-{{ $image->id }}" method="POST" action="{{ route('admin.gallery.destroy', [$activity, $image]) }}" onsubmit="return confirm('Hapus foto ini dari galeri? Tindakan ini tidak dapat dibatalkan.')" class="hidden">

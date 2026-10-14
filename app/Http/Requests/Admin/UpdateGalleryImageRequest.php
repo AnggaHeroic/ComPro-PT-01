@@ -34,7 +34,7 @@ class UpdateGalleryImageRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'caption' => 'Caption',
+            'caption' => 'Deskripsi singkat',
             'image' => 'Foto pengganti',
         ];
     }
