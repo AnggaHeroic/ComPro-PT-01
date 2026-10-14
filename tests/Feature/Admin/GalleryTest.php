@@ -450,7 +450,9 @@ class GalleryTest extends TestCase
             // satu ikon pembesar saja (overlay hover), tombol pojok kiri bawah sudah dihapus
             ->assertDontSee('absolute bottom-2 left-2', false)
             // keyboard: foto bisa difokus dan dibuka dengan Enter/Spasi
-            ->assertSee('role="button" tabindex="0"', false)
+            ->assertSee('role="button"', false)
+            ->assertSee('tabindex="0"', false)
+            ->assertSee('@keydown.enter.prevent="openPhoto('.$image->id.')"', false)
             // aksi berupa ikon: ganti (otomatis kirim), simpan caption, hapus lewat form terpisah
             ->assertSee('name="image"', false)
             ->assertSee('requestSubmit()', false)
