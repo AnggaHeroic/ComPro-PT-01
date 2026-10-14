@@ -170,20 +170,95 @@
                     </div>
                 </div>
 
-                {{-- SERVICE GRID --}}
-                <div class="mt-16 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {{-- SERVICE GRID: statis bila kategori <= 6, carousel otomatis bila lebih --}}
+                @php($servicePages = $navCategories->chunk(6))
 
-                    @foreach ($navCategories as $serviceCategory)
-                        <x-service-card
-                            :number="$loop->iteration"
-                            :icon="$serviceCategory->resolved_icon"
-                            :icon-url="$serviceCategory->icon_image_url"
-                            :title="$serviceCategory->name"
-                            :description="\Illuminate\Support\Str::limit($serviceCategory->description, 140)"
-                            :href="route('services.category', $serviceCategory->slug) . '#' . $serviceCategory->slug"
-                        />
-                    @endforeach
-                </div>
+                @if ($servicePages->count() <= 1)
+                    <x-service-grid :categories="$navCategories" grid-class="mt-16 grid gap-3 sm:grid-cols-2 lg:grid-cols-3" />
+                @else
+                    <div
+                        class="mt-16"
+                        x-data="serviceCarousel({{ $servicePages->count() }})"
+                        @mouseenter="paused = true"
+                        @mouseleave="paused = false"
+                        @focusin="paused = true"
+                        @focusout="paused = false"
+                        @keydown.arrow-left="prev(true)"
+                        @keydown.arrow-right="next(true)"
+                        role="region"
+                        aria-roledescription="carousel"
+                        aria-label="Bidang usaha"
+                    >
+                        <div
+                            class="overflow-hidden"
+                            @touchstart.passive="swipeStart($event)"
+                            @touchend.passive="swipeEnd($event)"
+                        >
+                            <div
+                                class="flex transition-transform duration-700 ease-out motion-reduce:transition-none"
+                                :style="`transform: translateX(-${current * 100}%)`"
+                                :aria-live="paused ? 'polite' : 'off'"
+                            >
+                                @foreach ($servicePages as $pageIndex => $pageCategories)
+                                    <div
+                                        class="w-full shrink-0"
+                                        role="group"
+                                        aria-roledescription="slide"
+                                        aria-label="{{ $pageIndex + 1 }} dari {{ $servicePages->count() }}"
+                                        x-bind:inert="current !== {{ $pageIndex }}"
+                                        :aria-hidden="current !== {{ $pageIndex }}"
+                                    >
+                                        <x-service-grid :categories="$pageCategories" :offset="$pageIndex * 6" />
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        {{-- Kontrol --}}
+                        <div class="mt-6 flex items-center justify-between gap-4">
+                            <div class="flex items-center gap-4">
+                                <span class="font-display text-xs font-semibold tracking-[0.15em] text-slate-500" aria-live="off">
+                                    <span x-text="String(current + 1).padStart(2, '0')"></span>
+                                    <span class="text-slate-300">/</span>
+                                    {{ str_pad($servicePages->count(), 2, '0', STR_PAD_LEFT) }}
+                                </span>
+
+                                <div class="flex items-center gap-1.5" role="tablist" aria-label="Pilih halaman">
+                                    @foreach ($servicePages as $pageIndex => $pageCategories)
+                                        <button
+                                            type="button"
+                                            role="tab"
+                                            @click="go({{ $pageIndex }})"
+                                            :aria-selected="current === {{ $pageIndex }}"
+                                            aria-label="Halaman {{ $pageIndex + 1 }}"
+                                            :class="current === {{ $pageIndex }} ? 'w-8 bg-primary' : 'w-4 bg-slate-300 hover:bg-slate-400'"
+                                            class="h-1.5 rounded-full transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                                        ></button>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-2">
+                                <button
+                                    type="button"
+                                    @click="prev(true)"
+                                    aria-label="Sebelumnya"
+                                    class="inline-flex h-9 w-9 items-center justify-center border border-slate-300 bg-white text-secondary-dark transition-colors hover:border-primary hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                                >
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5m7 7-7-7 7-7"/></svg>
+                                </button>
+                                <button
+                                    type="button"
+                                    @click="next(true)"
+                                    aria-label="Berikutnya"
+                                    class="inline-flex h-9 w-9 items-center justify-center border border-slate-300 bg-white text-secondary-dark transition-colors hover:border-primary hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                                >
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
     </section>

@@ -78,6 +78,82 @@ class PublicCatalogTest extends TestCase
             ->assertSee('/layanan-jasa/technology-digital#technology-digital', false);
     }
 
+    private function makeCategories(int $count, array $overrides = []): void
+    {
+        foreach (range(1, $count) as $i) {
+            ServiceCategory::factory()->create(array_merge([
+                'name' => sprintf('Kategori Nomor %02d', $i),
+                'slug' => sprintf('kategori-%02d', $i),
+                'sort_order' => $i,
+            ], $overrides));
+        }
+    }
+
+    public function test_home_service_cards_stay_a_static_grid_with_six_or_fewer_categories(): void
+    {
+        $this->makeCategories(6);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('Kategori Nomor 06')
+            ->assertDontSee('serviceCarousel(', false)
+            ->assertDontSee('aria-roledescription="carousel"', false)
+            ->assertSee('class="mt-16 grid gap-3 sm:grid-cols-2 lg:grid-cols-3"', false);
+    }
+
+    public function test_home_service_cards_become_an_auto_sliding_carousel_above_six_categories(): void
+    {
+        $this->makeCategories(7);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('x-data="serviceCarousel(2)"', false)
+            ->assertSee('aria-roledescription="carousel"', false)
+            // semua kategori tetap ada, dibagi dua halaman (6 + 1)
+            ->assertSeeInOrder(['Kategori Nomor 01', 'Kategori Nomor 06', 'Kategori Nomor 07'])
+            ->assertSee('aria-label="1 dari 2"', false)
+            ->assertSee('aria-label="2 dari 2"', false)
+            // nomor kartu berlanjut di halaman kedua
+            ->assertSee('07')
+            // kontrol: titik halaman dan tombol sebelumnya/berikutnya
+            ->assertSee('aria-label="Halaman 1"', false)
+            ->assertSee('aria-label="Halaman 2"', false)
+            ->assertSee('aria-label="Sebelumnya"', false)
+            ->assertSee('aria-label="Berikutnya"', false);
+    }
+
+    public function test_carousel_page_count_grows_with_categories(): void
+    {
+        $this->makeCategories(13);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('x-data="serviceCarousel(3)"', false)
+            ->assertSee('aria-label="3 dari 3"', false)
+            ->assertSee('Kategori Nomor 13');
+    }
+
+    public function test_carousel_only_counts_published_categories(): void
+    {
+        $this->makeCategories(6);
+        ServiceCategory::factory()->create(['name' => 'Kategori Draft Ketujuh', 'slug' => 'draft-ketujuh', 'sort_order' => 7, 'is_published' => false]);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertDontSee('serviceCarousel(', false)
+            ->assertDontSee('Kategori Draft Ketujuh');
+    }
+
+    public function test_carousel_slides_keep_valid_links_and_inactive_slides_are_inert_by_default(): void
+    {
+        $this->makeCategories(8);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('/layanan-jasa/kategori-08#kategori-08', false)
+            ->assertSee('x-bind:inert="current !== 1"', false);
+    }
+
     public function test_category_page_shows_only_its_own_published_activities(): void
     {
         $category = ServiceCategory::factory()->create(['slug' => 'kat-a']);
