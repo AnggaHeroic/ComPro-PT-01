@@ -172,7 +172,10 @@ class PublicCatalogTest extends TestCase
             ->assertSee('class="lg:col-span-4"', false)
             ->assertSee('class="mt-6 space-y-4"', false)
             ->assertSee('Kategori Nomor 06')
-            ->assertDontSee('bidang usaha</', false);
+            ->assertDontSee('bidang usaha</', false)
+            // tampilan satu kolom tetap polos: tanpa nomor dan tanpa kolom CSS
+            ->assertDontSee('break-inside-avoid', false)
+            ->assertDontSee('sm:columns-2', false);
     }
 
     public function test_footer_uses_two_columns_and_a_wider_block_for_seven_to_twelve_categories(): void
@@ -181,7 +184,11 @@ class PublicCatalogTest extends TestCase
 
         $html = $this->get('/tentang-kami')->assertOk()->assertSee('Kategori Nomor 12')->getContent();
 
-        $this->assertStringContainsString('grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2', $html);
+        // Dua kolom dengan urutan baca turun ke bawah, bernomor, dan garis pemisah halus.
+        $this->assertStringContainsString('columns-1 gap-x-10 sm:columns-2', $html);
+        $this->assertStringContainsString('[column-rule:1px_solid_rgb(255_255_255/0.08)]', $html);
+        $this->assertSame(12, substr_count($html, 'break-inside-avoid pb-3.5'));
+        $this->assertMatchesRegularExpression('#group-hover:text-primary"[^>]*>\s*12\s*</span>\s*<span>Kategori Nomor 12</span>#', $html);
         $this->assertStringContainsString('lg:col-span-5', $html);
         $this->assertStringNotContainsString('class="mt-6 space-y-4"><li>', $html);
         $this->assertStringNotContainsString('Lihat semua 12 bidang usaha', $html);
@@ -195,6 +202,7 @@ class PublicCatalogTest extends TestCase
             ->assertOk()
             ->assertSee('Kategori Nomor 12')
             ->assertSee('Lihat semua 15 bidang usaha')
+            ->assertSee('border border-white/20', false)
             ->assertSee('href="'.route('services').'"', false);
 
         // Daftar lengkap tetap tersedia di halaman Layanan & Jasa.

@@ -135,18 +135,29 @@
                     Bidang Usaha
                 </h3>
 
+                {{-- <= 6: satu kolom polos. > 6: dua kolom yang dibaca turun ke bawah, bernomor, dengan garis pemisah halus. --}}
                 <ul @class([
                     'mt-6',
                     'space-y-4' => ! $manyCategories,
-                    'grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2' => $manyCategories,
+                    'columns-1 gap-x-10 sm:columns-2 [column-rule:1px_solid_rgb(255_255_255/0.08)]' => $manyCategories,
                 ])>
                     @foreach ($footerCategories as $navCategory)
-                        <li>
+                        <li @if ($manyCategories) class="break-inside-avoid pb-3.5" @endif>
                             <a
                                 href="{{ route('services.category', $navCategory->slug) }}"
-                                class="font-body text-sm text-slate-400 transition hover:text-white"
+                                @class([
+                                    'font-body text-sm text-slate-400 transition hover:text-white',
+                                    'group flex items-baseline gap-3 leading-snug' => $manyCategories,
+                                ])
                             >
-                                {{ $navCategory->name }}
+                                @if ($manyCategories)
+                                    <span class="font-display w-5 shrink-0 text-[11px] font-bold text-slate-500 transition-colors group-hover:text-primary" aria-hidden="true">
+                                        {{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}
+                                    </span>
+                                    <span>{{ $navCategory->name }}</span>
+                                @else
+                                    {{ $navCategory->name }}
+                                @endif
                             </a>
                         </li>
                     @endforeach
@@ -155,7 +166,7 @@
                 @if ($hiddenCategories > 0)
                     <a
                         href="{{ route('services') }}"
-                        class="font-display group mt-6 inline-flex items-center gap-2 text-sm font-semibold text-white transition-colors hover:text-slate-300"
+                        class="font-display group mt-4 inline-flex items-center gap-2 border border-white/20 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:border-primary"
                     >
                         Lihat semua {{ $navCategories->count() }} bidang usaha
                         <span class="transition-transform duration-200 group-hover:translate-x-1" aria-hidden="true">→</span>
