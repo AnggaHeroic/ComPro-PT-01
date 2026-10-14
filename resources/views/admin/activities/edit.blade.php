@@ -1,7 +1,10 @@
 <x-app-layout>
     <x-slot name="header">
         <h1 class="font-display text-2xl font-bold text-gray-900">Edit Aktivitas</h1>
-        <p class="mt-1 text-sm text-gray-500">{{ $activity->name }}</p>
+        <p class="mt-1 text-sm text-gray-500">
+            {{ $activity->name }}
+            &middot; <a href="{{ route('admin.gallery.show', $activity) }}" class="font-medium text-primary hover:underline">Kelola galeri</a>
+        </p>
     </x-slot>
 
     <x-admin.card class="max-w-3xl">

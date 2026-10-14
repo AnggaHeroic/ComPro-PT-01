@@ -23,6 +23,10 @@ trait IndonesianMessages
             'image' => ':attribute harus berupa gambar.',
             'mimes' => ':attribute harus berformat JPG, PNG, atau WebP.',
             'dimensions' => 'Dimensi :attribute terlalu besar (maksimal :max_width x :max_height piksel).',
+            'array' => ':attribute tidak valid.',
+            'min.array' => 'Pilih minimal :min file.',
+            'max.array' => 'Maksimal :max file sekali unggah.',
+            'distinct' => ':attribute berisi duplikat.',
             'uploaded' => ':attribute gagal diunggah. Periksa ukuran file.',
         ];
     }

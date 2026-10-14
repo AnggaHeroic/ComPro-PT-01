@@ -55,7 +55,7 @@
                             <td class="px-4 py-3 text-gray-600">{{ $activity->category->name }}</td>
                             <td class="px-4 py-3 font-mono text-xs text-gray-500">{{ $activity->kbli_code ?? '—' }}</td>
                             <td class="px-4 py-3 font-mono text-xs text-gray-500">{{ $activity->slug }}</td>
-                            <td class="px-4 py-3 text-center text-gray-600">{{ $activity->images_count }}</td>
+                            <td class="px-4 py-3 text-center"><a href="{{ route('admin.gallery.show', $activity) }}" class="font-medium text-primary hover:underline" title="Kelola galeri">{{ $activity->images_count }}</a></td>
                             <td class="px-4 py-3">
                                 @if ($activity->is_published)
                                     <span class="rounded-sm bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700">Terbit</span>

@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\BusinessActivityController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\GalleryController;
 use App\Http\Controllers\Admin\ServiceCategoryController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ServiceController;
@@ -41,6 +42,19 @@ Route::middleware('auth')
         Route::resource('activities', BusinessActivityController::class)
             ->parameters(['activities' => 'activity'])
             ->except(['show']);
+
+        Route::controller(GalleryController::class)
+            ->prefix('gallery')
+            ->name('gallery.')
+            ->scopeBindings()
+            ->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::get('/{activity}', 'show')->name('show');
+                Route::post('/{activity}/images', 'store')->name('store');
+                Route::put('/{activity}/order', 'reorder')->name('reorder');
+                Route::patch('/{activity}/images/{image}', 'update')->name('update');
+                Route::delete('/{activity}/images/{image}', 'destroy')->name('destroy');
+            });
 
         Route::get('/profil', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profil', [ProfileController::class, 'update'])->name('profile.update');

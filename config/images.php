@@ -25,4 +25,9 @@ return [
 
     'max_dimension' => 8000,
 
+    // Batas galeri aktivitas: jumlah file sekali unggah dan total foto per aktivitas.
+    'gallery_max_per_upload' => 10,
+
+    'gallery_max_per_activity' => 60,
+
 ];
