@@ -1,3 +1,11 @@
+@php
+    // Footer menyesuaikan diri: <= 6 kategori satu kolom; 7-12 dua kolom;
+    // lebih dari 12 hanya 12 pertama + tautan ke semua bidang usaha.
+    $manyCategories = $navCategories->count() > 6;
+    $footerCategories = $navCategories->take(12);
+    $hiddenCategories = max(0, $navCategories->count() - 12);
+@endphp
+
 <footer class="border-t border-slate-800 bg-secondary-dark text-white">
 
     {{-- Main Footer --}}
@@ -5,7 +13,7 @@
         <div class="grid gap-12 lg:grid-cols-12 lg:gap-16">
 
             {{-- Company + Contact --}}
-            <div class="lg:col-span-5">
+            <div @class(['lg:col-span-5' => ! $manyCategories, 'lg:col-span-4' => $manyCategories])>
 
                 {{-- Logo --}}
                 <a
@@ -122,13 +130,17 @@
             </div>
 
             {{-- Business Categories --}}
-            <div class="lg:col-span-4">
+            <div @class(['lg:col-span-4' => ! $manyCategories, 'lg:col-span-5' => $manyCategories])>
                 <h3 class="font-display text-xs font-semibold uppercase tracking-[0.16em] text-white">
                     Bidang Usaha
                 </h3>
 
-                <ul class="mt-6 space-y-4">
-                    @foreach ($navCategories as $navCategory)
+                <ul @class([
+                    'mt-6',
+                    'space-y-4' => ! $manyCategories,
+                    'grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2' => $manyCategories,
+                ])>
+                    @foreach ($footerCategories as $navCategory)
                         <li>
                             <a
                                 href="{{ route('services.category', $navCategory->slug) }}"
@@ -139,6 +151,16 @@
                         </li>
                     @endforeach
                 </ul>
+
+                @if ($hiddenCategories > 0)
+                    <a
+                        href="{{ route('services') }}"
+                        class="font-display group mt-6 inline-flex items-center gap-2 text-sm font-semibold text-white transition-colors hover:text-slate-300"
+                    >
+                        Lihat semua {{ $navCategories->count() }} bidang usaha
+                        <span class="transition-transform duration-200 group-hover:translate-x-1" aria-hidden="true">→</span>
+                    </a>
+                @endif
             </div>
         </div>
     </div>

@@ -162,6 +162,45 @@ class PublicCatalogTest extends TestCase
         }
     }
 
+    public function test_footer_keeps_a_single_column_for_six_or_fewer_categories(): void
+    {
+        $this->makeCategories(6);
+
+        $this->get('/tentang-kami')
+            ->assertOk()
+            ->assertSee('class="lg:col-span-5"', false)
+            ->assertSee('class="lg:col-span-4"', false)
+            ->assertSee('class="mt-6 space-y-4"', false)
+            ->assertSee('Kategori Nomor 06')
+            ->assertDontSee('bidang usaha</', false);
+    }
+
+    public function test_footer_uses_two_columns_and_a_wider_block_for_seven_to_twelve_categories(): void
+    {
+        $this->makeCategories(12);
+
+        $html = $this->get('/tentang-kami')->assertOk()->assertSee('Kategori Nomor 12')->getContent();
+
+        $this->assertStringContainsString('grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2', $html);
+        $this->assertStringContainsString('lg:col-span-5', $html);
+        $this->assertStringNotContainsString('class="mt-6 space-y-4"><li>', $html);
+        $this->assertStringNotContainsString('Lihat semua 12 bidang usaha', $html);
+    }
+
+    public function test_footer_caps_the_list_at_twelve_and_links_to_all_services(): void
+    {
+        $this->makeCategories(15);
+
+        $this->get('/tentang-kami')
+            ->assertOk()
+            ->assertSee('Kategori Nomor 12')
+            ->assertSee('Lihat semua 15 bidang usaha')
+            ->assertSee('href="'.route('services').'"', false);
+
+        // Daftar lengkap tetap tersedia di halaman Layanan & Jasa.
+        $this->get('/layanan-jasa')->assertSee('Kategori Nomor 15');
+    }
+
     public function test_carousel_page_count_grows_with_categories(): void
     {
         $this->makeCategories(13);
