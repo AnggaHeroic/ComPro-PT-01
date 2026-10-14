@@ -97,7 +97,7 @@
                 @csrf
                 @method('PUT')
 
-                <p class="text-sm text-gray-500">Klik foto untuk pratinjau. Seret foto atau gunakan tombol panah untuk mengurutkan; urutan ini dipakai di website.</p>
+                <p class="text-sm text-gray-500">Klik foto untuk pratinjau. Seret foto atau gunakan tombol panah untuk mengurutkan; urutan ini dipakai di website. Ikon panah ke atas mengganti foto.</p>
 
                 <template x-for="id in ids" :key="id">
                     <input type="hidden" name="order[]" :value="id">
@@ -125,9 +125,14 @@
                     >
                         <div
                             draggable="true"
+                            role="button"
+                            tabindex="0"
+                            aria-label="Lihat foto {{ $loop->iteration }}"
+                            @keydown.enter.prevent="openPhoto({{ $image->id }})"
+                            @keydown.space.prevent="openPhoto({{ $image->id }})"
                             @dragstart="dragging = {{ $image->id }}"
                             @dragend="dragging = null"
-                            class="group relative aspect-[4/3] cursor-zoom-in bg-gray-100"
+                            class="group relative aspect-[4/3] cursor-zoom-in bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
                             title="Klik untuk pratinjau, seret untuk mengurutkan"
                         >
                             <img src="{{ $image->image_url }}" alt="{{ $image->caption ?: 'Foto '.$loop->iteration }}" class="h-full w-full object-cover" loading="lazy" draggable="false" @click="openPhoto({{ $image->id }})">
@@ -141,10 +146,6 @@
 
                             <span class="absolute left-2 top-2 rounded-sm bg-black/60 px-2 py-0.5 text-xs font-semibold text-white" x-text="ids.indexOf({{ $image->id }}) + 1"></span>
 
-                            <button type="button" @click.stop="openPhoto({{ $image->id }})" aria-label="Lihat foto {{ $loop->iteration }}" class="absolute bottom-2 left-2 flex h-7 w-7 items-center justify-center rounded-sm bg-white/90 text-gray-700 hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-                            </button>
-
                             <div class="absolute right-2 top-2 flex gap-1">
                                 <button type="button" @click="move({{ $image->id }}, -1)" :disabled="ids.indexOf({{ $image->id }}) === 0" aria-label="Geser ke depan" class="flex h-7 w-7 items-center justify-center rounded-sm bg-white/90 text-gray-700 hover:bg-white disabled:opacity-40">
                                     <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5m7 7-7-7 7-7"/></svg>
@@ -155,37 +156,52 @@
                             </div>
                         </div>
 
-                        <div class="flex flex-1 flex-col gap-3 p-4">
-                            <form method="POST" action="{{ route('admin.gallery.update', [$activity, $image]) }}" enctype="multipart/form-data" class="space-y-3">
+                        <div class="p-3" x-data="{ dirty: {{ $bag->any() ? 'true' : 'false' }} }">
+                            <form
+                                id="update-{{ $image->id }}"
+                                method="POST"
+                                action="{{ route('admin.gallery.update', [$activity, $image]) }}"
+                                enctype="multipart/form-data"
+                                class="flex items-center gap-1.5"
+                            >
                                 @csrf
                                 @method('PATCH')
 
-                                <div>
-                                    <x-input-label :for="'caption-'.$image->id" value="Caption (opsional)" />
-                                    <x-text-input :id="'caption-'.$image->id" name="caption" type="text" maxlength="255" :value="$bag->any() ? old('caption', $image->caption) : $image->caption" placeholder="Keterangan foto" />
-                                    <x-input-error :messages="$bag->get('caption')" class="mt-1.5" />
-                                </div>
+                                <input
+                                    name="caption"
+                                    type="text"
+                                    maxlength="255"
+                                    value="{{ $bag->any() ? old('caption', $image->caption) : $image->caption }}"
+                                    placeholder="Tambahkan caption..."
+                                    aria-label="Caption foto {{ $loop->iteration }}"
+                                    @input="dirty = true"
+                                    class="min-w-0 flex-1 rounded border border-gray-300 bg-white px-2.5 py-1.5 text-[13px] text-gray-900 placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                >
 
-                                <div>
-                                    <x-input-label :for="'replace-'.$image->id" value="Ganti foto (opsional)" />
-                                    <input
-                                        id="replace-{{ $image->id }}"
-                                        type="file"
-                                        name="image"
-                                        accept="image/jpeg,image/png,image/webp"
-                                        class="block w-full text-xs text-gray-600 file:mr-2 file:rounded file:border file:border-gray-300 file:bg-white file:px-2.5 file:py-1.5 file:text-xs file:font-medium file:text-gray-700 hover:file:bg-gray-50"
-                                    >
-                                    <x-input-error :messages="$bag->get('image')" class="mt-1.5" />
-                                </div>
+                                {{-- Simpan caption: muncul hanya setelah caption diubah --}}
+                                <button type="submit" x-show="dirty" x-cloak title="Simpan caption" aria-label="Simpan caption" class="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-primary text-white transition hover:bg-primary-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1">
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg>
+                                </button>
 
-                                <x-primary-button class="w-full !py-2 text-xs">Simpan perubahan</x-primary-button>
+                                {{-- Ganti foto: pilih file lalu otomatis tersimpan --}}
+                                <label title="Ganti foto" class="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded border border-gray-300 bg-white text-gray-500 transition focus-within:ring-2 focus-within:ring-primary hover:border-primary hover:text-primary">
+                                    <span class="sr-only">Ganti foto {{ $loop->iteration }}</span>
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L7 9m5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+                                    <input type="file" name="image" accept="image/jpeg,image/png,image/webp" class="sr-only" @change="$el.form.requestSubmit()">
+                                </label>
+
+                                {{-- Hapus: mengirim form terpisah di bawah (atribut form) --}}
+                                <button type="submit" form="delete-{{ $image->id }}" title="Hapus foto" aria-label="Hapus foto {{ $loop->iteration }}" class="flex h-8 w-8 shrink-0 items-center justify-center rounded border border-gray-300 bg-white text-gray-500 transition hover:border-primary hover:bg-primary-light hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12"/><path d="M9 7V4h6v3"/></svg>
+                                </button>
                             </form>
 
-                            <form method="POST" action="{{ route('admin.gallery.destroy', [$activity, $image]) }}" onsubmit="return confirm('Hapus foto ini dari galeri? Tindakan ini tidak dapat dibatalkan.')" class="mt-auto text-right">
+                            <form id="delete-{{ $image->id }}" method="POST" action="{{ route('admin.gallery.destroy', [$activity, $image]) }}" onsubmit="return confirm('Hapus foto ini dari galeri? Tindakan ini tidak dapat dibatalkan.')" class="hidden">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="text-xs font-medium text-gray-500 hover:text-primary">Hapus foto</button>
                             </form>
+
+                            <x-input-error :messages="array_merge($bag->get('caption'), $bag->get('image'))" class="mt-2 text-xs" />
                         </div>
                     </article>
                 @endforeach

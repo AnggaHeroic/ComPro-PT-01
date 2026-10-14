@@ -441,6 +441,28 @@ class GalleryTest extends TestCase
             ->assertSee('aria-label="Lihat foto 1"', false);
     }
 
+    public function test_photo_card_is_compact_with_icon_actions_only(): void
+    {
+        $image = ActivityImage::factory()->for($this->activity, 'activity')->create(['image_path' => 'https://example.com/a.jpg']);
+
+        $this->get($this->url())
+            ->assertOk()
+            // satu ikon pembesar saja (overlay hover), tombol pojok kiri bawah sudah dihapus
+            ->assertDontSee('absolute bottom-2 left-2', false)
+            // keyboard: foto bisa difokus dan dibuka dengan Enter/Spasi
+            ->assertSee('role="button" tabindex="0"', false)
+            // aksi berupa ikon: ganti (otomatis kirim), simpan caption, hapus lewat form terpisah
+            ->assertSee('name="image"', false)
+            ->assertSee('requestSubmit()', false)
+            ->assertSee('title="Simpan caption"', false)
+            ->assertSee('form="delete-'.$image->id.'"', false)
+            ->assertSee('id="delete-'.$image->id.'"', false)
+            // label panjang lama tidak ada lagi
+            ->assertDontSee('Simpan perubahan')
+            ->assertDontSee('Hapus foto</button>', false)
+            ->assertDontSee('Ganti foto (opsional)');
+    }
+
     public function test_gallery_without_photos_does_not_render_the_lightbox(): void
     {
         $this->get($this->url())->assertOk()->assertDontSee('documentationLightbox(', false);
