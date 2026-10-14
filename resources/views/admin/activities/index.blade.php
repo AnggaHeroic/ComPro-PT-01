@@ -8,7 +8,7 @@
         <x-primary-button size="sm" :href="route('admin.activities.create', array_filter(['category' => $categoryId]))">+ Tambah Aktivitas</x-primary-button>
     </x-slot>
 
-    <div class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+    <div class="overflow-hidden rounded border border-gray-200 bg-white shadow-sm">
     <form method="GET" action="{{ route('admin.activities.index') }}" class="flex flex-wrap items-center gap-2 border-b border-gray-200 bg-gray-50 px-4 py-3">
         <x-select name="category" class="w-full sm:w-56" onchange="this.form.submit()" aria-label="Filter kategori">
             <option value="">Semua kategori</option>
@@ -78,7 +78,7 @@
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center justify-end gap-3">
-                                    <a href="{{ route('admin.activities.edit', $activity) }}" class="whitespace-nowrap rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-primary hover:text-primary">Edit</a>
+                                    <a href="{{ route('admin.activities.edit', $activity) }}" class="whitespace-nowrap rounded border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-primary hover:text-primary">Edit</a>
                                     <form method="POST" action="{{ route('admin.activities.destroy', $activity) }}" onsubmit="return confirm('Hapus aktivitas &quot;{{ e($activity->name) }}&quot; beserta galerinya? Tindakan ini tidak dapat dibatalkan.')">
                                         @csrf
                                         @method('DELETE')

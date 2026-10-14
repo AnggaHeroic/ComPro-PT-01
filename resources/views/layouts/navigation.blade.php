@@ -23,7 +23,7 @@
         <a href="{{ route('admin.dashboard') }}" aria-label="Dashboard">
             <x-application-logo class="h-9 w-auto mix-blend-multiply" />
         </a>
-        <button type="button" @click="sidebar = false" aria-label="Tutup menu" class="rounded-md p-1.5 text-gray-500 hover:bg-gray-100 lg:hidden">
+        <button type="button" @click="sidebar = false" aria-label="Tutup menu" class="rounded p-1.5 text-gray-500 hover:bg-gray-100 lg:hidden">
             <x-icons.close class="h-5 w-5" />
         </button>
     </div>
@@ -85,7 +85,7 @@
 
         <form method="POST" action="{{ route('logout') }}" class="mt-1">
             @csrf
-            <button type="submit" class="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/10 hover:text-white focus:outline-none">
+            <button type="submit" class="flex w-full items-center gap-3 rounded px-3 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/10 hover:text-white focus:outline-none">
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
                 Keluar
             </button>

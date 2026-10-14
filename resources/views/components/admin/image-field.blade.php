@@ -13,7 +13,7 @@
 
     <div class="flex items-start gap-4">
         <div @class([
-            'flex shrink-0 items-center justify-center overflow-hidden rounded-md border border-dashed border-gray-300 bg-gray-50',
+            'flex shrink-0 items-center justify-center overflow-hidden rounded border border-dashed border-gray-300 bg-gray-50',
             'h-24 w-36' => ! $contain,
             'h-20 w-20 bg-white' => $contain,
         ])>
@@ -33,7 +33,7 @@
                 name="{{ $name }}"
                 accept="image/jpeg,image/png,image/webp"
                 @change="preview = $event.target.files[0] ? URL.createObjectURL($event.target.files[0]) : null"
-                class="block w-full text-sm text-gray-600 file:mr-3 file:rounded-md file:border file:border-gray-300 file:bg-white file:px-3 file:py-2 file:text-sm file:font-medium file:text-gray-700 hover:file:bg-gray-50"
+                class="block w-full text-sm text-gray-600 file:mr-3 file:rounded file:border file:border-gray-300 file:bg-white file:px-3 file:py-2 file:text-sm file:font-medium file:text-gray-700 hover:file:bg-gray-50"
             >
             <p class="text-xs text-gray-500">
                 {{ $hint ?? 'JPG, PNG, atau WebP, maksimal '.number_format(config('images.max_upload_kb') / 1024, 0).' MB. Otomatis dikonversi ke WebP dan dikompres.' }}

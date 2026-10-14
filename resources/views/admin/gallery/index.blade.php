@@ -4,7 +4,7 @@
         <p class="mt-1 text-sm text-gray-500">Pilih aktivitas usaha untuk mengelola foto dokumentasinya.</p>
     </x-slot>
 
-    <div class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+    <div class="overflow-hidden rounded border border-gray-200 bg-white shadow-sm">
     <form method="GET" action="{{ route('admin.gallery.index') }}" class="flex flex-wrap items-center gap-2 border-b border-gray-200 bg-gray-50 px-4 py-3">
         <x-select name="category" class="w-full sm:w-56" onchange="this.form.submit()" aria-label="Filter kategori">
             <option value="">Semua kategori</option>
@@ -66,7 +66,7 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3 text-right">
-                                <a href="{{ route('admin.gallery.show', $activity) }}" class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-primary hover:text-primary">
+                                <a href="{{ route('admin.gallery.show', $activity) }}" class="inline-flex items-center gap-1.5 whitespace-nowrap rounded border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-primary hover:text-primary">
                                     Kelola galeri
                                     <span aria-hidden="true">&rarr;</span>
                                 </a>

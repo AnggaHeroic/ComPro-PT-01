@@ -44,7 +44,7 @@
                     required
                     accept="image/jpeg,image/png,image/webp"
                     @change="count = $event.target.files.length"
-                    class="block w-full text-sm text-gray-600 file:mr-3 file:rounded-md file:border file:border-gray-300 file:bg-white file:px-3 file:py-2 file:text-sm file:font-medium file:text-gray-700 hover:file:bg-gray-50"
+                    class="block w-full text-sm text-gray-600 file:mr-3 file:rounded file:border file:border-gray-300 file:bg-white file:px-3 file:py-2 file:text-sm file:font-medium file:text-gray-700 hover:file:bg-gray-50"
                 >
                 @if ($uploadErrors->isNotEmpty())
                     <ul class="mt-2 space-y-1 text-sm text-primary">
@@ -63,7 +63,7 @@
 
     {{-- Daftar foto --}}
     @if ($images->isEmpty())
-        <div class="rounded-md border border-dashed border-gray-300 px-6 py-14 text-center">
+        <div class="rounded border border-dashed border-gray-300 px-6 py-14 text-center">
             <p class="font-medium text-gray-700">Galeri masih kosong</p>
             <p class="mt-1 text-sm text-gray-500">Halaman aktivitas di website tetap tampil normal tanpa bagian galeri. Unggah foto di atas untuk menambahkannya.</p>
         </div>
@@ -114,7 +114,7 @@
                         @dragover.prevent
                         @drop.prevent="dropOn({{ $image->id }})"
                         :class="dragging === {{ $image->id }} ? 'opacity-50' : ''"
-                        class="flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm"
+                        class="flex flex-col overflow-hidden rounded border border-gray-200 bg-white shadow-sm"
                     >
                         <div
                             draggable="true"
@@ -155,7 +155,7 @@
                                         type="file"
                                         name="image"
                                         accept="image/jpeg,image/png,image/webp"
-                                        class="block w-full text-xs text-gray-600 file:mr-2 file:rounded-md file:border file:border-gray-300 file:bg-white file:px-2.5 file:py-1.5 file:text-xs file:font-medium file:text-gray-700 hover:file:bg-gray-50"
+                                        class="block w-full text-xs text-gray-600 file:mr-2 file:rounded file:border file:border-gray-300 file:bg-white file:px-2.5 file:py-1.5 file:text-xs file:font-medium file:text-gray-700 hover:file:bg-gray-50"
                                     >
                                     <x-input-error :messages="$bag->get('image')" class="mt-1.5" />
                                 </div>

@@ -26,7 +26,7 @@
                 <x-icons.house class="pointer-events-none absolute -bottom-16 -right-16 size-md text-white/[0.07]" stroke-width="0.5" />
 
                 <div class="relative">
-                    <a href="{{ route('home') }}" class="inline-flex items-center rounded-md bg-white p-2" aria-label="Kembali ke website">
+                    <a href="{{ route('home') }}" class="inline-flex items-center rounded bg-white p-2" aria-label="Kembali ke website">
                         <x-application-logo class="h-10 w-auto" />
                     </a>
                 </div>
@@ -42,7 +42,7 @@
 
                     {{-- Dekorasi: mockup abstrak panel admin --}}
                     <div class="relative mt-10" aria-hidden="true">
-                        <div class="overflow-hidden rounded-md border border-white/20 bg-white/10 backdrop-blur-sm">
+                        <div class="overflow-hidden rounded border border-white/20 bg-white/10 backdrop-blur-sm">
                             {{-- Window bar --}}
                             <div class="flex items-center gap-1.5 border-b border-white/15 px-3 py-2.5">
                                 <span class="h-2 w-2 rounded-full bg-white/40"></span>
@@ -89,7 +89,7 @@
                         </div>
 
                         {{-- Floating gallery card --}}
-                        <div class="absolute -bottom-6 -right-4 w-36 rounded-md border border-white/25 bg-primary-dark/80 p-2.5 backdrop-blur-md">
+                        <div class="absolute -bottom-6 -right-4 w-36 rounded border border-white/25 bg-primary-dark/80 p-2.5 backdrop-blur-md">
                             <div class="grid grid-cols-2 gap-1.5">
                                 <span class="flex h-9 items-center justify-center rounded-sm bg-white/20 text-white/80">
                                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="M21 16l-5-5-8 9"/></svg>
