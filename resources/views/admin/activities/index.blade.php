@@ -30,13 +30,13 @@
 
     <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200 text-sm">
-                <thead class="bg-gray-100 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
+                <thead class="bg-gray-100 text-center text-xs font-bold uppercase tracking-wider text-gray-600">
                     <tr>
                         <th class="px-4 py-3">Aktivitas</th>
                         <th class="px-4 py-3">Kategori</th>
-                        <th class="px-4 py-3 text-center">Galeri</th>
+                        <th class="px-4 py-3">Galeri</th>
                         <th class="px-4 py-3">Status</th>
-                        <th class="px-4 py-3 text-right">Aksi</th>
+                        <th class="px-4 py-3">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -60,7 +60,7 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-4 py-3">
+                            <td class="px-4 py-3 text-center">
                                 <span class="inline-block whitespace-nowrap rounded-sm bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">{{ $activity->category->name }}</span>
                             </td>
                             <td class="px-4 py-3 text-center">
@@ -69,7 +69,7 @@
                                     {{ $activity->images_count }}
                                 </a>
                             </td>
-                            <td class="px-4 py-3">
+                            <td class="px-4 py-3 text-center">
                                 @if ($activity->is_published)
                                     <span class="rounded-sm bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700">Terbit</span>
                                 @else
@@ -77,7 +77,7 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3">
-                                <div class="flex items-center justify-end gap-3">
+                                <div class="flex items-center justify-center gap-3">
                                     <a href="{{ route('admin.activities.edit', $activity) }}" class="whitespace-nowrap rounded border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-primary hover:text-primary">Edit</a>
                                     <form method="POST" action="{{ route('admin.activities.destroy', $activity) }}" onsubmit="return confirm('Hapus aktivitas &quot;{{ e($activity->name) }}&quot; beserta galerinya? Tindakan ini tidak dapat dibatalkan.')">
                                         @csrf

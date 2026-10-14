@@ -23,19 +23,19 @@
 
     <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200 text-sm">
-                <thead class="bg-gray-100 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
+                <thead class="bg-gray-100 text-center text-xs font-bold uppercase tracking-wider text-gray-600">
                     <tr>
                         <th class="px-4 py-3">Urutan</th>
                         <th class="px-4 py-3">Kategori</th>
-                        <th class="px-4 py-3 text-center">Aktivitas</th>
+                        <th class="px-4 py-3">Aktivitas</th>
                         <th class="px-4 py-3">Status</th>
-                        <th class="px-4 py-3 text-right">Aksi</th>
+                        <th class="px-4 py-3">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     @forelse ($categories as $category)
                         <tr class="transition hover:bg-gray-50">
-                            <td class="px-4 py-3 text-gray-500">{{ $category->sort_order }}</td>
+                            <td class="px-4 py-3 text-center text-gray-500">{{ $category->sort_order }}</td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-3">
                                     <span class="flex h-11 w-16 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-gray-100">
@@ -52,7 +52,7 @@
                             <td class="px-4 py-3 text-center">
                                 <a href="{{ route('admin.activities.index', ['category' => $category->id]) }}" class="inline-flex min-w-7 justify-center rounded-sm bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-700 transition hover:bg-primary-light hover:text-primary-dark" title="Lihat aktivitas">{{ $category->activities_count }}</a>
                             </td>
-                            <td class="px-4 py-3">
+                            <td class="px-4 py-3 text-center">
                                 @if ($category->is_published)
                                     <span class="rounded-sm bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700">Terbit</span>
                                 @else
@@ -60,7 +60,7 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3">
-                                <div class="flex items-center justify-end gap-3">
+                                <div class="flex items-center justify-center gap-3">
                                     <a href="{{ route('admin.categories.edit', $category) }}" class="whitespace-nowrap rounded border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-primary hover:text-primary">Edit</a>
                                     <form method="POST" action="{{ route('admin.categories.destroy', $category) }}" onsubmit="return confirm('Hapus kategori &quot;{{ e($category->name) }}&quot;? Tindakan ini tidak dapat dibatalkan.')">
                                         @csrf
