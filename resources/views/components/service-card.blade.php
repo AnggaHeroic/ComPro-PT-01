@@ -9,7 +9,7 @@
 
 <a
     href="{{ $href ?? '#' }}"
-    class="group relative flex min-h-[280px] flex-col border border-slate-300 bg-white p-6 transition-all duration-300 hover:border-primary hover:bg-primary-light"
+    class="group relative flex h-[320px] flex-col border border-slate-300 bg-white p-6 transition-all duration-300 hover:border-primary hover:bg-primary-light"
 >
     {{-- Service Content --}}
     <div>
@@ -20,18 +20,18 @@
         @endif
 
         <h3
-            class="font-display mt-4 max-w-[240px] text-xl font-semibold leading-tight tracking-tight text-secondary-dark transition-colors duration-200 group-hover:text-primary sm:text-2xl"
+            class="font-display mt-4 line-clamp-2 max-w-[240px] text-xl font-semibold leading-tight tracking-tight text-secondary-dark transition-colors duration-200 group-hover:text-primary sm:text-2xl"
         >
             {{ $title }}
         </h3>
 
-        <p class="mt-3 max-w-[280px] text-sm leading-6 text-slate-500">
+        <p class="mt-3 line-clamp-4 max-w-[280px] text-sm leading-6 text-slate-500">
             {{ $description }}
         </p>
     </div>
 
     {{-- Service Footer --}}
-    <div class="mt-auto flex items-end justify-between pt-10">
+    <div class="mt-auto flex items-end justify-between pt-5">
         {{-- Icon --}}
         <div
             @class([

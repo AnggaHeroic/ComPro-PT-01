@@ -8,6 +8,7 @@ use App\Models\ServiceCategory;
 use Database\Seeders\ServiceCatalogSeeder;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class CatalogSchemaTest extends TestCase
@@ -80,8 +81,36 @@ class CatalogSchemaTest extends TestCase
 
         $this->assertSame(2, BusinessActivity::where('slug', 'sama')->count());
 
+        // Di tingkat database kombinasi (kategori, slug) tetap unik.
         $this->expectException(QueryException::class);
-        BusinessActivity::factory()->for($first, 'category')->create(['slug' => 'sama']);
+        DB::table('business_activities')->insert([
+            'service_category_id' => $first->id,
+            'name' => 'Duplikat',
+            'slug' => 'sama',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    public function test_slug_columns_accept_null_for_drafts_and_nulls_do_not_collide(): void
+    {
+        $category = ServiceCategory::factory()->create(['is_published' => false, 'slug' => null]);
+        $this->assertNull($category->refresh()->slug);
+
+        $other = ServiceCategory::factory()->create(['is_published' => false, 'slug' => null]);
+        $this->assertNull($other->refresh()->slug);
+
+        BusinessActivity::factory()->for($category, 'category')->count(2)->create(['is_published' => false, 'slug' => null]);
+        $this->assertSame(2, BusinessActivity::whereNull('slug')->count());
+    }
+
+    public function test_publishing_an_item_without_a_slug_generates_one_in_the_model(): void
+    {
+        $category = ServiceCategory::factory()->create(['name' => 'Alat & Mesin', 'slug' => null, 'is_published' => true]);
+        $this->assertSame('alat-mesin', $category->slug);
+
+        $activity = BusinessActivity::factory()->for($category, 'category')->create(['name' => 'Alat & Mesin', 'slug' => null]);
+        $this->assertSame('alat-mesin', $activity->slug);
     }
 
     public function test_category_slug_must_be_unique(): void

@@ -16,7 +16,7 @@ class ServiceCategoryController extends Controller
 {
     use StoresUploadedImage;
 
-    private const UPLOAD_FIELDS = ['image', 'remove_image', 'icon_image', 'remove_icon_image'];
+    private const UPLOAD_FIELDS = ['image', 'remove_image', 'icon_image', 'remove_icon_image', 'status'];
 
     public function index(Request $request): View
     {

@@ -43,7 +43,7 @@
                                     </span>
                                     <div class="min-w-0">
                                         <p class="font-medium leading-snug text-gray-900">{{ $category->name }}</p>
-                                        <p class="mt-0.5 font-mono text-xs text-gray-500">{{ $category->slug }}</p>
+                                        <p class="mt-0.5 text-xs text-gray-500">@if ($category->slug)<span class="font-mono">{{ $category->slug }}</span>@else<span class="italic">Belum ada URL (draft)</span>@endif</p>
                                     </div>
                                 </div>
                             </td>

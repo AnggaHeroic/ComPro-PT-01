@@ -68,6 +68,26 @@ class PublicCatalogTest extends TestCase
             ->assertDontSee('Kartu Draft');
     }
 
+    public function test_home_service_cards_have_a_fixed_size_regardless_of_description_length(): void
+    {
+        ServiceCategory::factory()->create(['name' => 'Pendek', 'slug' => 'pendek', 'description' => 'Singkat.', 'sort_order' => 1]);
+        ServiceCategory::factory()->create([
+            'name' => 'Judul Kategori Yang Sangat Panjang Sekali Sampai Melewati Dua Baris Penuh Di Kartu',
+            'slug' => 'panjang',
+            'description' => str_repeat('Deskripsi sangat panjang. ', 30),
+            'sort_order' => 2,
+        ]);
+
+        $html = $this->get('/')->assertOk()->getContent();
+
+        // Dua kartu dengan isi berbeda memakai tinggi tetap yang sama.
+        $this->assertSame(2, substr_count($html, 'flex h-[320px] flex-col'));
+        $this->assertStringNotContainsString('min-h-[280px]', $html);
+        // Judul dan deskripsi dipotong agar tidak mengubah ukuran kartu.
+        $this->assertSame(2, substr_count($html, 'line-clamp-2'));
+        $this->assertSame(2, substr_count($html, 'line-clamp-4'));
+    }
+
     public function test_home_service_cards_have_all_five_seeded_categories(): void
     {
         $this->seed(ServiceCatalogSeeder::class);

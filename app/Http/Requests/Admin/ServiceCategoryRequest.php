@@ -7,7 +7,6 @@ use App\Services\ImageUploader;
 use App\Support\CategoryIcons;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class ServiceCategoryRequest extends FormRequest
@@ -16,12 +15,11 @@ class ServiceCategoryRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        $slug = trim((string) $this->input('slug'));
-
         $this->merge([
-            'slug' => Str::lower($slug !== '' ? $slug : Str::slug((string) $this->input('name'))),
             'sort_order' => $this->filled('sort_order') ? $this->input('sort_order') : 0,
-            'is_published' => $this->boolean('is_published'),
+            'is_published' => $this->has('status')
+                ? $this->input('status') === 'published'
+                : $this->boolean('is_published'),
             'remove_image' => $this->boolean('remove_image'),
             'remove_icon_image' => $this->boolean('remove_icon_image'),
             'icon' => $this->filled('icon') ? $this->input('icon') : null,
@@ -35,11 +33,6 @@ class ServiceCategoryRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:120'],
-            'slug' => [
-                'required', 'string', 'max:120',
-                'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
-                Rule::unique('service_categories', 'slug')->ignore($this->route('category')),
-            ],
             'description' => ['nullable', 'string', 'max:2000'],
             'image' => ['nullable', ...ImageUploader::rules()],
             'remove_image' => ['boolean'],
@@ -48,6 +41,7 @@ class ServiceCategoryRequest extends FormRequest
             'icon_image' => ['nullable', ...ImageUploader::rules()],
             'remove_icon_image' => ['boolean'],
             'sort_order' => ['integer', 'min:0', 'max:65535'],
+            'status' => ['nullable', Rule::in(['published', 'draft'])],
             'is_published' => ['boolean'],
         ];
     }
@@ -59,7 +53,7 @@ class ServiceCategoryRequest extends FormRequest
     {
         return [
             'name' => 'Nama kategori',
-            'slug' => 'Slug',
+            'status' => 'Status',
             'description' => 'Deskripsi',
             'image' => 'Gambar',
             'icon' => 'Ikon',

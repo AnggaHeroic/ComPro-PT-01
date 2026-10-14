@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Concerns\ResolvesImageUrl;
 use App\Support\CategoryIcons;
+use App\Support\Slug;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -16,6 +17,26 @@ class ServiceCategory extends Model
 {
     /** @use HasFactory<\Database\Factories\ServiceCategoryFactory> */
     use HasFactory, ResolvesImageUrl;
+
+    /**
+     * Slug dibuat otomatis dari nama saat kategori diterbitkan. Draft tidak
+     * memiliki slug; slug yang sudah ada dipertahankan agar URL tidak berubah.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (self $category) {
+            if ($category->is_published && blank($category->slug)) {
+                $category->slug = Slug::unique(
+                    (string) $category->name,
+                    fn (string $slug) => static::query()
+                        ->where('slug', $slug)
+                        ->when($category->exists, fn ($query) => $query->whereKeyNot($category->getKey()))
+                        ->exists(),
+                    120,
+                );
+            }
+        });
+    }
 
     protected function casts(): array
     {

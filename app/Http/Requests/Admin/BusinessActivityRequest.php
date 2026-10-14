@@ -6,7 +6,6 @@ use App\Http\Requests\Admin\Concerns\IndonesianMessages;
 use App\Services\ImageUploader;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class BusinessActivityRequest extends FormRequest
@@ -15,13 +14,12 @@ class BusinessActivityRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        $slug = trim((string) $this->input('slug'));
-
         $this->merge([
-            'slug' => Str::lower($slug !== '' ? $slug : Str::slug((string) $this->input('name'))),
             'kbli_code' => filled($this->input('kbli_code')) ? trim((string) $this->input('kbli_code')) : null,
             'sort_order' => $this->filled('sort_order') ? $this->input('sort_order') : 0,
-            'is_published' => $this->boolean('is_published'),
+            'is_published' => $this->has('status')
+                ? $this->input('status') === 'published'
+                : $this->boolean('is_published'),
             'remove_image' => $this->boolean('remove_image'),
         ]);
     }
@@ -36,19 +34,12 @@ class BusinessActivityRequest extends FormRequest
             // KBLI selalu string (bukan integer); diterima apa adanya sampai kode resmi tersedia.
             'kbli_code' => ['nullable', 'string', 'max:10', 'regex:/^[A-Za-z0-9.\-]+$/'],
             'name' => ['required', 'string', 'max:255'],
-            'slug' => [
-                'required', 'string', 'max:150',
-                'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
-                // Slug hanya perlu unik di dalam kategori yang sama.
-                Rule::unique('business_activities', 'slug')
-                    ->where('service_category_id', $this->input('service_category_id'))
-                    ->ignore($this->route('activity')),
-            ],
             'short_description' => ['nullable', 'string', 'max:500'],
             'description' => ['nullable', 'string', 'max:10000'],
             'image' => ['nullable', ...ImageUploader::rules()],
             'remove_image' => ['boolean'],
             'sort_order' => ['integer', 'min:0', 'max:65535'],
+            'status' => ['nullable', Rule::in(['published', 'draft'])],
             'is_published' => ['boolean'],
         ];
     }
@@ -62,7 +53,7 @@ class BusinessActivityRequest extends FormRequest
             'service_category_id' => 'Kategori',
             'kbli_code' => 'Kode KBLI',
             'name' => 'Nama aktivitas',
-            'slug' => 'Slug',
+            'status' => 'Status',
             'short_description' => 'Deskripsi singkat',
             'description' => 'Deskripsi detail',
             'image' => 'Gambar',

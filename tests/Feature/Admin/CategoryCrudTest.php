@@ -26,7 +26,6 @@ class CategoryCrudTest extends TestCase
     {
         return array_merge([
             'name' => 'Kategori Uji',
-            'slug' => '',
             'description' => 'Deskripsi uji.',
             'sort_order' => 3,
             'is_published' => 1,
@@ -113,15 +112,74 @@ class CategoryCrudTest extends TestCase
         $this->assertSame(0, ServiceCategory::count());
     }
 
-    public function test_slug_must_be_unique_and_well_formed(): void
+    public function test_slug_is_generated_from_the_name_and_made_unique(): void
     {
-        ServiceCategory::factory()->create(['slug' => 'sudah-ada']);
+        $this->post('/admin/categories', $this->payload(['name' => 'Kategori Uji']));
+        $this->post('/admin/categories', $this->payload(['name' => 'Kategori Uji']));
+        $this->post('/admin/categories', $this->payload(['name' => 'Kategori   UJI!']));
 
-        $this->post('/admin/categories', $this->payload(['slug' => 'sudah-ada']))->assertSessionHasErrors('slug');
-        $this->post('/admin/categories', $this->payload(['slug' => 'Tidak Valid!']))->assertSessionHasErrors('slug');
-        $this->post('/admin/categories', $this->payload(['slug' => 'dua--tanda']))->assertSessionHasErrors('slug');
+        $this->assertSame(
+            ['kategori-uji', 'kategori-uji-2', 'kategori-uji-3'],
+            ServiceCategory::orderBy('id')->pluck('slug')->all(),
+        );
+    }
 
-        $this->assertSame(1, ServiceCategory::count());
+    public function test_a_posted_slug_is_ignored_because_slugs_are_automatic(): void
+    {
+        $this->post('/admin/categories', $this->payload(['name' => 'Nama Asli', 'slug' => 'slug-paksa']))
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame('nama-asli', ServiceCategory::firstOrFail()->slug);
+    }
+
+    public function test_draft_category_gets_no_slug_until_it_is_published(): void
+    {
+        $this->post('/admin/categories', $this->payload(['name' => 'Masih Draft', 'status' => 'draft']))
+            ->assertSessionHasNoErrors();
+
+        $category = ServiceCategory::firstOrFail();
+        $this->assertFalse($category->is_published);
+        $this->assertNull($category->slug);
+
+        $this->put("/admin/categories/{$category->id}", $this->payload(['name' => 'Masih Draft', 'status' => 'published']));
+        $this->assertSame('masih-draft', $category->refresh()->slug);
+        $this->assertTrue($category->is_published);
+    }
+
+    public function test_slug_is_kept_stable_when_renamed_or_set_back_to_draft(): void
+    {
+        $this->post('/admin/categories', $this->payload(['name' => 'Nama Awal', 'status' => 'published']));
+        $category = ServiceCategory::firstOrFail();
+
+        $this->put("/admin/categories/{$category->id}", $this->payload(['name' => 'Nama Baru Sekali', 'status' => 'published']));
+        $this->assertSame('nama-awal', $category->refresh()->slug);
+
+        $this->put("/admin/categories/{$category->id}", $this->payload(['name' => 'Nama Baru Sekali', 'status' => 'draft']));
+        $category->refresh();
+        $this->assertFalse($category->is_published);
+        $this->assertSame('nama-awal', $category->slug);
+
+        $this->put("/admin/categories/{$category->id}", $this->payload(['name' => 'Nama Baru Sekali', 'status' => 'published']));
+        $this->assertSame('nama-awal', $category->refresh()->slug);
+    }
+
+    public function test_status_must_be_published_or_draft(): void
+    {
+        $this->post('/admin/categories', $this->payload(['status' => 'rahasia']))->assertSessionHasErrors('status');
+
+        $this->assertSame(0, ServiceCategory::count());
+    }
+
+    public function test_form_offers_a_status_choice_and_no_slug_field(): void
+    {
+        $this->get('/admin/categories/create')
+            ->assertOk()
+            ->assertSee('name="status" value="published"', false)
+            ->assertSee('name="status" value="draft"', false)
+            ->assertSee('Terbit')
+            ->assertSee('Draft')
+            ->assertDontSee('name="slug"', false)
+            ->assertDontSee('Slug');
     }
 
     public function test_invalid_uploads_are_rejected(): void
@@ -149,7 +207,8 @@ class CategoryCrudTest extends TestCase
         $this->get("/admin/categories/{$category->id}/edit")
             ->assertOk()
             ->assertSee('Nama Lama')
-            ->assertSee('Mengubah slug');
+            ->assertSee('URL kategori')
+            ->assertSee('tetap sama walau nama diubah');
     }
 
     public function test_update_changes_fields_and_allows_keeping_own_slug(): void
@@ -166,13 +225,13 @@ class CategoryCrudTest extends TestCase
         $this->assertFalse($category->is_published);
     }
 
-    public function test_update_cannot_take_another_categorys_slug(): void
+    public function test_update_cannot_change_the_slug_by_posting_one(): void
     {
         ServiceCategory::factory()->create(['slug' => 'milik-lain']);
         $category = ServiceCategory::factory()->create(['slug' => 'milik-saya']);
 
         $this->put("/admin/categories/{$category->id}", $this->payload(['slug' => 'milik-lain']))
-            ->assertSessionHasErrors('slug');
+            ->assertSessionHasNoErrors();
 
         $this->assertSame('milik-saya', $category->refresh()->slug);
     }

@@ -53,7 +53,7 @@
                                             @if ($activity->kbli_code)
                                                 <span class="font-mono">KBLI {{ $activity->kbli_code }}</span> &middot;
                                             @endif
-                                            <span class="font-mono">{{ $activity->slug }}</span>
+                                            @if ($activity->slug)<span class="font-mono">{{ $activity->slug }}</span>@else<span class="italic">Belum ada URL (draft)</span>@endif
                                         </p>
                                     </div>
                                 </div>

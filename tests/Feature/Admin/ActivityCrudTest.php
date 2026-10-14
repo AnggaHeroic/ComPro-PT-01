@@ -32,7 +32,6 @@ class ActivityCrudTest extends TestCase
             'service_category_id' => $this->category->id,
             'kbli_code' => '',
             'name' => 'Aktivitas Uji',
-            'slug' => '',
             'short_description' => 'Singkat.',
             'description' => 'Detail.',
             'sort_order' => 1,
@@ -134,23 +133,69 @@ class ActivityCrudTest extends TestCase
             ->assertSessionHasInput('description', 'Jangan hilang');
     }
 
-    public function test_slug_is_unique_only_within_the_same_category(): void
+    public function test_slug_is_generated_and_unique_only_within_the_same_category(): void
     {
         $other = ServiceCategory::factory()->create();
-        BusinessActivity::factory()->for($this->category, 'category')->create(['slug' => 'kembar']);
 
-        $this->post('/admin/activities', $this->payload(['slug' => 'kembar']))->assertSessionHasErrors('slug');
+        $this->post('/admin/activities', $this->payload(['name' => 'Kembar']));
+        $this->post('/admin/activities', $this->payload(['name' => 'Kembar']));
+        $this->post('/admin/activities', $this->payload(['name' => 'Kembar', 'service_category_id' => $other->id]));
 
-        $this->post('/admin/activities', $this->payload(['slug' => 'kembar', 'service_category_id' => $other->id]))
-            ->assertSessionHasNoErrors();
-
-        $this->assertSame(2, BusinessActivity::where('slug', 'kembar')->count());
+        $this->assertSame(['kembar', 'kembar-2'], BusinessActivity::where('service_category_id', $this->category->id)->orderBy('id')->pluck('slug')->all());
+        $this->assertSame(['kembar'], BusinessActivity::where('service_category_id', $other->id)->pluck('slug')->all());
     }
 
-    public function test_slug_format_is_validated(): void
+    public function test_a_posted_slug_is_ignored_because_slugs_are_automatic(): void
     {
-        $this->post('/admin/activities', $this->payload(['slug' => 'Tidak Valid']))->assertSessionHasErrors('slug');
-        $this->post('/admin/activities', $this->payload(['slug' => '-awal']))->assertSessionHasErrors('slug');
+        $this->post('/admin/activities', $this->payload(['name' => 'Nama Aktivitas', 'slug' => 'Paksa Slug!']))
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame('nama-aktivitas', BusinessActivity::firstOrFail()->slug);
+    }
+
+    public function test_draft_activity_gets_no_slug_until_it_is_published(): void
+    {
+        $this->post('/admin/activities', $this->payload(['name' => 'Aktivitas Draft', 'status' => 'draft']))
+            ->assertSessionHasNoErrors();
+
+        $activity = BusinessActivity::firstOrFail();
+        $this->assertFalse($activity->is_published);
+        $this->assertNull($activity->slug);
+
+        $this->get('/admin/activities')->assertOk()->assertSee('Belum ada URL (draft)');
+
+        $this->put("/admin/activities/{$activity->id}", $this->payload(['name' => 'Aktivitas Draft', 'status' => 'published']));
+        $this->assertSame('aktivitas-draft', $activity->refresh()->slug);
+    }
+
+    public function test_slug_is_kept_stable_when_renamed_or_set_back_to_draft(): void
+    {
+        $this->post('/admin/activities', $this->payload(['name' => 'Nama Awal', 'status' => 'published']));
+        $activity = BusinessActivity::firstOrFail();
+
+        $this->put("/admin/activities/{$activity->id}", $this->payload(['name' => 'Nama Baru Lagi', 'status' => 'draft']));
+        $activity->refresh();
+        $this->assertFalse($activity->is_published);
+        $this->assertSame('nama-awal', $activity->slug);
+
+        $this->put("/admin/activities/{$activity->id}", $this->payload(['name' => 'Nama Baru Lagi', 'status' => 'published']));
+        $this->assertSame('nama-awal', $activity->refresh()->slug);
+    }
+
+    public function test_status_must_be_published_or_draft(): void
+    {
+        $this->post('/admin/activities', $this->payload(['status' => 'rahasia']))->assertSessionHasErrors('status');
+
+        $this->assertSame(0, BusinessActivity::count());
+    }
+
+    public function test_form_offers_a_status_choice_and_no_slug_field(): void
+    {
+        $this->get('/admin/activities/create')
+            ->assertOk()
+            ->assertSee('name="status" value="published"', false)
+            ->assertSee('name="status" value="draft"', false)
+            ->assertDontSee('name="slug"', false);
     }
 
     public function test_invalid_uploads_are_rejected(): void
@@ -182,12 +227,17 @@ class ActivityCrudTest extends TestCase
         $this->assertFalse($activity->is_published);
     }
 
-    public function test_update_cannot_collide_with_sibling_slug(): void
+    public function test_moving_an_activity_to_a_category_with_the_same_slug_makes_it_unique(): void
     {
-        BusinessActivity::factory()->for($this->category, 'category')->create(['slug' => 'saudara']);
-        $activity = BusinessActivity::factory()->for($this->category, 'category')->create(['slug' => 'saya']);
+        $other = ServiceCategory::factory()->create();
+        BusinessActivity::factory()->for($other, 'category')->create(['slug' => 'bentrok']);
+        $activity = BusinessActivity::factory()->for($this->category, 'category')->create(['name' => 'Bentrok', 'slug' => 'bentrok']);
 
-        $this->put("/admin/activities/{$activity->id}", $this->payload(['slug' => 'saudara']))->assertSessionHasErrors('slug');
+        $this->put("/admin/activities/{$activity->id}", $this->payload(['name' => 'Bentrok', 'service_category_id' => $other->id]))
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame('bentrok-2', $activity->refresh()->slug);
+        $this->assertSame(2, BusinessActivity::where('service_category_id', $other->id)->count());
     }
 
     public function test_replace_and_remove_main_image_clean_up_files(): void
@@ -250,6 +300,21 @@ class ActivityCrudTest extends TestCase
         $this->delete("/admin/activities/{$activity->id}")->assertSessionHas('success');
 
         $this->assertModelMissing($activity);
+    }
+
+    public function test_admin_pages_work_for_activities_in_a_draft_category_without_slug(): void
+    {
+        $draft = ServiceCategory::factory()->create(['name' => 'Kategori Draft', 'slug' => null, 'is_published' => false]);
+        $activity = BusinessActivity::factory()->for($draft, 'category')->create(['name' => 'Aktivitas Dalam Draft']);
+
+        $this->get('/admin/activities')->assertOk()->assertSee('Aktivitas Dalam Draft');
+        $this->get("/admin/activities/{$activity->id}/edit")->assertOk()->assertSee('Belum memiliki URL', false);
+        $this->get("/admin/gallery/{$activity->id}")->assertOk()->assertSee('Aktivitas Dalam Draft');
+        $this->get('/admin/categories')->assertOk()->assertSee('Belum ada URL (draft)');
+
+        auth()->logout();
+        $this->get('/layanan-jasa')->assertDontSee('Kategori Draft');
+        $this->get("/layanan-jasa/{$activity->slug}")->assertNotFound();
     }
 
     public function test_new_activity_appears_on_public_site_unless_draft(): void

@@ -17,6 +17,8 @@ class BusinessActivityController extends Controller
 {
     use StoresUploadedImage;
 
+    private const NON_COLUMN_FIELDS = ['image', 'remove_image', 'status'];
+
     public function index(Request $request): View
     {
         $search = trim((string) $request->query('q'));
@@ -68,7 +70,7 @@ class BusinessActivityController extends Controller
 
         try {
             BusinessActivity::create([
-                ...$request->safe()->except(['image', 'remove_image']),
+                ...$request->safe()->except(self::NON_COLUMN_FIELDS),
                 'image_path' => $path,
             ]);
         } catch (Throwable $e) {
@@ -92,7 +94,7 @@ class BusinessActivityController extends Controller
 
     public function update(BusinessActivityRequest $request, BusinessActivity $activity, ImageUploader $images): RedirectResponse
     {
-        $data = $request->safe()->except(['image', 'remove_image']);
+        $data = $request->safe()->except(self::NON_COLUMN_FIELDS);
         $oldPath = $activity->image_path;
         $newPath = $this->storeUploadedImage($request, $images, 'activities');
 

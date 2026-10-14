@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\ResolvesImageUrl;
+use App\Support\Slug;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -19,6 +20,30 @@ class BusinessActivity extends Model
 {
     /** @use HasFactory<\Database\Factories\BusinessActivityFactory> */
     use HasFactory, ResolvesImageUrl;
+
+    /**
+     * Slug dibuat otomatis dari nama saat aktivitas diterbitkan (unik di dalam
+     * kategorinya). Draft tidak memiliki slug; slug yang sudah ada dipertahankan,
+     * kecuali bentrok setelah aktivitas dipindah ke kategori lain.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (self $activity) {
+            if (! $activity->is_published) {
+                return;
+            }
+
+            $taken = fn (string $slug) => static::query()
+                ->where('service_category_id', $activity->service_category_id)
+                ->where('slug', $slug)
+                ->when($activity->exists, fn ($query) => $query->whereKeyNot($activity->getKey()))
+                ->exists();
+
+            if (blank($activity->slug) || ($activity->isDirty('service_category_id') && $taken($activity->slug))) {
+                $activity->slug = Slug::unique((string) $activity->name, $taken, 150);
+            }
+        });
+    }
 
     protected function casts(): array
     {
