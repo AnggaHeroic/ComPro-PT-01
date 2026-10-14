@@ -27,8 +27,8 @@
 
                 {{-- Page header (fixed, sejajar tinggi dengan strip logo sidebar) --}}
                 @isset($header)
-                    <div class="sticky top-14 z-20 border-b-[3px] border-primary bg-white/95 shadow-sm backdrop-blur lg:top-0">
-                        <div class="mx-auto flex min-h-[61px] max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-2 sm:px-6 lg:px-10">
+                    <div class="sticky top-14 z-20 border-b-[3px] border-primary bg-white/95 shadow-sm backdrop-blur lg:top-0 lg:h-16">
+                        <div class="mx-auto flex min-h-[61px] max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-2 sm:px-6 lg:h-[61px] lg:flex-nowrap lg:px-10 lg:py-0">
                             <div class="min-w-0 flex-1 border-l-4 border-primary pl-3 [&_h1]:truncate [&_h1]:text-xl [&_h1]:leading-tight [&_p]:mt-0.5 [&_p]:truncate [&_p]:text-xs">
                                 {{ $header }}
                             </div>

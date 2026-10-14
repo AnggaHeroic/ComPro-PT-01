@@ -18,9 +18,8 @@
     class="fixed inset-y-0 left-0 z-50 flex w-64 flex-col overflow-hidden bg-linear-to-b from-secondary-dark to-[#222] text-white shadow-xl transition-transform duration-200 ease-out lg:shadow-none"
     aria-label="Navigasi admin"
 >
-    {{-- Dekorasi: sama seperti panel login (grid halus, cahaya merah, watermark rumah) --}}
+    {{-- Dekorasi: sama seperti panel login (grid halus, watermark rumah) --}}
     <div class="pointer-events-none absolute inset-0 opacity-[0.07]" style="background-image: linear-gradient(to right, #fff 1px, transparent 1px), linear-gradient(to bottom, #fff 1px, transparent 1px); background-size: 40px 40px; mask-image: linear-gradient(to bottom, transparent 8%, #000 40%, transparent 95%); -webkit-mask-image: linear-gradient(to bottom, transparent 8%, #000 40%, transparent 95%);"></div>
-    <div class="pointer-events-none absolute -left-20 top-1/3 h-72 w-72 rounded-full bg-primary/25 blur-3xl"></div>
     <svg class="pointer-events-none absolute -bottom-12 -right-12 h-60 w-60 text-white/[0.05]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-6h6v6"/></svg>
 
     {{-- Brand --}}
@@ -36,7 +35,7 @@
     {{-- Menu --}}
     <nav class="relative flex-1 space-y-7 overflow-y-auto px-3 py-6">
         <div>
-            <p class="mb-2 px-3 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-300">Menu</p>
+            <p class="mb-2 px-3 text-[11px] font-bold uppercase tracking-[0.14em] text-red-500">Menu</p>
             <div class="space-y-1">
                 <x-side-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
@@ -46,7 +45,7 @@
         </div>
 
         <div>
-            <p class="mb-2 px-3 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-300">Konten</p>
+            <p class="mb-2 px-3 text-[11px] font-bold uppercase tracking-[0.14em] text-red-500">Konten</p>
             <div class="space-y-1">
                 <x-side-link :href="route('admin.categories.index')" :active="request()->routeIs('admin.categories.*')">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 12l9 4 9-4"/><path d="M3 17l9 4 9-4"/></svg>
@@ -64,7 +63,7 @@
         </div>
 
         <div>
-            <p class="mb-2 px-3 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-300">Akun</p>
+            <p class="mb-2 px-3 text-[11px] font-bold uppercase tracking-[0.14em] text-red-500">Akun</p>
             <div class="space-y-1">
                 <x-side-link :href="route('admin.profile.edit')" :active="request()->routeIs('admin.profile.*')">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
