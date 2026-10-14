@@ -5,7 +5,7 @@
     </x-slot>
 
     <x-slot name="actions">
-        <x-admin.back :href="route('admin.dashboard')" label="Kembali ke Dashboard" />
+        <x-admin.back :href="route('admin.dashboard')" />
     </x-slot>
 
     <div class="max-w-2xl space-y-6">

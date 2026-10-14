@@ -26,7 +26,13 @@ Alpine.data('documentationLightbox', (images = []) => ({
     pinchStartDistance: 0,
     pinchStartZoom: 1,
 
-    openPreview(index) {
+    openPreview(index, images = null) {
+        // Opsional: pemanggil (mis. galeri admin) bisa mengirim daftar gambar
+        // sesuai urutan yang sedang tampil. Halaman publik tidak mengirimnya.
+        if (Array.isArray(images) && images.length) {
+            this.images = images;
+        }
+
         if (
             !this.images.length ||
             !Number.isInteger(index) ||

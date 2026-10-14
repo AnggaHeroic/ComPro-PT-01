@@ -5,7 +5,7 @@
     </x-slot>
 
     <x-slot name="actions">
-        <x-admin.back :href="route('admin.categories.index')" label="Kembali ke Kategori" />
+        <x-admin.back :href="route('admin.categories.index')" />
     </x-slot>
 
     <form method="POST" action="{{ route('admin.categories.update', $category) }}" enctype="multipart/form-data">

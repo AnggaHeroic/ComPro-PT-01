@@ -4,7 +4,7 @@
 
 <div
     x-data="documentationLightbox(@js($images))"
-    @documentation-open.window="openPreview($event.detail.index)"
+    @documentation-open.window="openPreview($event.detail.index, $event.detail.images)"
     @keydown.escape.window="closePreview()"
     @keydown.arrow-right.window="preview && nextPreview()"
     @keydown.arrow-left.window="preview && previousPreview()"

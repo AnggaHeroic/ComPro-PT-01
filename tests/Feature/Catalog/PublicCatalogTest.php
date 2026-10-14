@@ -141,6 +141,18 @@ class PublicCatalogTest extends TestCase
             ->assertSeeInOrder(['https://example.com/satu.jpg', 'https://example.com/dua.jpg'], false);
     }
 
+    public function test_public_lightbox_listens_for_the_event_with_optional_image_list(): void
+    {
+        $category = ServiceCategory::factory()->create(['slug' => 'kat']);
+        $activity = BusinessActivity::factory()->for($category, 'category')->create(['slug' => 'akt']);
+        ActivityImage::factory()->for($activity, 'activity')->create(['image_path' => 'https://example.com/satu.jpg']);
+
+        $this->get('/layanan-jasa/kat/akt')
+            ->assertOk()
+            ->assertSee('openPreview($event.detail.index, $event.detail.images)', false)
+            ->assertSee("\$dispatch('documentation-open', { index: 0 })", false);
+    }
+
     public function test_pages_do_not_run_queries_per_activity(): void
     {
         $category = ServiceCategory::factory()->create(['slug' => 'kat']);

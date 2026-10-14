@@ -5,7 +5,7 @@
     </x-slot>
 
     <x-slot name="actions">
-        <x-admin.back :href="route('admin.activities.index', array_filter(['category' => $activity->service_category_id]))" label="Kembali ke Aktivitas Usaha" />
+        <x-admin.back :href="route('admin.activities.index', array_filter(['category' => $activity->service_category_id]))" />
     </x-slot>
 
     <form method="POST" action="{{ route('admin.activities.store') }}" enctype="multipart/form-data">

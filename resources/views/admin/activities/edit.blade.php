@@ -6,7 +6,7 @@
 
     <x-slot name="actions">
         <x-secondary-button size="sm" :href="route('admin.gallery.show', $activity)">Kelola galeri</x-secondary-button>
-        <x-admin.back :href="route('admin.activities.index', ['category' => $activity->service_category_id])" label="Kembali ke Aktivitas Usaha" />
+        <x-admin.back :href="route('admin.activities.index', ['category' => $activity->service_category_id])" />
     </x-slot>
 
     <form method="POST" action="{{ route('admin.activities.update', $activity) }}" enctype="multipart/form-data">

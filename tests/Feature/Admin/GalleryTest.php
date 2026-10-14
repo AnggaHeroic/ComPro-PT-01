@@ -401,21 +401,49 @@ class GalleryTest extends TestCase
         }
     }
 
-    public function test_manage_pages_have_a_back_link_to_their_list(): void
+    public function test_manage_pages_have_a_plain_back_link_to_their_list(): void
     {
         $category = $this->activity->category;
-        $activityList = route('admin.activities.index', ['category' => $category->id]);
 
-        $this->get("/admin/categories/create")->assertSee('Kembali ke Kategori')->assertSee(route('admin.categories.index'), false);
-        $this->get("/admin/categories/{$category->id}/edit")->assertSee('Kembali ke Kategori');
-        $this->get('/admin/activities/create')->assertSee('Kembali ke Aktivitas Usaha');
-        $this->get("/admin/activities/{$this->activity->id}/edit")
-            ->assertSee('Kembali ke Aktivitas Usaha')
-            ->assertSee(e($activityList), false);
+        $pages = [
+            '/admin/categories/create' => route('admin.categories.index'),
+            "/admin/categories/{$category->id}/edit" => route('admin.categories.index'),
+            '/admin/activities/create' => route('admin.activities.index'),
+            "/admin/activities/{$this->activity->id}/edit" => route('admin.activities.index', ['category' => $category->id]),
+            $this->url() => route('admin.gallery.index', ['category' => $category->id]),
+            '/admin/profil' => route('admin.dashboard'),
+        ];
+
+        foreach ($pages as $url => $target) {
+            $html = $this->get($url)->assertOk()->getContent();
+
+            // Label hanya "Kembali", tanpa nama menu; tujuan tautan tetap benar.
+            $this->assertMatchesRegularExpression('#<a\s+href="'.preg_quote(e($target), '#').'"[^>]*>.*?</span>\s*Kembali\s*</a>#s', $html, "Tombol kembali di {$url}");
+            $this->assertStringNotContainsString('Kembali ke ', $html, "Label panjang masih ada di {$url}");
+        }
+    }
+
+    public function test_gallery_photos_can_be_previewed_with_the_shared_alpine_lightbox(): void
+    {
+        $a = ActivityImage::factory()->for($this->activity, 'activity')->create(['image_path' => 'https://example.com/a.jpg', 'sort_order' => 1]);
+        $b = ActivityImage::factory()->for($this->activity, 'activity')->create(['image_path' => 'https://example.com/b.jpg', 'sort_order' => 2]);
+
         $this->get($this->url())
-            ->assertSee('Kembali ke Galeri')
-            ->assertSee(e(route('admin.gallery.index', ['category' => $category->id])), false);
-        $this->get('/admin/profil')->assertSee('Kembali ke Dashboard');
+            ->assertOk()
+            // komponen lightbox yang sama dengan halaman publik
+            ->assertSee('documentationLightbox(', false)
+            ->assertSee('@documentation-open.window', false)
+            // daftar awal berurutan sesuai urutan tersimpan
+            ->assertSeeInOrder(['https://example.com/a.jpg', 'https://example.com/b.jpg'], false)
+            // klik foto dan tombol akses papan ketik membuka pratinjau
+            ->assertSee("openPhoto({$a->id})", false)
+            ->assertSee("openPhoto({$b->id})", false)
+            ->assertSee('aria-label="Lihat foto 1"', false);
+    }
+
+    public function test_gallery_without_photos_does_not_render_the_lightbox(): void
+    {
+        $this->get($this->url())->assertOk()->assertDontSee('documentationLightbox(', false);
     }
 
     public function test_activity_index_links_to_gallery_and_sidebar_has_gallery_menu(): void
