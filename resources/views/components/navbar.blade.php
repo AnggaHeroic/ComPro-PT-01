@@ -17,7 +17,7 @@
         ])
         ->all();
 
-    // Dropdown desktop: <= 6 kategori satu kolom; > 6 dua kolom bernomor (maks. 12) + tautan ke semua.
+    // Dropdown desktop: <= 6 kategori satu kolom; > 6 dua kolom (maks. 12) + tautan ke semua.
     $manyCategories = count($serviceCategories) > 6;
     $dropdownCategories = array_slice($serviceCategories, 0, 12);
     $hiddenCategories = max(0, count($serviceCategories) - 12);
@@ -175,26 +175,16 @@
 
                             
                             @if ($manyCategories)
-                                {{-- Dua kolom, dibaca turun ke bawah, bernomor --}}
+                                {{-- Dua kolom, dibaca turun ke bawah --}}
                                 <div class="columns-2 gap-x-2 [column-rule:1px_solid_rgb(226_232_240)]">
                                     @foreach ($dropdownCategories as $category)
                                         <a
                                             href="{{ route('services.category', $category['slug']) }}"
-                                            class="group flex break-inside-avoid items-baseline gap-3 px-4 py-2.5"
+                                            class="group flex break-inside-avoid items-center justify-between gap-3 px-4 py-2.5"
                                             @if ($activeCategorySlug === $category['slug'])
                                                 aria-current="page"
                                             @endif
                                         >
-                                            <span
-                                                class="font-display w-5 shrink-0 text-[11px] font-bold transition-colors
-                                                {{ $activeCategorySlug === $category['slug']
-                                                    ? 'text-primary'
-                                                    : 'text-slate-400 group-hover:text-primary' }}"
-                                                aria-hidden="true"
-                                            >
-                                                {{ $category['number'] }}
-                                            </span>
-
                                             <span
                                                 class="font-display text-sm font-medium leading-snug
                                                 {{ $activeCategorySlug === $category['slug']
@@ -203,6 +193,13 @@
                                             >
                                                 {{ $category['name'] }}
                                             </span>
+
+                                            @if ($activeCategorySlug === $category['slug'])
+                                                <span
+                                                    class="h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
+                                                    aria-hidden="true"
+                                                ></span>
+                                            @endif
                                         </a>
                                     @endforeach
                                 </div>

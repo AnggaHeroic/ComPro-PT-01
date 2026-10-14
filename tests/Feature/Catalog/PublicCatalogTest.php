@@ -184,7 +184,7 @@ class PublicCatalogTest extends TestCase
         $this->assertStringNotContainsString('Lihat semua', $dropdown);
     }
 
-    public function test_navbar_dropdown_becomes_two_numbered_columns_above_six_categories(): void
+    public function test_navbar_dropdown_becomes_two_plain_columns_above_six_categories(): void
     {
         $this->makeCategories(9);
 
@@ -195,7 +195,10 @@ class PublicCatalogTest extends TestCase
         $this->assertStringContainsString('columns-2 gap-x-2', $dropdown);
         $this->assertStringContainsString('[column-rule:1px_solid_rgb(226_232_240)]', $dropdown);
         $this->assertSame(9, substr_count($dropdown, 'break-inside-avoid'));
-        $this->assertMatchesRegularExpression('#>\s*09\s*</span>\s*<span[^>]*>\s*Kategori Nomor 09\s*</span>#', $dropdown);
+        // Tanpa penomoran: hanya nama kategori.
+        $this->assertStringContainsString('Kategori Nomor 09', $dropdown);
+        $this->assertDoesNotMatchRegularExpression('#font-bold[^>]*>\s*0[1-9]\s*</span>#', $dropdown);
+        $this->assertStringNotContainsString('text-[11px]', $dropdown);
         // Tautan "Semua Layanan" tetap ada di atas, dan tidak ada tautan "Lihat semua" selama <= 12.
         $this->assertStringContainsString('Semua Layanan', $dropdown);
         $this->assertStringNotContainsString('Lihat semua', $dropdown);
@@ -220,6 +223,8 @@ class PublicCatalogTest extends TestCase
         $dropdown = $this->desktopDropdown($this->get('/layanan-jasa/kategori-03')->assertOk()->getContent());
 
         $this->assertSame(1, substr_count($dropdown, 'aria-current="page"'));
+        // Penanda aktif berupa titik merah di sisi kanan (tanpa nomor).
+        $this->assertSame(1, substr_count($dropdown, 'h-1.5 w-1.5 shrink-0 rounded-full bg-primary'));
         $this->assertMatchesRegularExpression('#href="[^"]*/layanan-jasa/kategori-03"[^>]*aria-current="page"#', $dropdown);
     }
 
