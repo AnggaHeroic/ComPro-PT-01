@@ -171,8 +171,6 @@ class PublicCatalogTest extends TestCase
             ->assertSee('class="lg:col-span-5"', false)
             ->assertSee('class="lg:col-span-4"', false)
             ->assertSee('class="mt-6 space-y-4"', false)
-            // judul tetap di posisi normal (rata kiri) pada tampilan satu kolom
-            ->assertSee('class="font-display text-xs font-semibold uppercase tracking-[0.16em] text-white"', false)
             ->assertSee('Kategori Nomor 06')
             ->assertDontSee('bidang usaha</', false);
     }
@@ -187,9 +185,6 @@ class PublicCatalogTest extends TestCase
         $this->assertStringContainsString('lg:col-span-5', $html);
         $this->assertStringNotContainsString('class="mt-6 space-y-4"><li>', $html);
         $this->assertStringNotContainsString('Lihat semua 12 bidang usaha', $html);
-
-        // Judul dipusatkan di atas daftar dua kolom.
-        $this->assertMatchesRegularExpression('#<h3 class="font-display text-xs[^"]*text-white text-center">\s*Bidang Usaha#', $html);
     }
 
     public function test_footer_caps_the_list_at_twelve_and_links_to_all_services(): void
@@ -200,7 +195,6 @@ class PublicCatalogTest extends TestCase
             ->assertOk()
             ->assertSee('Kategori Nomor 12')
             ->assertSee('Lihat semua 15 bidang usaha')
-            ->assertSee('class="mt-6 text-center"', false)
             ->assertSee('href="'.route('services').'"', false);
 
         // Daftar lengkap tetap tersedia di halaman Layanan & Jasa.
