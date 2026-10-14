@@ -65,6 +65,15 @@ class ActivityCrudTest extends TestCase
         $this->get('/admin/activities?q=zzz')->assertSee('Tidak ada aktivitas yang cocok');
     }
 
+    public function test_toolbar_puts_the_count_beside_search_and_the_add_button_on_the_right(): void
+    {
+        BusinessActivity::factory()->for($this->category, 'category')->create();
+
+        $this->get('/admin/activities')
+            ->assertOk()
+            ->assertSeeInOrder(['Cari nama, slug, atau KBLI', 'Cari', '1 aktivitas', '+ Tambah Aktivitas'], false);
+    }
+
     public function test_empty_state_is_shown_without_activities(): void
     {
         $this->get('/admin/activities')->assertOk()->assertSee('Belum ada aktivitas');

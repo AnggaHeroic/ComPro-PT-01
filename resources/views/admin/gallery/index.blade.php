@@ -21,7 +21,7 @@
             <a href="{{ route('admin.gallery.index') }}" class="px-2 text-sm text-gray-500 hover:text-primary">Reset</a>
         @endif
 
-        <span class="ml-auto text-sm text-gray-500">{{ $activities->total() }} aktivitas</span>
+        <span class="px-1 text-sm text-gray-500">{{ $activities->total() }} aktivitas</span>
     </form>
 
     <div class="overflow-x-auto">

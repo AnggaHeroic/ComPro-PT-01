@@ -1,11 +1,7 @@
 <x-app-layout>
-    <x-slot name="header">                <h1 class="font-display text-2xl font-bold text-gray-900">Aktivitas Usaha</h1>
-                <p class="mt-1 text-sm text-gray-500">Kelola aktivitas usaha dan kode KBLI di setiap kategori.</p>
-            
-    </x-slot>
-
-    <x-slot name="actions">
-        <x-primary-button size="sm" :href="route('admin.activities.create', array_filter(['category' => $categoryId]))">+ Tambah Aktivitas</x-primary-button>
+    <x-slot name="header">
+        <h1 class="font-display text-2xl font-bold text-gray-900">Aktivitas Usaha</h1>
+        <p class="mt-1 text-sm text-gray-500">Kelola aktivitas usaha dan kode KBLI di setiap kategori.</p>
     </x-slot>
 
     <div class="overflow-hidden rounded border border-gray-200 bg-white shadow-sm">
@@ -25,7 +21,9 @@
             <a href="{{ route('admin.activities.index') }}" class="px-2 text-sm text-gray-500 hover:text-primary">Reset</a>
         @endif
 
-        <span class="ml-auto text-sm text-gray-500">{{ $activities->total() }} aktivitas</span>
+        <span class="px-1 text-sm text-gray-500">{{ $activities->total() }} aktivitas</span>
+
+        <x-primary-button :href="route('admin.activities.create', array_filter(['category' => $categoryId]))" class="ml-auto">+ Tambah Aktivitas</x-primary-button>
     </form>
 
     <div class="overflow-x-auto">

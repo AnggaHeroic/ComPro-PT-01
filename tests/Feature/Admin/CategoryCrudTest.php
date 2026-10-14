@@ -61,6 +61,15 @@ class CategoryCrudTest extends TestCase
             ->assertDontSee('Belum ada kategori');
     }
 
+    public function test_toolbar_puts_the_count_beside_search_and_the_add_button_on_the_right(): void
+    {
+        ServiceCategory::factory()->create();
+
+        $this->get('/admin/categories')
+            ->assertOk()
+            ->assertSeeInOrder(['Cari nama atau slug', 'Cari', '1 kategori', '+ Tambah Kategori'], false);
+    }
+
     public function test_index_search_filters_by_name_and_slug(): void
     {
         ServiceCategory::factory()->create(['name' => 'Teknologi', 'slug' => 'teknologi']);
