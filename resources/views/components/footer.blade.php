@@ -12,7 +12,7 @@
     <div class="container-site py-16 lg:py-20">
         <div class="grid gap-12 lg:grid-cols-12 lg:gap-16">
 
-            {{-- Company --}}
+            {{-- Company + Contact --}}
             <div @class(['lg:col-span-5' => ! $manyCategories, 'lg:col-span-4' => $manyCategories])>
 
                 {{-- Logo --}}
@@ -36,92 +36,9 @@
                     dalam berbagai bidang perdagangan dan layanan untuk
                     memenuhi beragam kebutuhan pelanggan dan mitra bisnis.
                 </p>
-            </div>
 
-            {{-- Navigation + Business Categories --}}
-            <div @class(['lg:col-span-4' => ! $manyCategories, 'lg:col-span-5' => $manyCategories])>
-                <div>
-                    <h3 class="font-display text-xs font-semibold uppercase tracking-[0.16em] text-white">
-                        Navigasi
-                    </h3>
-                    <ul class="mt-6 space-y-4">
-                        <li>
-                            <a
-                                href="{{ route('home') }}"
-                                class="font-body text-sm text-slate-400 transition hover:text-white"
-                            >
-                                Beranda
-                            </a>
-                        </li>
-                        <li>
-                            <a
-                                href="{{ route('about') }}"
-                                class="font-body text-sm text-slate-400 transition hover:text-white"
-                            >
-                                Tentang Kami
-                            </a>
-                        </li>
-                        <li>
-                            <a
-                                href="{{ route('services') }}"
-                                class="font-body text-sm text-slate-400 transition hover:text-white"
-                            >
-                                Layanan & Jasa
-                            </a>
-                        </li>
-                        <li>
-                            <a
-                                href="{{ route('contact') }}"
-                                class="font-body text-sm text-slate-400 transition hover:text-white"
-                            >
-                                Kontak Kami
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-
-                {{-- Business Categories --}}
-                <div class="mt-12">
-                    <h3 class="font-display text-xs font-semibold uppercase tracking-[0.16em] text-white">
-                        Bidang Usaha
-                    </h3>
-
-                    <ul @class([
-                        'mt-6',
-                        'space-y-4' => ! $manyCategories,
-                        'grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2' => $manyCategories,
-                    ])>
-                        @foreach ($footerCategories as $navCategory)
-                            <li>
-                                <a
-                                    href="{{ route('services.category', $navCategory->slug) }}"
-                                    class="font-body text-sm text-slate-400 transition hover:text-white"
-                                >
-                                    {{ $navCategory->name }}
-                                </a>
-                            </li>
-                        @endforeach
-                    </ul>
-
-                    @if ($hiddenCategories > 0)
-                        <a
-                            href="{{ route('services') }}"
-                            class="font-display group mt-6 inline-flex items-center gap-2 text-sm font-semibold text-white transition-colors hover:text-slate-300"
-                        >
-                            Lihat semua {{ $navCategories->count() }} bidang usaha
-                            <span class="transition-transform duration-200 group-hover:translate-x-1" aria-hidden="true">→</span>
-                        </a>
-                    @endif
-                </div>
-            </div>
-
-            {{-- Contact --}}
-            <div class="lg:col-span-3">
-                <h3 class="font-display text-xs font-semibold uppercase tracking-[0.16em] text-white">
-                    Kontak
-                </h3>
-
-                <div class="mt-6 space-y-4">
+                {{-- Contact Information --}}
+                <div class="mt-8 space-y-4">
 
                     {{-- Phone --}}
                     <a
@@ -169,6 +86,81 @@
                         </p>
                     </a>
                 </div>
+            </div>
+
+            {{-- Navigation --}}
+            <div class="lg:col-span-3">
+                <h3 class="font-display text-xs font-semibold uppercase tracking-[0.16em] text-white">
+                    Navigasi
+                </h3>
+                <ul class="mt-6 space-y-4">
+                    <li>
+                        <a
+                            href="{{ route('home') }}"
+                            class="font-body text-sm text-slate-400 transition hover:text-white"
+                        >
+                            Beranda
+                        </a>
+                    </li>
+                    <li>
+                        <a
+                            href="{{ route('about') }}"
+                            class="font-body text-sm text-slate-400 transition hover:text-white"
+                        >
+                            Tentang Kami
+                        </a>
+                    </li>
+                    <li>
+                        <a
+                            href="{{ route('services') }}"
+                            class="font-body text-sm text-slate-400 transition hover:text-white"
+                        >
+                            Layanan & Jasa
+                        </a>
+                    </li>
+                    <li>
+                        <a
+                            href="{{ route('contact') }}"
+                            class="font-body text-sm text-slate-400 transition hover:text-white"
+                        >
+                            Kontak Kami
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            {{-- Business Categories --}}
+            <div @class(['lg:col-span-4' => ! $manyCategories, 'lg:col-span-5' => $manyCategories])>
+                <h3 class="font-display text-xs font-semibold uppercase tracking-[0.16em] text-white">
+                    Bidang Usaha
+                </h3>
+
+                <ul @class([
+                    'mt-6',
+                    'space-y-4' => ! $manyCategories,
+                    'grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2' => $manyCategories,
+                ])>
+                    @foreach ($footerCategories as $navCategory)
+                        <li>
+                            <a
+                                href="{{ route('services.category', $navCategory->slug) }}"
+                                class="font-body text-sm text-slate-400 transition hover:text-white"
+                            >
+                                {{ $navCategory->name }}
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+
+                @if ($hiddenCategories > 0)
+                    <a
+                        href="{{ route('services') }}"
+                        class="font-display group mt-6 inline-flex items-center gap-2 text-sm font-semibold text-white transition-colors hover:text-slate-300"
+                    >
+                        Lihat semua {{ $navCategories->count() }} bidang usaha
+                        <span class="transition-transform duration-200 group-hover:translate-x-1" aria-hidden="true">→</span>
+                    </a>
+                @endif
             </div>
         </div>
     </div>

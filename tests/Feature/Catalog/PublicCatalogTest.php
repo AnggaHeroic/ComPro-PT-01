@@ -162,37 +162,6 @@ class PublicCatalogTest extends TestCase
         }
     }
 
-    public function test_footer_places_business_fields_under_navigation_and_contact_in_the_last_column(): void
-    {
-        $this->makeCategories(3);
-
-        $html = $this->get('/tentang-kami')->assertOk()->getContent();
-        $footer = substr($html, strpos($html, '<footer'));
-
-        // Profil perusahaan -> Navigasi -> Bidang Usaha (di bawah Navigasi) -> Kontak (kolom terakhir).
-        $this->assertSame(
-            true,
-            strpos($footer, 'merupakan perusahaan') < strpos($footer, 'Navigasi')
-            && strpos($footer, 'Navigasi') < strpos($footer, 'Bidang Usaha')
-            && strpos($footer, 'Bidang Usaha') < strpos($footer, '>'."
-".'                    Kontak')
-        );
-
-        // Informasi kontak tidak lagi berada di kolom profil perusahaan.
-        $companyColumn = substr($footer, 0, strpos($footer, 'Navigasi'));
-        $this->assertStringNotContainsString('081130521216', $companyColumn);
-        $this->assertStringNotContainsString('sputramaju@gmail.com', $companyColumn);
-
-        // Kontak berada setelah Bidang Usaha dan memakai kolom sendiri.
-        $afterBusiness = substr($footer, strpos($footer, 'Bidang Usaha'));
-        $this->assertStringContainsString('081130521216', $afterBusiness);
-        $this->assertStringContainsString('sputramaju@gmail.com', $afterBusiness);
-        $this->assertStringContainsString('lg:col-span-3', $footer);
-
-        // Bidang Usaha satu kolom induk dengan Navigasi (bukan kolom grid sendiri).
-        $this->assertSame(3, substr_count($footer, 'lg:col-span-'));
-    }
-
     public function test_footer_keeps_a_single_column_for_six_or_fewer_categories(): void
     {
         $this->makeCategories(6);
