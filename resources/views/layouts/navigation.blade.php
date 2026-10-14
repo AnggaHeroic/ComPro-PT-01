@@ -50,10 +50,16 @@
                 <x-side-link :href="route('admin.categories.index')" :active="request()->routeIs('admin.categories.*')">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 12l9 4 9-4"/><path d="M3 17l9 4 9-4"/></svg>
                     Kategori
+                    @if (($draftCounts['categories'] ?? 0) > 0)
+                        <span class="ml-auto rounded-sm bg-yellow-400 px-1.5 py-0.5 text-[10px] font-bold leading-none text-yellow-950" title="{{ $draftCounts['categories'] }} draft">{{ $draftCounts['categories'] }}</span>
+                    @endif
                 </x-side-link>
                 <x-side-link :href="route('admin.activities.index')" :active="request()->routeIs('admin.activities.*')">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg>
                     Aktivitas Usaha
+                    @if (($draftCounts['activities'] ?? 0) > 0)
+                        <span class="ml-auto rounded-sm bg-yellow-400 px-1.5 py-0.5 text-[10px] font-bold leading-none text-yellow-950" title="{{ $draftCounts['activities'] }} draft">{{ $draftCounts['activities'] }}</span>
+                    @endif
                 </x-side-link>
                 <x-side-link :href="route('admin.gallery.index')" :active="request()->routeIs('admin.gallery.*')">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="M21 16l-5-5-8 9"/></svg>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Admin\Concerns\FiltersByStatus;
 use App\Http\Controllers\Admin\Concerns\StoresUploadedImage;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ServiceCategoryRequest;
@@ -14,15 +15,18 @@ use Throwable;
 
 class ServiceCategoryController extends Controller
 {
-    use StoresUploadedImage;
+    use FiltersByStatus, StoresUploadedImage;
 
     private const UPLOAD_FIELDS = ['image', 'remove_image', 'icon_image', 'remove_icon_image', 'status'];
 
     public function index(Request $request): View
     {
         $search = trim((string) $request->query('q'));
+        $status = $this->statusFilter($request);
+        $counts = $this->statusCounts(ServiceCategory::query());
 
         $categories = ServiceCategory::query()
+            ->tap(fn ($query) => $this->applyStatus($query, $status))
             ->withCount('activities')
             ->when($search !== '', fn ($query) => $query->where(function ($query) use ($search) {
                 $query->where('name', 'like', "%{$search}%")
@@ -32,7 +36,7 @@ class ServiceCategoryController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        return view('admin.categories.index', compact('categories', 'search'));
+        return view('admin.categories.index', compact('categories', 'search', 'status', 'counts'));
     }
 
     public function create(): View
@@ -58,7 +62,7 @@ class ServiceCategoryController extends Controller
         }
 
         try {
-            ServiceCategory::create([
+            $category = ServiceCategory::create([
                 ...$request->safe()->except(self::UPLOAD_FIELDS),
                 'image_path' => $path,
                 'icon_image_path' => $iconPath,
@@ -70,9 +74,7 @@ class ServiceCategoryController extends Controller
             throw $e;
         }
 
-        return redirect()
-            ->route('admin.categories.index')
-            ->with('success', 'Kategori berhasil ditambahkan.');
+        return $this->redirectAfterSave($category, 'Kategori berhasil ditambahkan.');
     }
 
     public function edit(ServiceCategory $category): View
@@ -124,9 +126,7 @@ class ServiceCategoryController extends Controller
             $images->release($oldIconPath);
         }
 
-        return redirect()
-            ->route('admin.categories.index')
-            ->with('success', 'Kategori berhasil diperbarui.');
+        return $this->redirectAfterSave($category, 'Kategori berhasil diperbarui.');
     }
 
     public function destroy(ServiceCategory $category, ImageUploader $images): RedirectResponse
@@ -146,5 +146,19 @@ class ServiceCategoryController extends Controller
         return redirect()
             ->route('admin.categories.index')
             ->with('success', 'Kategori berhasil dihapus.');
+    }
+
+    /**
+     * Draft diarahkan ke daftar draft agar langsung terlihat dan mudah ditemukan.
+     */
+    private function redirectAfterSave(ServiceCategory $category, string $message): RedirectResponse
+    {
+        if ($category->is_published) {
+            return redirect()->route('admin.categories.index')->with('success', $message);
+        }
+
+        return redirect()
+            ->route('admin.categories.index', ['status' => 'draft'])
+            ->with('success', rtrim($message, '.').' sebagai draft. Belum tampil di website.');
     }
 }

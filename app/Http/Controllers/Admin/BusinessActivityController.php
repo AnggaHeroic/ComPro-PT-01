@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Admin\Concerns\FiltersByStatus;
 use App\Http\Controllers\Admin\Concerns\StoresUploadedImage;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\BusinessActivityRequest;
@@ -15,7 +16,7 @@ use Throwable;
 
 class BusinessActivityController extends Controller
 {
-    use StoresUploadedImage;
+    use FiltersByStatus, StoresUploadedImage;
 
     private const NON_COLUMN_FIELDS = ['image', 'remove_image', 'status'];
 
@@ -23,8 +24,13 @@ class BusinessActivityController extends Controller
     {
         $search = trim((string) $request->query('q'));
         $categoryId = $request->integer('category') ?: null;
+        $status = $this->statusFilter($request);
+        $counts = $this->statusCounts(
+            BusinessActivity::query()->when($categoryId, fn ($query) => $query->where('service_category_id', $categoryId))
+        );
 
         $activities = BusinessActivity::query()
+            ->tap(fn ($query) => $this->applyStatus($query, $status))
             ->with('category:id,name,slug')
             ->withCount('images')
             ->when($categoryId, fn ($query) => $query->where('service_category_id', $categoryId))
@@ -43,6 +49,8 @@ class BusinessActivityController extends Controller
             'categories' => ServiceCategory::ordered()->get(['id', 'name']),
             'search' => $search,
             'categoryId' => $categoryId,
+            'status' => $status,
+            'counts' => $counts,
         ]);
     }
 
@@ -69,7 +77,7 @@ class BusinessActivityController extends Controller
         $path = $this->storeUploadedImage($request, $images, 'activities');
 
         try {
-            BusinessActivity::create([
+            $activity = BusinessActivity::create([
                 ...$request->safe()->except(self::NON_COLUMN_FIELDS),
                 'image_path' => $path,
             ]);
@@ -79,9 +87,7 @@ class BusinessActivityController extends Controller
             throw $e;
         }
 
-        return redirect()
-            ->route('admin.activities.index', ['category' => $request->integer('service_category_id')])
-            ->with('success', 'Aktivitas berhasil ditambahkan.');
+        return $this->redirectAfterSave($activity, 'Aktivitas berhasil ditambahkan.');
     }
 
     public function edit(BusinessActivity $activity): View
@@ -116,9 +122,7 @@ class BusinessActivityController extends Controller
             $images->release($oldPath);
         }
 
-        return redirect()
-            ->route('admin.activities.index', ['category' => $activity->service_category_id])
-            ->with('success', 'Aktivitas berhasil diperbarui.');
+        return $this->redirectAfterSave($activity, 'Aktivitas berhasil diperbarui.');
     }
 
     public function destroy(BusinessActivity $activity, ImageUploader $images): RedirectResponse
@@ -136,5 +140,21 @@ class BusinessActivityController extends Controller
         return redirect()
             ->route('admin.activities.index', ['category' => $categoryId])
             ->with('success', 'Aktivitas berhasil dihapus.');
+    }
+
+    /**
+     * Draft diarahkan ke daftar draft (pada kategori yang sama) agar mudah ditemukan.
+     */
+    private function redirectAfterSave(BusinessActivity $activity, string $message): RedirectResponse
+    {
+        $params = ['category' => $activity->service_category_id];
+
+        if ($activity->is_published) {
+            return redirect()->route('admin.activities.index', $params)->with('success', $message);
+        }
+
+        return redirect()
+            ->route('admin.activities.index', $params + ['status' => 'draft'])
+            ->with('success', rtrim($message, '.').' sebagai draft. Belum tampil di website.');
     }
 }

@@ -13,7 +13,7 @@
             @endforeach
         </x-select>
 
-        <x-admin.search :value="$search" placeholder="Cari nama, slug, atau KBLI..." />
+        <x-admin.search :value="$search" placeholder="Cari nama, alamat URL, atau KBLI..." />
 
         <x-secondary-button type="submit">Cari</x-secondary-button>
 

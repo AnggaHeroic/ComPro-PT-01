@@ -6,6 +6,7 @@ use App\Http\Requests\Admin\Concerns\IndonesianMessages;
 use App\Services\ImageUploader;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class BusinessActivityRequest extends FormRequest
@@ -14,7 +15,11 @@ class BusinessActivityRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        $slug = trim((string) $this->input('slug'));
+
         $this->merge([
+            // Kosong = dibuat otomatis dari nama saat diterbitkan.
+            'slug' => $slug !== '' ? Str::lower($slug) : null,
             'kbli_code' => filled($this->input('kbli_code')) ? trim((string) $this->input('kbli_code')) : null,
             'sort_order' => $this->filled('sort_order') ? $this->input('sort_order') : 0,
             'is_published' => $this->has('status')
@@ -34,6 +39,14 @@ class BusinessActivityRequest extends FormRequest
             // KBLI selalu string (bukan integer); diterima apa adanya sampai kode resmi tersedia.
             'kbli_code' => ['nullable', 'string', 'max:10', 'regex:/^[A-Za-z0-9.\-]+$/'],
             'name' => ['required', 'string', 'max:255'],
+            'slug' => [
+                'nullable', 'string', 'max:150',
+                'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
+                // Alamat hanya perlu unik di dalam kategori yang sama.
+                Rule::unique('business_activities', 'slug')
+                    ->where('service_category_id', $this->input('service_category_id'))
+                    ->ignore($this->route('activity')),
+            ],
             'short_description' => ['nullable', 'string', 'max:500'],
             'description' => ['nullable', 'string', 'max:10000'],
             'image' => ['nullable', ...ImageUploader::rules()],
@@ -53,6 +66,7 @@ class BusinessActivityRequest extends FormRequest
             'service_category_id' => 'Kategori',
             'kbli_code' => 'Kode KBLI',
             'name' => 'Nama aktivitas',
+            'slug' => 'Alamat URL',
             'status' => 'Status',
             'short_description' => 'Deskripsi singkat',
             'description' => 'Deskripsi detail',

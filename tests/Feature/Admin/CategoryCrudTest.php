@@ -66,7 +66,7 @@ class CategoryCrudTest extends TestCase
 
         $this->get('/admin/categories')
             ->assertOk()
-            ->assertSeeInOrder(['Cari nama atau slug', 'Cari', '1 kategori', '+ Tambah Kategori'], false);
+            ->assertSeeInOrder(['Cari nama atau alamat URL', 'Cari', '1 kategori', '+ Tambah Kategori'], false);
     }
 
     public function test_index_search_filters_by_name_and_slug(): void
@@ -124,12 +124,43 @@ class CategoryCrudTest extends TestCase
         );
     }
 
-    public function test_a_posted_slug_is_ignored_because_slugs_are_automatic(): void
+    public function test_url_can_be_set_manually_and_is_normalized_to_lowercase(): void
     {
-        $this->post('/admin/categories', $this->payload(['name' => 'Nama Asli', 'slug' => 'slug-paksa']))
+        $this->post('/admin/categories', $this->payload(['name' => 'Nama Asli', 'slug' => 'Alamat-Saya']))
             ->assertSessionHasNoErrors();
 
-        $this->assertSame('nama-asli', ServiceCategory::firstOrFail()->slug);
+        $this->assertSame('alamat-saya', ServiceCategory::firstOrFail()->slug);
+    }
+
+    public function test_url_must_be_unique_and_well_formed_with_a_friendly_label(): void
+    {
+        ServiceCategory::factory()->create(['slug' => 'sudah-ada']);
+
+        $dup = $this->post('/admin/categories', $this->payload(['slug' => 'sudah-ada']));
+        $dup->assertSessionHasErrors('slug');
+        $this->assertSame('Alamat URL sudah dipakai.', session('errors')->first('slug'));
+
+        $this->post('/admin/categories', $this->payload(['slug' => 'Tidak Valid!']))->assertSessionHasErrors('slug');
+        $this->post('/admin/categories', $this->payload(['slug' => 'dua--tanda']))->assertSessionHasErrors('slug');
+        $this->post('/admin/categories', $this->payload(['slug' => '-awal']))->assertSessionHasErrors('slug');
+
+        $this->assertSame(1, ServiceCategory::count());
+    }
+
+    public function test_a_blank_url_is_generated_from_the_name_when_published(): void
+    {
+        $this->post('/admin/categories', $this->payload(['name' => 'Otomatis Dari Nama', 'slug' => '', 'status' => 'published']));
+
+        $this->assertSame('otomatis-dari-nama', ServiceCategory::firstOrFail()->slug);
+    }
+
+    public function test_a_draft_can_still_be_given_a_manual_url(): void
+    {
+        $this->post('/admin/categories', $this->payload(['name' => 'Draft Beralamat', 'slug' => 'alamat-draft', 'status' => 'draft']));
+
+        $category = ServiceCategory::firstOrFail();
+        $this->assertFalse($category->is_published);
+        $this->assertSame('alamat-draft', $category->slug);
     }
 
     public function test_draft_category_gets_no_slug_until_it_is_published(): void
@@ -146,21 +177,44 @@ class CategoryCrudTest extends TestCase
         $this->assertTrue($category->is_published);
     }
 
-    public function test_slug_is_kept_stable_when_renamed_or_set_back_to_draft(): void
+    public function test_url_stays_the_same_when_renamed_or_set_back_to_draft_via_the_form(): void
     {
         $this->post('/admin/categories', $this->payload(['name' => 'Nama Awal', 'status' => 'published']));
         $category = ServiceCategory::firstOrFail();
 
-        $this->put("/admin/categories/{$category->id}", $this->payload(['name' => 'Nama Baru Sekali', 'status' => 'published']));
+        // Form edit selalu mengirim alamat URL yang sudah terisi.
+        $this->put("/admin/categories/{$category->id}", $this->payload(['name' => 'Nama Baru Sekali', 'slug' => $category->slug, 'status' => 'published']));
         $this->assertSame('nama-awal', $category->refresh()->slug);
 
-        $this->put("/admin/categories/{$category->id}", $this->payload(['name' => 'Nama Baru Sekali', 'status' => 'draft']));
+        $this->put("/admin/categories/{$category->id}", $this->payload(['name' => 'Nama Baru Sekali', 'slug' => $category->slug, 'status' => 'draft']));
         $category->refresh();
         $this->assertFalse($category->is_published);
         $this->assertSame('nama-awal', $category->slug);
 
-        $this->put("/admin/categories/{$category->id}", $this->payload(['name' => 'Nama Baru Sekali', 'status' => 'published']));
+        $this->put("/admin/categories/{$category->id}", $this->payload(['name' => 'Nama Baru Sekali', 'slug' => $category->slug, 'status' => 'published']));
         $this->assertSame('nama-awal', $category->refresh()->slug);
+    }
+
+    public function test_clearing_the_url_regenerates_it_from_the_name_only_when_published(): void
+    {
+        $category = ServiceCategory::factory()->create(['name' => 'Ganti Alamat', 'slug' => 'alamat-lama']);
+
+        $this->put("/admin/categories/{$category->id}", $this->payload(['name' => 'Ganti Alamat', 'slug' => '', 'status' => 'published']));
+        $this->assertSame('ganti-alamat', $category->refresh()->slug);
+
+        $this->put("/admin/categories/{$category->id}", $this->payload(['name' => 'Ganti Alamat', 'slug' => '', 'status' => 'draft']));
+        $this->assertNull($category->refresh()->slug);
+    }
+
+    public function test_changing_the_url_changes_the_public_address(): void
+    {
+        $category = ServiceCategory::factory()->create(['name' => 'Ubah Alamat', 'slug' => 'alamat-lama']);
+
+        $this->put("/admin/categories/{$category->id}", $this->payload(['name' => 'Ubah Alamat', 'slug' => 'alamat-baru']));
+
+        auth()->logout();
+        $this->get('/layanan-jasa/alamat-baru')->assertOk();
+        $this->get('/layanan-jasa/alamat-lama')->assertNotFound();
     }
 
     public function test_status_must_be_published_or_draft(): void
@@ -170,7 +224,7 @@ class CategoryCrudTest extends TestCase
         $this->assertSame(0, ServiceCategory::count());
     }
 
-    public function test_form_offers_a_status_choice_and_no_slug_field(): void
+    public function test_form_offers_a_status_choice_and_a_url_field_without_the_word_slug(): void
     {
         $this->get('/admin/categories/create')
             ->assertOk()
@@ -178,8 +232,20 @@ class CategoryCrudTest extends TestCase
             ->assertSee('name="status" value="draft"', false)
             ->assertSee('Terbit')
             ->assertSee('Draft')
-            ->assertDontSee('name="slug"', false)
-            ->assertDontSee('Slug');
+            ->assertSee('Alamat URL')
+            ->assertSee('name="slug"', false)
+            ->assertDontSeeText('slug')
+            ->assertDontSeeText('Slug');
+    }
+
+    public function test_status_options_use_green_for_published_and_yellow_for_draft(): void
+    {
+        $html = $this->get('/admin/categories/create')->assertOk()->getContent();
+
+        $this->assertStringContainsString('hover:border-green-500', $html);
+        $this->assertStringContainsString('peer-checked:border-green-600', $html);
+        $this->assertStringContainsString('hover:border-yellow-500', $html);
+        $this->assertStringContainsString('peer-checked:border-yellow-500', $html);
     }
 
     public function test_invalid_uploads_are_rejected(): void
@@ -202,21 +268,21 @@ class CategoryCrudTest extends TestCase
 
     public function test_edit_form_renders_with_existing_values(): void
     {
-        $category = ServiceCategory::factory()->create(['name' => 'Nama Lama']);
+        $category = ServiceCategory::factory()->create(['name' => 'Nama Lama', 'slug' => 'alamat-saya']);
 
         $this->get("/admin/categories/{$category->id}/edit")
             ->assertOk()
             ->assertSee('Nama Lama')
-            ->assertSee('URL kategori')
-            ->assertSee('tetap sama walau nama diubah');
+            ->assertSee('value="alamat-saya"', false)
+            ->assertSee('Mengubah alamat ini membuat tautan lama tidak berfungsi');
     }
 
-    public function test_update_changes_fields_and_allows_keeping_own_slug(): void
+    public function test_update_changes_fields_and_allows_keeping_own_url(): void
     {
         $category = ServiceCategory::factory()->create(['name' => 'Lama', 'slug' => 'lama']);
 
         $this->put("/admin/categories/{$category->id}", $this->payload(['name' => 'Baru', 'slug' => 'lama', 'is_published' => 0]))
-            ->assertRedirect('/admin/categories')
+            ->assertRedirect('/admin/categories?status=draft')
             ->assertSessionHasNoErrors();
 
         $category->refresh();
@@ -225,15 +291,82 @@ class CategoryCrudTest extends TestCase
         $this->assertFalse($category->is_published);
     }
 
-    public function test_update_cannot_change_the_slug_by_posting_one(): void
+    public function test_update_cannot_take_another_categorys_url(): void
     {
         ServiceCategory::factory()->create(['slug' => 'milik-lain']);
         $category = ServiceCategory::factory()->create(['slug' => 'milik-saya']);
 
         $this->put("/admin/categories/{$category->id}", $this->payload(['slug' => 'milik-lain']))
-            ->assertSessionHasNoErrors();
+            ->assertSessionHasErrors('slug');
 
         $this->assertSame('milik-saya', $category->refresh()->slug);
+    }
+
+    public function test_saving_as_draft_redirects_to_the_draft_list_and_shows_the_item(): void
+    {
+        $this->post('/admin/categories', $this->payload(['name' => 'Baru Tapi Draft', 'status' => 'draft']))
+            ->assertRedirect('/admin/categories?status=draft')
+            ->assertSessionHas('success', fn ($message) => str_contains($message, 'sebagai draft') && str_contains($message, 'Belum tampil di website'));
+
+        $this->get('/admin/categories?status=draft')->assertOk()->assertSee('Baru Tapi Draft');
+    }
+
+    public function test_publishing_redirects_to_the_normal_list(): void
+    {
+        $this->post('/admin/categories', $this->payload(['name' => 'Langsung Terbit', 'status' => 'published']))
+            ->assertRedirect('/admin/categories');
+    }
+
+    public function test_status_tabs_filter_the_list_and_show_counts(): void
+    {
+        ServiceCategory::factory()->count(2)->create(['is_published' => true]);
+        ServiceCategory::factory()->create(['name' => 'Kategori Konsep', 'slug' => null, 'is_published' => false]);
+
+        $all = $this->get('/admin/categories')->assertOk();
+        $all->assertSee('Semua')->assertSee('Terbit')->assertSee('Draft')->assertSee('Kategori Konsep');
+
+        $this->get('/admin/categories?status=draft')->assertOk()->assertSee('Kategori Konsep')->assertSee('1 kategori');
+        $published = $this->get('/admin/categories?status=published')->assertOk()->assertDontSee('Kategori Konsep');
+        $published->assertSee('2 kategori');
+
+        // nilai tak dikenal dianggap "semua"
+        $this->get('/admin/categories?status=apa-saja')->assertOk()->assertSee('Kategori Konsep');
+    }
+
+    public function test_tab_counts_are_not_affected_by_the_search_and_the_filter_is_kept_when_searching(): void
+    {
+        ServiceCategory::factory()->create(['name' => 'Alfa Draft', 'slug' => null, 'is_published' => false]);
+        ServiceCategory::factory()->create(['name' => 'Beta Draft', 'slug' => null, 'is_published' => false]);
+
+        $html = $this->get('/admin/categories?status=draft&q=Alfa')->assertOk()->assertSee('Alfa Draft')->assertDontSee('Beta Draft')->getContent();
+
+        $this->assertStringContainsString('<input type="hidden" name="status" value="draft">', $html);
+        $this->assertStringContainsString('>2</span>', $html);
+    }
+
+    public function test_empty_draft_filter_shows_a_clear_message(): void
+    {
+        ServiceCategory::factory()->create(['is_published' => true]);
+
+        $this->get('/admin/categories?status=draft')->assertOk()->assertSee('Tidak ada kategori draft.');
+    }
+
+    public function test_status_badges_use_green_for_published_and_yellow_for_draft(): void
+    {
+        ServiceCategory::factory()->create(['name' => 'Aktif', 'is_published' => true]);
+        ServiceCategory::factory()->create(['name' => 'Konsep', 'slug' => null, 'is_published' => false]);
+
+        $html = $this->get('/admin/categories')->assertOk()->getContent();
+
+        $this->assertMatchesRegularExpression('#bg-green-100[^"]*text-green-800">Terbit</span>#', $html);
+        $this->assertMatchesRegularExpression('#bg-yellow-100[^"]*text-yellow-800">Draft</span>#', $html);
+    }
+
+    public function test_sidebar_shows_the_number_of_drafts(): void
+    {
+        ServiceCategory::factory()->count(2)->create(['slug' => null, 'is_published' => false]);
+
+        $this->get('/admin')->assertOk()->assertSee('title="2 draft"', false);
     }
 
     public function test_replacing_image_deletes_the_old_file(): void

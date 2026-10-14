@@ -9,6 +9,13 @@
                 <x-input-error :messages="$errors->get('name')" class="mt-2" />
             </div>
 
+            <x-admin.url-field
+                prefix="/layanan-jasa/"
+                :value="$category->slug"
+                :exists="$category->exists"
+                :published="$category->is_published"
+            />
+
             <div>
                 <x-input-label for="description" value="Deskripsi" />
                 <x-textarea id="description" name="description" rows="4" maxlength="2000">{{ old('description', $category->description) }}</x-textarea>
@@ -43,12 +50,7 @@
 
     <x-admin.card title="Penayangan" description="Atur status dan urutan tampil di website.">
         <div class="space-y-5">
-            <x-admin.status-field
-                :selected="old('status', $category->exists ? ($category->is_published ? 'published' : 'draft') : 'published')"
-                :exists="$category->exists"
-                :url="$category->slug ? route('services.category', $category->slug, false) : null"
-                noun="kategori"
-            />
+            <x-admin.status-field :selected="old('status', $category->exists ? ($category->is_published ? 'published' : 'draft') : 'published')" />
 
             <div class="sm:max-w-xs">
                 <x-input-label for="sort_order" value="Urutan tampil" />

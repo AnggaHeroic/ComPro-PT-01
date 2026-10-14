@@ -5,12 +5,18 @@
     </x-slot>
 
     <div class="overflow-hidden rounded border border-gray-200 bg-white shadow-sm">
+    <x-admin.status-tabs :current="$status" :counts="$counts" route="admin.categories.index" :params="request()->only(['q'])" />
+
     <form method="GET" action="{{ route('admin.categories.index') }}" class="flex flex-wrap items-center gap-2 border-b border-gray-200 bg-gray-50 px-4 py-3">
-        <x-admin.search :value="$search" placeholder="Cari nama atau slug..." />
+        @if ($status)
+            <input type="hidden" name="status" value="{{ $status }}">
+        @endif
+
+        <x-admin.search :value="$search" placeholder="Cari nama atau alamat URL..." />
 
         <x-secondary-button type="submit">Cari</x-secondary-button>
 
-        @if ($search !== '')
+        @if ($search !== '' || $status)
             <a href="{{ route('admin.categories.index') }}" class="px-2 text-sm text-gray-500 hover:text-primary">Reset</a>
         @endif
 
@@ -52,9 +58,9 @@
                             </td>
                             <td class="px-4 py-3 text-center">
                                 @if ($category->is_published)
-                                    <span class="rounded-sm bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700">Terbit</span>
+                                    <span class="rounded-sm bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">Terbit</span>
                                 @else
-                                    <span class="rounded-sm bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">Draft</span>
+                                    <span class="rounded-sm bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-800">Draft</span>
                                 @endif
                             </td>
                             <td class="px-4 py-3">
@@ -73,6 +79,8 @@
                             <td colspan="5" class="px-4 py-14 text-center text-gray-500">
                                 @if ($search !== '')
                                     Tidak ada kategori yang cocok dengan "{{ $search }}".
+                                @elseif ($status)
+                                    Tidak ada kategori {{ $status === 'draft' ? 'draft' : 'terbit' }}.
                                 @else
                                     Belum ada kategori. <a href="{{ route('admin.categories.create') }}" class="font-medium text-primary hover:underline">Tambah kategori pertama</a>.
                                 @endif

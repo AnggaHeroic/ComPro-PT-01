@@ -27,6 +27,13 @@
                     <x-input-error :messages="$errors->get('kbli_code')" class="mt-2" />
                 </div>
             </div>
+
+            <x-admin.url-field
+                prefix="/layanan-jasa/…/"
+                :value="$activity->slug"
+                :exists="$activity->exists"
+                :published="$activity->is_published"
+            />
         </div>
     </x-admin.card>
 
@@ -52,12 +59,7 @@
 
     <x-admin.card title="Penayangan" description="Atur status dan urutan di dalam kategori.">
         <div class="space-y-5">
-            <x-admin.status-field
-                :selected="old('status', $activity->exists ? ($activity->is_published ? 'published' : 'draft') : 'published')"
-                :exists="$activity->exists"
-                :url="($activity->slug && $activity->category?->slug) ? route('services.detail', [$activity->category->slug, $activity->slug], false) : null"
-                noun="aktivitas"
-            />
+            <x-admin.status-field :selected="old('status', $activity->exists ? ($activity->is_published ? 'published' : 'draft') : 'published')" />
 
             <div class="sm:max-w-xs">
                 <x-input-label for="sort_order" value="Urutan tampil" />

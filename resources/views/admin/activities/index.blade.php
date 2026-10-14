@@ -5,7 +5,13 @@
     </x-slot>
 
     <div class="overflow-hidden rounded border border-gray-200 bg-white shadow-sm">
+    <x-admin.status-tabs :current="$status" :counts="$counts" route="admin.activities.index" :params="request()->only(['q', 'category'])" />
+
     <form method="GET" action="{{ route('admin.activities.index') }}" class="flex flex-wrap items-center gap-2 border-b border-gray-200 bg-gray-50 px-4 py-3">
+        @if ($status)
+            <input type="hidden" name="status" value="{{ $status }}">
+        @endif
+
         <x-select name="category" class="w-full sm:w-56" onchange="this.form.submit()" aria-label="Filter kategori">
             <option value="">Semua kategori</option>
             @foreach ($categories as $category)
@@ -13,11 +19,11 @@
             @endforeach
         </x-select>
 
-        <x-admin.search :value="$search" placeholder="Cari nama, slug, atau KBLI..." />
+        <x-admin.search :value="$search" placeholder="Cari nama, alamat URL, atau KBLI..." />
 
         <x-secondary-button type="submit">Cari</x-secondary-button>
 
-        @if ($search !== '' || $categoryId)
+        @if ($search !== '' || $categoryId || $status)
             <a href="{{ route('admin.activities.index') }}" class="px-2 text-sm text-gray-500 hover:text-primary">Reset</a>
         @endif
 
@@ -69,9 +75,9 @@
                             </td>
                             <td class="px-4 py-3 text-center">
                                 @if ($activity->is_published)
-                                    <span class="rounded-sm bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700">Terbit</span>
+                                    <span class="rounded-sm bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">Terbit</span>
                                 @else
-                                    <span class="rounded-sm bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">Draft</span>
+                                    <span class="rounded-sm bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-800">Draft</span>
                                 @endif
                             </td>
                             <td class="px-4 py-3">
@@ -88,7 +94,7 @@
                     @empty
                         <tr>
                             <td colspan="5" class="px-4 py-14 text-center text-gray-500">
-                                @if ($search !== '' || $categoryId)
+                                @if ($search !== '' || $categoryId || $status)
                                     Tidak ada aktivitas yang cocok dengan filter.
                                 @else
                                     Belum ada aktivitas. <a href="{{ route('admin.activities.create') }}" class="font-medium text-primary hover:underline">Tambah aktivitas pertama</a>.
