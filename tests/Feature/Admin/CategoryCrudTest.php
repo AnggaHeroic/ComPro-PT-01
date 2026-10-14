@@ -344,6 +344,16 @@ class CategoryCrudTest extends TestCase
         $this->assertStringContainsString('>2</span>', $html);
     }
 
+    public function test_status_tabs_have_no_overflow_container_that_could_show_a_scrollbar(): void
+    {
+        $html = $this->get('/admin/categories')->assertOk()->getContent();
+
+        preg_match('#<nav class="([^"]*)" aria-label="Filter status">#', $html, $m);
+
+        $this->assertNotEmpty($m, 'Bar tab status tidak ditemukan.');
+        $this->assertStringNotContainsString('overflow', $m[1]);
+    }
+
     public function test_empty_draft_filter_shows_a_clear_message(): void
     {
         ServiceCategory::factory()->create(['is_published' => true]);

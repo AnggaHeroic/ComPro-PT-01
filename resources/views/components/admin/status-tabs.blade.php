@@ -8,7 +8,7 @@
     ];
 @endphp
 
-<nav class="flex gap-1 overflow-x-auto border-b border-gray-200 bg-white px-3" aria-label="Filter status">
+<nav class="flex flex-wrap gap-1 border-b border-gray-200 bg-white px-3" aria-label="Filter status">
     @foreach ($tabs as $tab)
         @php($active = $current === $tab['key'])
 
