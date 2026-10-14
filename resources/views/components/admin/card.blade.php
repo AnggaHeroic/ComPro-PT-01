@@ -1,14 +1,18 @@
 @props(['title' => null, 'description' => null])
 
-<section {{ $attributes->merge(['class' => 'rounded-md border border-gray-200 bg-white p-6']) }}>
+<section {{ $attributes->merge(['class' => 'rounded-lg border border-gray-200 bg-white shadow-sm']) }}>
     @if ($title)
-        <header class="{{ $slot->isEmpty() ? '' : 'mb-5' }}">
+        <header class="rounded-t-lg border-b border-gray-200 bg-gray-50 px-6 py-4 sm:px-7">
             <h2 class="text-base font-semibold text-gray-900">{{ $title }}</h2>
             @if ($description)
-                <p class="mt-1 text-sm text-gray-500">{{ $description }}</p>
+                <p class="mt-0.5 text-sm text-gray-500">{{ $description }}</p>
             @endif
         </header>
     @endif
 
-    {{ $slot }}
+    @if (! $slot->isEmpty())
+        <div class="p-6 sm:p-7">
+            {{ $slot }}
+        </div>
+    @endif
 </section>

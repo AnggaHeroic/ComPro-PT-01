@@ -9,17 +9,17 @@
     x-cloak
     x-transition.opacity
     @click="sidebar = false"
-    class="fixed inset-0 z-40 bg-gray-900/50 lg:hidden"
+    class="fixed inset-0 z-40 bg-black/60 lg:hidden"
     aria-hidden="true"
 ></div>
 
 <aside
     :class="sidebar ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
-    class="fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-gray-200 bg-white transition-transform duration-200 ease-out"
+    class="fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-secondary-dark text-white shadow-xl transition-transform duration-200 ease-out lg:shadow-none"
     aria-label="Navigasi admin"
 >
     {{-- Brand --}}
-    <div class="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 px-5">
+    <div class="flex h-16 shrink-0 items-center justify-between border-b-[3px] border-primary bg-white px-5">
         <a href="{{ route('admin.dashboard') }}" aria-label="Dashboard">
             <x-application-logo class="h-9 w-auto mix-blend-multiply" />
         </a>
@@ -29,9 +29,9 @@
     </div>
 
     {{-- Menu --}}
-    <nav class="flex-1 space-y-6 overflow-y-auto px-3 py-5">
+    <nav class="flex-1 space-y-7 overflow-y-auto px-3 py-6">
         <div>
-            <p class="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400">Menu</p>
+            <p class="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">Menu</p>
             <div class="space-y-1">
                 <x-side-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
@@ -41,7 +41,7 @@
         </div>
 
         <div>
-            <p class="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400">Konten</p>
+            <p class="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">Konten</p>
             <div class="space-y-1">
                 <x-side-link :href="route('admin.categories.index')" :active="request()->routeIs('admin.categories.*')">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 12l9 4 9-4"/><path d="M3 17l9 4 9-4"/></svg>
@@ -59,7 +59,7 @@
         </div>
 
         <div>
-            <p class="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400">Akun</p>
+            <p class="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">Akun</p>
             <div class="space-y-1">
                 <x-side-link :href="route('admin.profile.edit')" :active="request()->routeIs('admin.profile.*')">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
@@ -74,18 +74,18 @@
     </nav>
 
     {{-- User --}}
-    <div class="shrink-0 border-t border-gray-200 p-3">
+    <div class="shrink-0 border-t border-white/10 bg-black/25 p-3">
         <div class="flex items-center gap-3 px-2 py-2">
-            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-white">{{ $initial }}</span>
+            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-white ring-2 ring-white/20">{{ $initial }}</span>
             <div class="min-w-0">
-                <p class="truncate text-sm font-medium text-gray-900">{{ $user->name }}</p>
-                <p class="truncate text-xs text-gray-500">{{ $user->email }}</p>
+                <p class="truncate text-sm font-semibold text-white">{{ $user->name }}</p>
+                <p class="truncate text-xs text-slate-400">{{ $user->email }}</p>
             </div>
         </div>
 
         <form method="POST" action="{{ route('logout') }}" class="mt-1">
             @csrf
-            <button type="submit" class="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100 hover:text-primary focus:outline-none">
+            <button type="submit" class="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/10 hover:text-white focus:outline-none">
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
                 Keluar
             </button>

@@ -1,14 +1,11 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="flex flex-wrap items-end justify-between gap-4">
-            <div>
-                <h1 class="font-display text-2xl font-bold text-gray-900">Kategori</h1>
+    <x-slot name="header">                <h1 class="font-display text-2xl font-bold text-gray-900">Kategori</h1>
                 <p class="mt-1 text-sm text-gray-500">Kelola kategori layanan yang tampil di website.</p>
-            </div>
-            <a href="{{ route('admin.categories.create') }}" class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-dark">
-                + Tambah Kategori
-            </a>
-        </div>
+            
+    </x-slot>
+
+    <x-slot name="actions">
+        <x-primary-button :href="route('admin.categories.create')">+ Tambah Kategori</x-primary-button>
     </x-slot>
 
     <form method="GET" action="{{ route('admin.categories.index') }}" class="mb-5 flex flex-wrap items-center gap-2">
@@ -23,10 +20,10 @@
         <span class="ml-auto text-sm text-gray-500">{{ $categories->total() }} kategori</span>
     </form>
 
-    <div class="overflow-hidden rounded-md border border-gray-200 bg-white">
+    <div class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200 text-sm">
-                <thead class="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                <thead class="bg-gray-100 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
                     <tr>
                         <th class="px-4 py-3">Urutan</th>
                         <th class="px-4 py-3">Kategori</th>

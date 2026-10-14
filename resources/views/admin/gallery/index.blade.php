@@ -23,10 +23,10 @@
         <span class="ml-auto text-sm text-gray-500">{{ $activities->total() }} aktivitas</span>
     </form>
 
-    <div class="overflow-hidden rounded-md border border-gray-200 bg-white">
+    <div class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200 text-sm">
-                <thead class="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                <thead class="bg-gray-100 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
                     <tr>
                         <th class="px-4 py-3">Aktivitas</th>
                         <th class="px-4 py-3">Kategori</th>

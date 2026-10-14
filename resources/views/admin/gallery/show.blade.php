@@ -10,27 +10,20 @@
 
 <x-app-layout>
     <x-slot name="header">
+        <p class="mb-1 text-xs font-semibold uppercase tracking-wider text-primary">{{ $activity->category->name }}</p>
+        <h1 class="font-display text-2xl font-bold text-gray-900">{{ $activity->name }}</h1>
+        <p class="mt-1 text-sm text-gray-500">
+            {{ $images->count() }} dari {{ $maxPerActivity }} foto
+            @if ($activity->kbli_code) &middot; KBLI <span class="font-mono">{{ $activity->kbli_code }}</span> @endif
+        </p>
+    </x-slot>
+
+    <x-slot name="actions">
+        <x-secondary-button :href="route('admin.activities.edit', $activity)">Edit aktivitas</x-secondary-button>
+        @if ($publicUrl)
+            <x-secondary-button :href="$publicUrl" target="_blank" rel="noopener">Lihat di website &nearr;</x-secondary-button>
+        @endif
         <x-admin.back :href="route('admin.gallery.index', ['category' => $activity->service_category_id])" label="Kembali ke Galeri" />
-        <p class="mb-1 text-xs font-medium uppercase tracking-wider text-gray-400">{{ $activity->category->name }}</p>
-
-        <div class="flex flex-wrap items-end justify-between gap-4">
-            <div class="min-w-0">
-                <h1 class="font-display text-2xl font-bold text-gray-900">{{ $activity->name }}</h1>
-                <p class="mt-1 text-sm text-gray-500">
-                    {{ $images->count() }} dari {{ $maxPerActivity }} foto
-                    @if ($activity->kbli_code) &middot; KBLI <span class="font-mono">{{ $activity->kbli_code }}</span> @endif
-                </p>
-            </div>
-
-            <div class="flex items-center gap-4 text-sm">
-                <a href="{{ route('admin.activities.edit', $activity) }}" class="font-medium text-gray-600 hover:text-primary">Edit aktivitas</a>
-                @if ($publicUrl)
-                    <a href="{{ $publicUrl }}" target="_blank" rel="noopener" class="font-medium text-gray-600 hover:text-primary">Lihat di website &nearr;</a>
-                @else
-                    <span class="text-xs text-gray-400">Belum terbit di website</span>
-                @endif
-            </div>
-        </div>
     </x-slot>
 
     {{-- Unggah foto --}}
@@ -40,7 +33,7 @@
             action="{{ route('admin.gallery.store', $activity) }}"
             enctype="multipart/form-data"
             x-data="{ count: 0 }"
-            class="mt-5 flex flex-wrap items-start gap-3"
+            class="flex flex-wrap items-start gap-3"
         >
             @csrf
             <div class="min-w-0 flex-1">
@@ -121,7 +114,7 @@
                         @dragover.prevent
                         @drop.prevent="dropOn({{ $image->id }})"
                         :class="dragging === {{ $image->id }} ? 'opacity-50' : ''"
-                        class="flex flex-col overflow-hidden rounded-md border border-gray-200 bg-white"
+                        class="flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm"
                     >
                         <div
                             draggable="true"
