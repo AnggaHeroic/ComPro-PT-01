@@ -297,7 +297,7 @@
             x-transition:leave="transition ease-in duration-150"
             x-transition:leave-start="opacity-100 translate-y-0"
             x-transition:leave-end="opacity-0 -translate-y-2"
-            class="border-t border-slate-100 py-4 md:hidden"
+            class="max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain border-t border-slate-100 py-4 md:hidden"
         >
             <div class="flex flex-col">
 

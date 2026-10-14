@@ -170,6 +170,23 @@ class PublicCatalogTest extends TestCase
         return substr($html, $start, strpos($html, 'href="'.route('contact').'"', $start) - $start);
     }
 
+    public function test_mobile_menu_scrolls_inside_itself_so_long_category_lists_stay_reachable(): void
+    {
+        $this->makeCategories(14);
+
+        $html = $this->get('/layanan-jasa')->assertOk()->getContent();
+
+        preg_match('#id="mobile-navigation"(.*?)class="([^"]*)"#s', $html, $m);
+
+        $this->assertNotEmpty($m, 'Panel menu mobile tidak ditemukan.');
+        // Tinggi dibatasi sebatas layar dikurangi baris header (h-20 = 5rem) dan bisa digulir.
+        $this->assertStringContainsString('max-h-[calc(100dvh-5rem)]', $m[2]);
+        $this->assertStringContainsString('overflow-y-auto', $m[2]);
+        $this->assertStringContainsString('overscroll-contain', $m[2]);
+        // Semua kategori tetap tersedia di menu mobile.
+        $this->assertStringContainsString('Kategori Nomor 14', $html);
+    }
+
     public function test_navbar_dropdown_is_unchanged_for_six_or_fewer_categories(): void
     {
         $this->makeCategories(6);
