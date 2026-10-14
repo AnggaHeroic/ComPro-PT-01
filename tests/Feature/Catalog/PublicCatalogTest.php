@@ -122,6 +122,26 @@ class PublicCatalogTest extends TestCase
             ->assertSee('aria-label="Berikutnya"', false);
     }
 
+    public function test_carousel_arrows_flank_the_cards_without_borders_and_page_info_is_centered(): void
+    {
+        $this->makeCategories(7);
+
+        $html = $this->get('/')->assertOk()->getContent();
+
+        // Panah samping (layar lebar): absolute di kiri/kanan kartu, tanpa kelas border.
+        $this->assertSame(1, substr_count($html, '-left-12 top-1/2'));
+        $this->assertSame(1, substr_count($html, '-right-12 top-1/2'));
+        // Panah cadangan (layar sempit) mengapit informasi halaman yang rata tengah.
+        $this->assertSame(2, substr_count($html, 'min-[1366px]:hidden'));
+        $this->assertStringContainsString('mt-6 flex items-center justify-center gap-3', $html);
+        // Tombol panah tidak punya border.
+        preg_match_all('#<button[^>]*aria-label="(?:Sebelumnya|Berikutnya)"[^>]*class="([^"]*)"#', $html, $m);
+        $this->assertCount(4, $m[1]);
+        foreach ($m[1] as $class) {
+            $this->assertStringNotContainsString('border', $class);
+        }
+    }
+
     public function test_carousel_page_count_grows_with_categories(): void
     {
         $this->makeCategories(13);

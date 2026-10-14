@@ -189,73 +189,70 @@
                         aria-roledescription="carousel"
                         aria-label="Bidang usaha"
                     >
-                        <div
-                            class="overflow-hidden"
-                            @touchstart.passive="swipeStart($event)"
-                            @touchend.passive="swipeEnd($event)"
-                        >
+                        <div class="relative">
                             <div
-                                class="flex transition-transform duration-700 ease-out motion-reduce:transition-none"
-                                :style="`transform: translateX(-${current * 100}%)`"
-                                :aria-live="paused ? 'polite' : 'off'"
+                                class="overflow-hidden"
+                                @touchstart.passive="swipeStart($event)"
+                                @touchend.passive="swipeEnd($event)"
                             >
-                                @foreach ($servicePages as $pageIndex => $pageCategories)
-                                    <div
-                                        class="w-full shrink-0"
-                                        role="group"
-                                        aria-roledescription="slide"
-                                        aria-label="{{ $pageIndex + 1 }} dari {{ $servicePages->count() }}"
-                                        x-bind:inert="current !== {{ $pageIndex }}"
-                                        :aria-hidden="current !== {{ $pageIndex }}"
-                                    >
-                                        <x-service-grid :categories="$pageCategories" :offset="$pageIndex * 6" />
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-
-                        {{-- Kontrol --}}
-                        <div class="mt-6 flex items-center justify-between gap-4">
-                            <div class="flex items-center gap-4">
-                                <span class="font-display text-xs font-semibold tracking-[0.15em] text-slate-500" aria-live="off">
-                                    <span x-text="String(current + 1).padStart(2, '0')"></span>
-                                    <span class="text-slate-300">/</span>
-                                    {{ str_pad($servicePages->count(), 2, '0', STR_PAD_LEFT) }}
-                                </span>
-
-                                <div class="flex items-center gap-1.5" role="tablist" aria-label="Pilih halaman">
+                                <div
+                                    class="flex transition-transform duration-700 ease-out motion-reduce:transition-none"
+                                    :style="`transform: translateX(-${current * 100}%)`"
+                                    :aria-live="paused ? 'polite' : 'off'"
+                                >
                                     @foreach ($servicePages as $pageIndex => $pageCategories)
-                                        <button
-                                            type="button"
-                                            role="tab"
-                                            @click="go({{ $pageIndex }})"
-                                            :aria-selected="current === {{ $pageIndex }}"
-                                            aria-label="Halaman {{ $pageIndex + 1 }}"
-                                            :class="current === {{ $pageIndex }} ? 'w-8 bg-primary' : 'w-4 bg-slate-300 hover:bg-slate-400'"
-                                            class="h-1.5 rounded-full transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-                                        ></button>
+                                        <div
+                                            class="w-full shrink-0"
+                                            role="group"
+                                            aria-roledescription="slide"
+                                            aria-label="{{ $pageIndex + 1 }} dari {{ $servicePages->count() }}"
+                                            x-bind:inert="current !== {{ $pageIndex }}"
+                                            :aria-hidden="current !== {{ $pageIndex }}"
+                                        >
+                                            <x-service-grid :categories="$pageCategories" :offset="$pageIndex * 6" />
+                                        </div>
                                     @endforeach
                                 </div>
                             </div>
 
-                            <div class="flex items-center gap-2">
-                                <button
-                                    type="button"
-                                    @click="prev(true)"
-                                    aria-label="Sebelumnya"
-                                    class="inline-flex h-9 w-9 items-center justify-center border border-slate-300 bg-white text-secondary-dark transition-colors hover:border-primary hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-                                >
-                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5m7 7-7-7 7-7"/></svg>
-                                </button>
-                                <button
-                                    type="button"
-                                    @click="next(true)"
-                                    aria-label="Berikutnya"
-                                    class="inline-flex h-9 w-9 items-center justify-center border border-slate-300 bg-white text-secondary-dark transition-colors hover:border-primary hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-                                >
-                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
-                                </button>
+                            {{-- Panah di sisi kiri/kanan kartu (layar lebar, tanpa border) --}}
+                            <button type="button" @click="prev(true)" aria-label="Sebelumnya" class="inline-flex h-10 w-10 items-center justify-center text-slate-400 transition-colors duration-200 hover:text-primary focus:outline-none focus-visible:text-primary focus-visible:ring-2 focus-visible:ring-primary absolute -left-12 top-1/2 hidden -translate-y-1/2 min-[1366px]:inline-flex">
+                                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>
+                            </button>
+                            <button type="button" @click="next(true)" aria-label="Berikutnya" class="inline-flex h-10 w-10 items-center justify-center text-slate-400 transition-colors duration-200 hover:text-primary focus:outline-none focus-visible:text-primary focus-visible:ring-2 focus-visible:ring-primary absolute -right-12 top-1/2 hidden -translate-y-1/2 min-[1366px]:inline-flex">
+                                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+                            </button>
+                        </div>
+
+                        {{-- Informasi halaman: di tengah; panah ikut di sini pada layar yang lebih sempit --}}
+                        <div class="mt-6 flex items-center justify-center gap-3">
+                            <button type="button" @click="prev(true)" aria-label="Sebelumnya" class="inline-flex h-10 w-10 items-center justify-center text-slate-400 transition-colors duration-200 hover:text-primary focus:outline-none focus-visible:text-primary focus-visible:ring-2 focus-visible:ring-primary min-[1366px]:hidden">
+                                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>
+                            </button>
+
+                            <span class="font-display text-xs font-semibold tracking-[0.15em] text-slate-500" aria-live="off">
+                                <span x-text="String(current + 1).padStart(2, '0')"></span>
+                                <span class="text-slate-300">/</span>
+                                {{ str_pad($servicePages->count(), 2, '0', STR_PAD_LEFT) }}
+                            </span>
+
+                            <div class="flex items-center gap-1.5" role="tablist" aria-label="Pilih halaman">
+                                @foreach ($servicePages as $pageIndex => $pageCategories)
+                                    <button
+                                        type="button"
+                                        role="tab"
+                                        @click="go({{ $pageIndex }})"
+                                        :aria-selected="current === {{ $pageIndex }}"
+                                        aria-label="Halaman {{ $pageIndex + 1 }}"
+                                        :class="current === {{ $pageIndex }} ? 'w-8 bg-primary' : 'w-4 bg-slate-300 hover:bg-slate-400'"
+                                        class="h-1.5 rounded-full transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                                    ></button>
+                                @endforeach
                             </div>
+
+                            <button type="button" @click="next(true)" aria-label="Berikutnya" class="inline-flex h-10 w-10 items-center justify-center text-slate-400 transition-colors duration-200 hover:text-primary focus:outline-none focus-visible:text-primary focus-visible:ring-2 focus-visible:ring-primary min-[1366px]:hidden">
+                                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+                            </button>
                         </div>
                     </div>
                 @endif
