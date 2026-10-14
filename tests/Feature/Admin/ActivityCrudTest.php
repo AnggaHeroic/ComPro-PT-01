@@ -260,6 +260,11 @@ class ActivityCrudTest extends TestCase
         BusinessActivity::factory()->count(2)->for($this->category, 'category')->create();
         BusinessActivity::factory()->for($this->category, 'category')->create(['is_published' => false]);
 
-        $this->get('/admin')->assertOk()->assertSee('2 terbit, 1 draft');
+        $this->get('/admin')
+            ->assertOk()
+            ->assertSee('2 terbit, 1 draft')
+            ->assertSee('Kelola konten website dengan mudah.')
+            ->assertSee(route('admin.categories.create'), false)
+            ->assertSee(route('admin.activities.create'), false);
     }
 }

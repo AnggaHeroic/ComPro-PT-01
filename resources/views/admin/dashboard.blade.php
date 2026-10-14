@@ -8,6 +8,23 @@
         <x-secondary-button size="sm" :href="route('home')" target="_blank" rel="noopener">Lihat website &nearr;</x-secondary-button>
     </x-slot>
 
+    {{-- Banner: elemen visual yang sama dengan halaman login --}}
+    <section class="relative isolate mb-8 overflow-hidden rounded bg-linear-to-br from-primary via-primary-dark to-[#6e0f0e] px-7 py-8 text-white sm:px-10 sm:py-10">
+        <div class="pointer-events-none absolute inset-0 -z-10 opacity-[0.12]" style="background-image: linear-gradient(to right, #fff 1px, transparent 1px), linear-gradient(to bottom, #fff 1px, transparent 1px); background-size: 40px 40px; background-size: 48px 48px; mask-image: radial-gradient(ellipse at 20% 20%, #000 10%, transparent 75%); -webkit-mask-image: radial-gradient(ellipse at 20% 20%, #000 10%, transparent 75%);"></div>
+        <svg class="pointer-events-none absolute -bottom-16 -right-10 -z-10 h-72 w-72 text-white/[0.08]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-6h6v6"/></svg>
+
+        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">Panel Admin</p>
+        <h2 class="mt-2 max-w-xl font-display text-2xl font-bold leading-tight sm:text-3xl">Kelola konten website dengan mudah.</h2>
+        <p class="mt-3 max-w-xl text-sm leading-relaxed text-white/75">Perbarui kategori layanan, aktivitas usaha, dan galeri tanpa menyentuh kode.</p>
+
+        <div class="mt-6 flex flex-wrap gap-3">
+            <a href="{{ route('admin.categories.create') }}" class="inline-flex items-center rounded bg-white px-4 py-2.5 text-sm font-semibold text-primary-dark transition hover:bg-primary-light">+ Tambah kategori</a>
+            <a href="{{ route('admin.activities.create') }}" class="inline-flex items-center rounded bg-white px-4 py-2.5 text-sm font-semibold text-primary-dark transition hover:bg-primary-light">+ Tambah aktivitas</a>
+            <a href="{{ route('admin.gallery.index') }}" class="inline-flex items-center rounded border border-white/30 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/20">Kelola galeri</a>
+            <a href="{{ route('admin.profile.edit') }}" class="inline-flex items-center rounded border border-white/30 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/20">Profil akun</a>
+        </div>
+    </section>
+
     {{-- Ringkasan --}}
     <div class="grid gap-5 md:grid-cols-3">
         <a href="{{ route('admin.categories.index') }}" class="group relative overflow-hidden rounded border border-gray-200 bg-white p-6 shadow-sm transition hover:border-primary/40">
@@ -56,13 +73,4 @@
         </a>
     </div>
 
-    {{-- Aksi cepat --}}
-    <x-admin.card title="Aksi cepat" description="Pintasan untuk pekerjaan yang paling sering dilakukan." class="mt-8">
-        <div class="flex flex-wrap gap-3">
-            <x-primary-button :href="route('admin.categories.create')">+ Tambah kategori</x-primary-button>
-            <x-primary-button :href="route('admin.activities.create')">+ Tambah aktivitas</x-primary-button>
-            <x-secondary-button :href="route('admin.gallery.index')">Kelola galeri</x-secondary-button>
-            <x-secondary-button :href="route('admin.profile.edit')">Profil akun</x-secondary-button>
-        </div>
-    </x-admin.card>
 </x-app-layout>

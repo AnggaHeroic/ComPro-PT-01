@@ -30,7 +30,7 @@
 
     <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200 text-sm">
-                <thead class="bg-gray-100 text-center text-xs font-bold uppercase tracking-wider text-gray-600">
+                <thead class="bg-secondary-dark text-center text-xs font-bold uppercase tracking-wider text-white [&>tr>th]:border-b-2 [&>tr>th]:border-primary">
                     <tr>
                         <th class="px-4 py-3">Aktivitas</th>
                         <th class="px-4 py-3">Kategori</th>
@@ -77,12 +77,12 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3">
-                                <div class="flex items-center justify-center gap-3">
-                                    <a href="{{ route('admin.activities.edit', $activity) }}" class="whitespace-nowrap rounded border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-primary hover:text-primary">Edit</a>
+                                <div class="flex items-center justify-center gap-2">
+                                    <a href="{{ route('admin.activities.edit', $activity) }}" class="whitespace-nowrap rounded bg-secondary-dark px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-primary">Edit</a>
                                     <form method="POST" action="{{ route('admin.activities.destroy', $activity) }}" onsubmit="return confirm('Hapus aktivitas &quot;{{ e($activity->name) }}&quot; beserta galerinya? Tindakan ini tidak dapat dibatalkan.')">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="text-xs font-medium text-gray-500 transition hover:text-primary">Hapus</button>
+                                        <button type="submit" class="rounded border border-primary/30 bg-primary-light px-3 py-1.5 text-xs font-semibold text-primary-dark transition hover:bg-primary hover:text-white">Hapus</button>
                                     </form>
                                 </div>
                             </td>
