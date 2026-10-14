@@ -34,7 +34,6 @@ class ActivityCrudTest extends TestCase
             'name' => 'Aktivitas Uji',
             'short_description' => 'Singkat.',
             'description' => 'Detail.',
-            'sort_order' => 1,
             'is_published' => 1,
         ], $overrides);
     }
@@ -375,6 +374,103 @@ class ActivityCrudTest extends TestCase
         auth()->logout();
         $this->get('/layanan-jasa')->assertDontSee('Kategori Draft');
         $this->get("/layanan-jasa/{$activity->slug}")->assertNotFound();
+    }
+
+    public function test_new_activities_are_appended_at_the_end_of_their_category(): void
+    {
+        $other = ServiceCategory::factory()->create();
+        BusinessActivity::factory()->for($this->category, 'category')->create(['sort_order' => 3]);
+        BusinessActivity::factory()->for($other, 'category')->create(['sort_order' => 10]);
+
+        $this->post('/admin/activities', $this->payload(['name' => 'Di Ujung']));
+
+        $this->assertSame(4, BusinessActivity::where('name', 'Di Ujung')->value('sort_order'));
+    }
+
+    public function test_moving_an_activity_to_another_category_puts_it_at_the_end_of_the_new_one(): void
+    {
+        $other = ServiceCategory::factory()->create();
+        BusinessActivity::factory()->for($other, 'category')->create(['sort_order' => 5]);
+        $activity = BusinessActivity::factory()->for($this->category, 'category')->create(['name' => 'Pindah', 'sort_order' => 1]);
+
+        $this->put("/admin/activities/{$activity->id}", $this->payload(['name' => 'Pindah', 'slug' => $activity->slug, 'service_category_id' => $other->id]));
+        $this->assertSame(6, $activity->refresh()->sort_order);
+
+        // Tanpa pindah kategori, urutan tidak berubah.
+        $this->put("/admin/activities/{$activity->id}", $this->payload(['name' => 'Pindah', 'slug' => $activity->slug, 'service_category_id' => $other->id, 'sort_order' => 99]));
+        $this->assertSame(6, $activity->refresh()->sort_order);
+    }
+
+    public function test_activity_form_has_no_order_input(): void
+    {
+        $this->get('/admin/activities/create')->assertOk()->assertDontSee('name="sort_order"', false)->assertSee('Atur urutan');
+    }
+
+    public function test_activity_reorder_mode_groups_rows_by_category_and_can_be_limited_to_one(): void
+    {
+        $other = ServiceCategory::factory()->create(['name' => 'Kategori Kedua']);
+        BusinessActivity::factory()->for($this->category, 'category')->create(['name' => 'A Satu', 'sort_order' => 1]);
+        BusinessActivity::factory()->for($this->category, 'category')->create(['name' => 'A Dua', 'sort_order' => 2]);
+        BusinessActivity::factory()->for($other, 'category')->create(['name' => 'B Satu', 'sort_order' => 1]);
+
+        $all = $this->get('/admin/activities?reorder=1')->assertOk();
+        $all->assertSee('x-data="reorderList(', false)
+            ->assertSee('data-group="'.$this->category->id.'"', false)
+            ->assertSee('data-group="'.$other->id.'"', false)
+            ->assertSee('Naikkan A Dua', false)
+            ->assertDontSee('+ Tambah Aktivitas');
+
+        $this->get("/admin/activities?reorder=1&category={$other->id}")->assertOk()->assertSee('B Satu')->assertDontSee('A Satu');
+
+        $this->get('/admin/activities?q=x')->assertSee('Hapus pencarian atau filter status untuk mengatur urutan.');
+    }
+
+    public function test_activity_reorder_saves_the_order_within_one_category_only(): void
+    {
+        $other = ServiceCategory::factory()->create();
+        [$a, $b, $c] = BusinessActivity::factory()->count(3)->for($this->category, 'category')->sequence(['sort_order' => 1], ['sort_order' => 2], ['sort_order' => 3])->create()->all();
+        $foreign = BusinessActivity::factory()->for($other, 'category')->create(['sort_order' => 8]);
+
+        $this->putJson('/admin/activities/reorder', ['category' => $this->category->id, 'order' => [$b->id, $c->id, $a->id]])
+            ->assertOk()
+            ->assertJson(['message' => 'Urutan aktivitas disimpan.']);
+
+        $this->assertSame([1, 2, 3], [$b->refresh()->sort_order, $c->refresh()->sort_order, $a->refresh()->sort_order]);
+        $this->assertSame(8, $foreign->refresh()->sort_order);
+    }
+
+    public function test_activity_reorder_rejects_ids_from_other_categories_or_missing_ones(): void
+    {
+        $other = ServiceCategory::factory()->create();
+        [$a, $b] = BusinessActivity::factory()->count(2)->for($this->category, 'category')->sequence(['sort_order' => 1], ['sort_order' => 2])->create()->all();
+        $foreign = BusinessActivity::factory()->for($other, 'category')->create(['sort_order' => 4]);
+
+        $this->putJson('/admin/activities/reorder', ['category' => $this->category->id, 'order' => [$a->id]])->assertStatus(422);
+        $this->putJson('/admin/activities/reorder', ['category' => $this->category->id, 'order' => [$a->id, $foreign->id]])->assertStatus(422);
+        $this->putJson('/admin/activities/reorder', ['category' => 99999, 'order' => [$a->id, $b->id]])->assertStatus(422);
+        $this->putJson('/admin/activities/reorder', ['order' => [$a->id, $b->id]])->assertStatus(422);
+
+        $this->assertSame([1, 2, 4], [$a->refresh()->sort_order, $b->refresh()->sort_order, $foreign->refresh()->sort_order]);
+    }
+
+    public function test_activity_reorder_requires_login(): void
+    {
+        auth()->logout();
+
+        $this->putJson('/admin/activities/reorder', ['category' => $this->category->id, 'order' => [1]])->assertUnauthorized();
+    }
+
+    public function test_reordered_activities_appear_in_the_new_order_on_the_public_category_page(): void
+    {
+        [$a, $b] = BusinessActivity::factory()->count(2)->for($this->category, 'category')->sequence(
+            ['name' => 'Aktivitas Alfa', 'slug' => 'alfa', 'sort_order' => 1],
+            ['name' => 'Aktivitas Beta', 'slug' => 'beta', 'sort_order' => 2],
+        )->create()->all();
+
+        $this->putJson('/admin/activities/reorder', ['category' => $this->category->id, 'order' => [$b->id, $a->id]])->assertOk();
+
+        auth()->logout();
+        $this->get('/layanan-jasa/induk')->assertSeeInOrder(['Aktivitas Beta', 'Aktivitas Alfa']);
     }
 
     public function test_new_activity_appears_on_public_site_unless_draft(): void

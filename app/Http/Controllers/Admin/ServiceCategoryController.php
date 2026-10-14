@@ -5,11 +5,15 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Admin\Concerns\FiltersByStatus;
 use App\Http\Controllers\Admin\Concerns\StoresUploadedImage;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\ReorderItemsRequest;
 use App\Http\Requests\Admin\ServiceCategoryRequest;
 use App\Models\ServiceCategory;
 use App\Services\ImageUploader;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Throwable;
 
@@ -25,18 +29,21 @@ class ServiceCategoryController extends Controller
         $status = $this->statusFilter($request);
         $counts = $this->statusCounts(ServiceCategory::query());
 
-        $categories = ServiceCategory::query()
+        // Mode atur urutan: hanya tanpa pencarian/filter, memuat semua baris agar urutan utuh.
+        $reorder = $request->boolean('reorder') && $search === '' && $status === null;
+
+        $query = ServiceCategory::query()
             ->tap(fn ($query) => $this->applyStatus($query, $status))
             ->withCount('activities')
             ->when($search !== '', fn ($query) => $query->where(function ($query) use ($search) {
                 $query->where('name', 'like', "%{$search}%")
                     ->orWhere('slug', 'like', "%{$search}%");
             }))
-            ->ordered()
-            ->paginate(15)
-            ->withQueryString();
+            ->ordered();
 
-        return view('admin.categories.index', compact('categories', 'search', 'status', 'counts'));
+        $categories = $reorder ? $query->get() : $query->paginate(15)->withQueryString();
+
+        return view('admin.categories.index', compact('categories', 'search', 'status', 'counts', 'reorder'));
     }
 
     public function create(): View
@@ -64,6 +71,7 @@ class ServiceCategoryController extends Controller
         try {
             $category = ServiceCategory::create([
                 ...$request->safe()->except(self::UPLOAD_FIELDS),
+                'sort_order' => (int) ServiceCategory::max('sort_order') + 1,
                 'image_path' => $path,
                 'icon_image_path' => $iconPath,
             ]);
@@ -146,6 +154,30 @@ class ServiceCategoryController extends Controller
         return redirect()
             ->route('admin.categories.index')
             ->with('success', 'Kategori berhasil dihapus.');
+    }
+
+    /**
+     * Simpan urutan baru dari drag-and-drop. Daftar id harus persis semua kategori.
+     */
+    public function reorder(ReorderItemsRequest $request): JsonResponse
+    {
+        $order = array_map('intval', $request->validated('order'));
+
+        $expected = ServiceCategory::query()->pluck('id')->map(fn ($id) => (int) $id)->sort()->values()->all();
+
+        if ($expected !== collect($order)->sort()->values()->all()) {
+            throw ValidationException::withMessages([
+                'order' => 'Daftar kategori sudah berubah. Muat ulang halaman lalu coba lagi.',
+            ]);
+        }
+
+        DB::transaction(function () use ($order) {
+            foreach ($order as $position => $id) {
+                ServiceCategory::whereKey($id)->update(['sort_order' => $position + 1]);
+            }
+        });
+
+        return response()->json(['message' => 'Urutan kategori disimpan.']);
     }
 
     /**

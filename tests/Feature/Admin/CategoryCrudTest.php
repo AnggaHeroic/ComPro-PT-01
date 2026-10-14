@@ -27,7 +27,6 @@ class CategoryCrudTest extends TestCase
         return array_merge([
             'name' => 'Kategori Uji',
             'description' => 'Deskripsi uji.',
-            'sort_order' => 3,
             'is_published' => 1,
         ], $overrides);
     }
@@ -94,7 +93,7 @@ class CategoryCrudTest extends TestCase
         $category = ServiceCategory::firstOrFail();
 
         $this->assertSame('teknologi-digital-baru', $category->slug);
-        $this->assertSame(3, $category->sort_order);
+        $this->assertSame(1, $category->sort_order);
         $this->assertTrue($category->is_published);
         $this->assertMatchesRegularExpression('#^categories/[0-9a-f-]{36}\.webp$#', $category->image_path);
         Storage::disk('public')->assertExists($category->image_path);
@@ -352,6 +351,119 @@ class CategoryCrudTest extends TestCase
 
         $this->assertNotEmpty($m, 'Bar tab status tidak ditemukan.');
         $this->assertStringNotContainsString('overflow', $m[1]);
+    }
+
+    public function test_new_categories_are_appended_at_the_end_of_the_order(): void
+    {
+        ServiceCategory::factory()->create(['sort_order' => 4]);
+
+        $this->post('/admin/categories', $this->payload(['name' => 'Paling Akhir']));
+
+        $this->assertSame(5, ServiceCategory::where('name', 'Paling Akhir')->value('sort_order'));
+    }
+
+    public function test_forms_no_longer_have_an_order_input_and_updates_keep_the_order(): void
+    {
+        $this->get('/admin/categories/create')->assertOk()->assertDontSee('name="sort_order"', false)->assertSee('Atur urutan');
+
+        $category = ServiceCategory::factory()->create(['name' => 'Tetap Di Tempat', 'sort_order' => 7]);
+
+        // sort_order yang dikirim paksa diabaikan.
+        $this->put("/admin/categories/{$category->id}", $this->payload(['name' => 'Tetap Di Tempat', 'slug' => $category->slug, 'sort_order' => 99]));
+
+        $this->assertSame(7, $category->refresh()->sort_order);
+    }
+
+    public function test_reorder_mode_loads_every_row_with_drag_handles_and_hides_row_actions(): void
+    {
+        ServiceCategory::factory()->count(20)->sequence(fn ($s) => ['name' => 'Urut '.str_pad($s->index + 1, 2, '0', STR_PAD_LEFT), 'sort_order' => $s->index + 1])->create();
+
+        $normal = $this->get('/admin/categories')->assertOk();
+        $normal->assertDontSee('Urut 20')->assertSee('role="switch"', false)->assertSee('aria-checked="false"', false);
+
+        $this->get('/admin/categories?reorder=1')
+            ->assertOk()
+            ->assertSee('Urut 20')
+            ->assertSee('x-data="reorderList(', false)
+            ->assertSee('draggable="true"', false)
+            ->assertSee('aria-checked="true"', false)
+            ->assertSee('Perubahan langsung tersimpan')
+            ->assertSee('Naikkan Urut 01', false)
+            ->assertSee('Turunkan Urut 01', false)
+            ->assertDontSee('+ Tambah Kategori')
+            ->assertDontSee('Filter status', false)
+            ->assertDontSee('>Hapus</button>', false);
+    }
+
+    public function test_reorder_mode_is_ignored_while_searching_or_filtering(): void
+    {
+        ServiceCategory::factory()->count(3)->create();
+
+        $this->get('/admin/categories?reorder=1&q=a')->assertOk()->assertDontSee('x-data="reorderList(', false);
+        $this->get('/admin/categories?reorder=1&status=draft')->assertOk()->assertDontSee('x-data="reorderList(', false);
+
+        // Toggle dinonaktifkan dengan alasan yang jelas saat ada filter.
+        $this->get('/admin/categories?q=a')->assertOk()->assertSee('aria-disabled="true"', false)->assertSee('Hapus pencarian atau filter untuk mengatur urutan.');
+    }
+
+    public function test_reorder_toggle_is_disabled_with_fewer_than_two_categories(): void
+    {
+        ServiceCategory::factory()->create();
+
+        $this->get('/admin/categories')->assertOk()->assertSee('Perlu minimal dua kategori.');
+    }
+
+    public function test_reorder_saves_the_new_order_as_json(): void
+    {
+        [$a, $b, $c] = ServiceCategory::factory()->count(3)->sequence(['sort_order' => 1], ['sort_order' => 2], ['sort_order' => 3])->create()->all();
+
+        $this->putJson('/admin/categories/reorder', ['order' => [$c->id, $a->id, $b->id]])
+            ->assertOk()
+            ->assertJson(['message' => 'Urutan kategori disimpan.']);
+
+        $this->assertSame([$c->id, $a->id, $b->id], ServiceCategory::ordered()->pluck('id')->all());
+        $this->assertSame([1, 2, 3], ServiceCategory::ordered()->pluck('sort_order')->all());
+    }
+
+    public function test_reorder_rejects_missing_unknown_or_duplicate_ids_without_changing_anything(): void
+    {
+        [$a, $b] = ServiceCategory::factory()->count(2)->sequence(['sort_order' => 1], ['sort_order' => 2])->create()->all();
+
+        $this->putJson('/admin/categories/reorder', ['order' => [$a->id]])->assertStatus(422)->assertJsonValidationErrors('order');
+        $this->putJson('/admin/categories/reorder', ['order' => [$a->id, 9999]])->assertStatus(422)->assertJsonValidationErrors('order');
+        $this->putJson('/admin/categories/reorder', ['order' => [$a->id, $a->id]])->assertStatus(422);
+        $this->putJson('/admin/categories/reorder', [])->assertStatus(422);
+
+        $this->assertSame([1, 2], [$a->refresh()->sort_order, $b->refresh()->sort_order]);
+    }
+
+    public function test_reorder_requires_login(): void
+    {
+        auth()->logout();
+        $category = ServiceCategory::factory()->create(['sort_order' => 1]);
+
+        $this->putJson('/admin/categories/reorder', ['order' => [$category->id]])->assertUnauthorized();
+    }
+
+    public function test_reordered_categories_appear_in_the_new_order_on_the_public_site(): void
+    {
+        [$a, $b] = ServiceCategory::factory()->count(2)->sequence(
+            ['name' => 'Alfa Publik', 'slug' => 'alfa', 'sort_order' => 1],
+            ['name' => 'Beta Publik', 'slug' => 'beta', 'sort_order' => 2],
+        )->create()->all();
+
+        $this->putJson('/admin/categories/reorder', ['order' => [$b->id, $a->id]])->assertOk();
+
+        auth()->logout();
+        $this->get('/layanan-jasa')->assertSeeInOrder(['Beta Publik', 'Alfa Publik']);
+    }
+
+    public function test_the_word_reorder_is_not_treated_as_a_category_id(): void
+    {
+        $this->get('/admin/categories/reorder/edit')->assertNotFound();
+        // Hanya PUT yang dikenali sebagai urutan; metode lain jatuh ke rute id dan tidak menemukan apa pun.
+        $this->delete('/admin/categories/reorder')->assertNotFound();
+        $this->assertSame(0, ServiceCategory::count());
     }
 
     public function test_empty_draft_filter_shows_a_clear_message(): void

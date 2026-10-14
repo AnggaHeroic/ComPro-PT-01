@@ -6,11 +6,15 @@ use App\Http\Controllers\Admin\Concerns\FiltersByStatus;
 use App\Http\Controllers\Admin\Concerns\StoresUploadedImage;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\BusinessActivityRequest;
+use App\Http\Requests\Admin\ReorderItemsRequest;
 use App\Models\BusinessActivity;
 use App\Models\ServiceCategory;
 use App\Services\ImageUploader;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Throwable;
 
@@ -29,7 +33,10 @@ class BusinessActivityController extends Controller
             BusinessActivity::query()->when($categoryId, fn ($query) => $query->where('service_category_id', $categoryId))
         );
 
-        $activities = BusinessActivity::query()
+        // Mode atur urutan: tanpa pencarian/filter status; semua baris dimuat agar urutan per kategori utuh.
+        $reorder = $request->boolean('reorder') && $search === '' && $status === null;
+
+        $query = BusinessActivity::query()
             ->tap(fn ($query) => $this->applyStatus($query, $status))
             ->with('category:id,name,slug')
             ->withCount('images')
@@ -40,9 +47,9 @@ class BusinessActivityController extends Controller
                     ->orWhere('kbli_code', 'like', "%{$search}%");
             }))
             ->orderBy('service_category_id')
-            ->ordered()
-            ->paginate(15)
-            ->withQueryString();
+            ->ordered();
+
+        $activities = $reorder ? $query->get() : $query->paginate(15)->withQueryString();
 
         return view('admin.activities.index', [
             'activities' => $activities,
@@ -51,6 +58,7 @@ class BusinessActivityController extends Controller
             'categoryId' => $categoryId,
             'status' => $status,
             'counts' => $counts,
+            'reorder' => $reorder,
         ]);
     }
 
@@ -79,6 +87,7 @@ class BusinessActivityController extends Controller
         try {
             $activity = BusinessActivity::create([
                 ...$request->safe()->except(self::NON_COLUMN_FIELDS),
+                'sort_order' => (int) BusinessActivity::where('service_category_id', $request->integer('service_category_id'))->max('sort_order') + 1,
                 'image_path' => $path,
             ]);
         } catch (Throwable $e) {
@@ -103,6 +112,10 @@ class BusinessActivityController extends Controller
         $data = $request->safe()->except(self::NON_COLUMN_FIELDS);
         $oldPath = $activity->image_path;
         $newPath = $this->storeUploadedImage($request, $images, 'activities');
+
+        if ((int) $data['service_category_id'] !== $activity->service_category_id) {
+            $data['sort_order'] = (int) BusinessActivity::where('service_category_id', $data['service_category_id'])->max('sort_order') + 1;
+        }
 
         if ($newPath !== null) {
             $data['image_path'] = $newPath;
@@ -140,6 +153,36 @@ class BusinessActivityController extends Controller
         return redirect()
             ->route('admin.activities.index', ['category' => $categoryId])
             ->with('success', 'Aktivitas berhasil dihapus.');
+    }
+
+    /**
+     * Simpan urutan baru dari drag-and-drop untuk satu kategori.
+     */
+    public function reorder(ReorderItemsRequest $request): JsonResponse
+    {
+        $categoryId = $request->integer('category');
+        $order = array_map('intval', $request->validated('order'));
+
+        if (! ServiceCategory::whereKey($categoryId)->exists()) {
+            throw ValidationException::withMessages(['category' => 'Kategori tidak ditemukan.']);
+        }
+
+        $expected = BusinessActivity::where('service_category_id', $categoryId)
+            ->pluck('id')->map(fn ($id) => (int) $id)->sort()->values()->all();
+
+        if ($expected !== collect($order)->sort()->values()->all()) {
+            throw ValidationException::withMessages([
+                'order' => 'Daftar aktivitas sudah berubah. Muat ulang halaman lalu coba lagi.',
+            ]);
+        }
+
+        DB::transaction(function () use ($order, $categoryId) {
+            foreach ($order as $position => $id) {
+                BusinessActivity::where('service_category_id', $categoryId)->whereKey($id)->update(['sort_order' => $position + 1]);
+            }
+        });
+
+        return response()->json(['message' => 'Urutan aktivitas disimpan.']);
     }
 
     /**

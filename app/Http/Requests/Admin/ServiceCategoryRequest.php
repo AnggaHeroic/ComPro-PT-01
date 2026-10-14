@@ -21,7 +21,6 @@ class ServiceCategoryRequest extends FormRequest
         $this->merge([
             // Kosong = dibuat otomatis dari nama saat diterbitkan.
             'slug' => $slug !== '' ? Str::lower($slug) : null,
-            'sort_order' => $this->filled('sort_order') ? $this->input('sort_order') : 0,
             'is_published' => $this->has('status')
                 ? $this->input('status') === 'published'
                 : $this->boolean('is_published'),
@@ -50,7 +49,6 @@ class ServiceCategoryRequest extends FormRequest
             'icon' => ['nullable', 'string', Rule::in(CategoryIcons::keys())],
             'icon_image' => ['nullable', ...ImageUploader::rules()],
             'remove_icon_image' => ['boolean'],
-            'sort_order' => ['integer', 'min:0', 'max:65535'],
             'status' => ['nullable', Rule::in(['published', 'draft'])],
             'is_published' => ['boolean'],
         ];
@@ -69,7 +67,6 @@ class ServiceCategoryRequest extends FormRequest
             'image' => 'Gambar',
             'icon' => 'Ikon',
             'icon_image' => 'Ikon kustom',
-            'sort_order' => 'Urutan',
         ];
     }
 }

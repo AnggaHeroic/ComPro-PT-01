@@ -21,7 +21,6 @@ class BusinessActivityRequest extends FormRequest
             // Kosong = dibuat otomatis dari nama saat diterbitkan.
             'slug' => $slug !== '' ? Str::lower($slug) : null,
             'kbli_code' => filled($this->input('kbli_code')) ? trim((string) $this->input('kbli_code')) : null,
-            'sort_order' => $this->filled('sort_order') ? $this->input('sort_order') : 0,
             'is_published' => $this->has('status')
                 ? $this->input('status') === 'published'
                 : $this->boolean('is_published'),
@@ -51,7 +50,6 @@ class BusinessActivityRequest extends FormRequest
             'description' => ['nullable', 'string', 'max:10000'],
             'image' => ['nullable', ...ImageUploader::rules()],
             'remove_image' => ['boolean'],
-            'sort_order' => ['integer', 'min:0', 'max:65535'],
             'status' => ['nullable', Rule::in(['published', 'draft'])],
             'is_published' => ['boolean'],
         ];
@@ -71,7 +69,6 @@ class BusinessActivityRequest extends FormRequest
             'short_description' => 'Deskripsi singkat',
             'description' => 'Deskripsi detail',
             'image' => 'Gambar',
-            'sort_order' => 'Urutan',
         ];
     }
 }

@@ -57,16 +57,11 @@
         <x-admin.image-field label="Gambar utama" :current="$activity->image_url" />
     </x-admin.card>
 
-    <x-admin.card title="Penayangan" description="Atur status dan urutan di dalam kategori.">
+    <x-admin.card title="Penayangan" description="Atur status tampil di website.">
         <div class="space-y-5">
             <x-admin.status-field :selected="old('status', $activity->exists ? ($activity->is_published ? 'published' : 'draft') : 'published')" />
 
-            <div class="sm:max-w-xs">
-                <x-input-label for="sort_order" value="Urutan tampil" />
-                <x-text-input id="sort_order" name="sort_order" type="number" min="0" max="65535" :value="old('sort_order', $activity->sort_order)" />
-                <x-input-error :messages="$errors->get('sort_order')" class="mt-2" />
-                <p class="mt-1.5 text-xs text-gray-500">Urutan berlaku di dalam kategorinya.</p>
-            </div>
+            <p class="text-xs text-gray-500">Urutan tampil diatur lewat tombol "Atur urutan" di halaman daftar.</p>
         </div>
     </x-admin.card>
 </div>

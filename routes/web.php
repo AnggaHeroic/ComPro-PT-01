@@ -35,6 +35,10 @@ Route::middleware('auth')
         Route::get('/', [DashboardController::class, 'index'])
             ->name('dashboard');
 
+        // Harus sebelum resource: "reorder" bukan id.
+        Route::put('categories/reorder', [ServiceCategoryController::class, 'reorder'])->name('categories.reorder');
+        Route::put('activities/reorder', [BusinessActivityController::class, 'reorder'])->name('activities.reorder');
+
         Route::resource('categories', ServiceCategoryController::class)
             ->parameters(['categories' => 'category'])
             ->except(['show']);

@@ -345,4 +345,160 @@ Alpine.data('serviceCarousel', (total, interval = 6000) => ({
     },
 }));
 
+/**
+ * Atur urutan baris tabel admin (kategori / aktivitas) dengan drag-and-drop
+ * atau tombol panah. Setiap perubahan langsung disimpan ke server; bila gagal,
+ * urutan di layar dikembalikan seperti sebelumnya.
+ *
+ * Setiap baris punya data-id dan data-group (kosong untuk kategori, id kategori
+ * untuk aktivitas); baris hanya bisa dipindah di dalam grup yang sama.
+ */
+Alpine.data('reorderList', ({ url }) => ({
+    state: 'idle', // idle | saving | saved | error
+    message: '',
+    dragRow: null,
+    snapshot: [],
+    resetTimer: null,
+
+    rows(group = null) {
+        const all = Array.from(this.$refs.body.querySelectorAll('tr[data-id]'));
+
+        return group === null
+            ? all
+            : all.filter((row) => row.dataset.group === String(group));
+    },
+
+    ids(group) {
+        return this.rows(group).map((row) => Number(row.dataset.id));
+    },
+
+    start(event) {
+        const row = event.target.closest('tr[data-id]');
+
+        if (!row) return;
+
+        this.dragRow = row;
+        this.snapshot = this.rows();
+        row.classList.add('opacity-40');
+
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('text/plain', row.dataset.id);
+    },
+
+    over(event) {
+        if (!this.dragRow) return;
+
+        const target = event.target.closest('tr[data-id]');
+
+        if (
+            !target ||
+            target === this.dragRow ||
+            target.dataset.group !== this.dragRow.dataset.group
+        ) {
+            return;
+        }
+
+        event.preventDefault();
+
+        const rect = target.getBoundingClientRect();
+        const after = event.clientY > rect.top + rect.height / 2;
+
+        after ? target.after(this.dragRow) : target.before(this.dragRow);
+    },
+
+    end() {
+        if (!this.dragRow) return;
+
+        const row = this.dragRow;
+        row.classList.remove('opacity-40');
+        this.dragRow = null;
+
+        const before = this.snapshot.map((item) => item.dataset.id).join();
+        const after = this.rows().map((item) => item.dataset.id).join();
+
+        if (before !== after) {
+            this.save(row.dataset.group);
+        }
+    },
+
+    move(event, delta) {
+        const row = event.target.closest('tr[data-id]');
+
+        if (!row) return;
+
+        const group = row.dataset.group;
+        const siblings = this.rows(group);
+        const target = siblings[siblings.indexOf(row) + delta];
+
+        if (!target) return;
+
+        this.snapshot = this.rows();
+        delta < 0 ? target.before(row) : target.after(row);
+        row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+
+        this.save(group);
+    },
+
+    restore() {
+        this.snapshot.forEach((row) => this.$refs.body.appendChild(row));
+    },
+
+    renumber(group) {
+        this.rows(group).forEach((row, index) => {
+            row.querySelectorAll('[data-position]').forEach((cell) => {
+                cell.textContent = index + 1;
+            });
+        });
+    },
+
+    async save(group) {
+        clearTimeout(this.resetTimer);
+        this.state = 'saving';
+        this.message = '';
+
+        const payload = { order: this.ids(group) };
+
+        if (group !== '') {
+            payload.category = Number(group);
+        }
+
+        try {
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN':
+                        document.querySelector('meta[name="csrf-token"]')?.content ?? '',
+                },
+                body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) {
+                let message = 'Gagal menyimpan urutan.';
+
+                try {
+                    const data = await response.json();
+                    message = data.errors
+                        ? Object.values(data.errors).flat()[0]
+                        : data.message ?? message;
+                } catch (e) {
+                    // abaikan: pakai pesan bawaan
+                }
+
+                throw new Error(message);
+            }
+
+            this.renumber(group);
+            this.state = 'saved';
+            this.resetTimer = setTimeout(() => (this.state = 'idle'), 2500);
+        } catch (error) {
+            this.restore();
+            this.state = 'error';
+            this.message = error.message || 'Gagal menyimpan urutan.';
+        }
+    },
+}));
+
 Alpine.start();
