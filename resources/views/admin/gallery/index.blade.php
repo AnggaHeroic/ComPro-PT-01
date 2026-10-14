@@ -4,18 +4,23 @@
         <p class="mt-1 text-sm text-gray-500">Pilih aktivitas usaha untuk mengelola foto dokumentasinya.</p>
     </x-slot>
 
-    <form method="GET" action="{{ route('admin.gallery.index') }}" class="mb-4 flex flex-wrap gap-2">
-        <x-select name="category" class="w-auto" onchange="this.form.submit()">
+    <form method="GET" action="{{ route('admin.gallery.index') }}" class="mb-5 flex flex-wrap items-center gap-2">
+        <x-select name="category" class="w-full sm:w-56" onchange="this.form.submit()" aria-label="Filter kategori">
             <option value="">Semua kategori</option>
             @foreach ($categories as $category)
                 <option value="{{ $category->id }}" @selected($categoryId === $category->id)>{{ $category->name }}</option>
             @endforeach
         </x-select>
-        <x-text-input name="q" type="search" :value="$search" placeholder="Cari nama, slug, atau KBLI..." class="max-w-xs" />
+
+        <x-admin.search :value="$search" placeholder="Cari nama, slug, atau KBLI..." />
+
         <x-secondary-button type="submit">Cari</x-secondary-button>
+
         @if ($search !== '' || $categoryId)
-            <a href="{{ route('admin.gallery.index') }}" class="inline-flex items-center px-2 text-sm text-gray-500 hover:text-gray-900">Reset</a>
+            <a href="{{ route('admin.gallery.index') }}" class="px-2 text-sm text-gray-500 hover:text-primary">Reset</a>
         @endif
+
+        <span class="ml-auto text-sm text-gray-500">{{ $activities->total() }} aktivitas</span>
     </form>
 
     <div class="overflow-hidden rounded-md border border-gray-200 bg-white">
@@ -25,31 +30,51 @@
                     <tr>
                         <th class="px-4 py-3">Aktivitas</th>
                         <th class="px-4 py-3">Kategori</th>
-                        <th class="px-4 py-3">KBLI</th>
                         <th class="px-4 py-3 text-center">Foto</th>
                         <th class="px-4 py-3 text-right">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     @forelse ($activities as $activity)
-                        <tr class="hover:bg-gray-50">
-                            <td class="max-w-sm px-4 py-3 font-medium text-gray-900">{{ $activity->name }}</td>
-                            <td class="px-4 py-3 text-gray-600">{{ $activity->category->name }}</td>
-                            <td class="px-4 py-3 font-mono text-xs text-gray-500">{{ $activity->kbli_code ?? '—' }}</td>
+                        <tr class="transition hover:bg-gray-50">
+                            <td class="px-4 py-3">
+                                <div class="flex items-center gap-3">
+                                    <span class="flex h-11 w-16 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-gray-100">
+                                        @if ($activity->image_url)
+                                            <img src="{{ $activity->image_url }}" alt="" class="h-full w-full object-cover" loading="lazy">
+                                        @endif
+                                    </span>
+                                    <div class="min-w-0">
+                                        <p class="max-w-md font-medium leading-snug text-gray-900">{{ $activity->name }}</p>
+                                        @if ($activity->kbli_code)
+                                            <p class="mt-0.5 font-mono text-xs text-gray-500">KBLI {{ $activity->kbli_code }}</p>
+                                        @endif
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-4 py-3">
+                                <span class="inline-block whitespace-nowrap rounded-sm bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">{{ $activity->category->name }}</span>
+                            </td>
                             <td class="px-4 py-3 text-center">
                                 @if ($activity->images_count > 0)
-                                    <span class="rounded-sm bg-primary-light px-2 py-0.5 text-xs font-medium text-primary-dark">{{ $activity->images_count }} foto</span>
+                                    <span class="inline-flex items-center gap-1 rounded-sm bg-primary-light px-2 py-0.5 text-xs font-semibold text-primary-dark">
+                                        <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="M21 16l-5-5-8 9"/></svg>
+                                        {{ $activity->images_count }}
+                                    </span>
                                 @else
                                     <span class="text-xs text-gray-400">Kosong</span>
                                 @endif
                             </td>
                             <td class="px-4 py-3 text-right">
-                                <a href="{{ route('admin.gallery.show', $activity) }}" class="font-medium text-gray-700 hover:text-primary">Kelola galeri</a>
+                                <a href="{{ route('admin.gallery.show', $activity) }}" class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-primary hover:text-primary">
+                                    Kelola galeri
+                                    <span aria-hidden="true">&rarr;</span>
+                                </a>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-4 py-12 text-center text-gray-500">
+                            <td colspan="4" class="px-4 py-14 text-center text-gray-500">
                                 @if ($search !== '' || $categoryId)
                                     Tidak ada aktivitas yang cocok dengan filter.
                                 @else

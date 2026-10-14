@@ -74,7 +74,7 @@ class GalleryTest extends TestCase
         $this->get('/admin/gallery')
             ->assertOk()
             ->assertSee('Aktivitas Galeri')
-            ->assertSee('3 foto')
+            ->assertSee('Kosong')
             ->assertSee('Aktivitas Lain')
             ->assertSee('Kosong');
 
@@ -399,6 +399,23 @@ class GalleryTest extends TestCase
                 ->assertOk()
                 ->assertSee("{$count} / 6", false);
         }
+    }
+
+    public function test_manage_pages_have_a_back_link_to_their_list(): void
+    {
+        $category = $this->activity->category;
+        $activityList = route('admin.activities.index', ['category' => $category->id]);
+
+        $this->get("/admin/categories/create")->assertSee('Kembali ke Kategori')->assertSee(route('admin.categories.index'), false);
+        $this->get("/admin/categories/{$category->id}/edit")->assertSee('Kembali ke Kategori');
+        $this->get('/admin/activities/create')->assertSee('Kembali ke Aktivitas Usaha');
+        $this->get("/admin/activities/{$this->activity->id}/edit")
+            ->assertSee('Kembali ke Aktivitas Usaha')
+            ->assertSee(e($activityList), false);
+        $this->get($this->url())
+            ->assertSee('Kembali ke Galeri')
+            ->assertSee(e(route('admin.gallery.index', ['category' => $category->id])), false);
+        $this->get('/admin/profil')->assertSee('Kembali ke Dashboard');
     }
 
     public function test_activity_index_links_to_gallery_and_sidebar_has_gallery_menu(): void

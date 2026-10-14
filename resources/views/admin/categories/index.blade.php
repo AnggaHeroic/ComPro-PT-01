@@ -11,12 +11,16 @@
         </div>
     </x-slot>
 
-    <form method="GET" action="{{ route('admin.categories.index') }}" class="mb-4 flex gap-2">
-        <x-text-input name="q" type="search" :value="$search" placeholder="Cari nama atau slug..." class="max-w-xs" />
+    <form method="GET" action="{{ route('admin.categories.index') }}" class="mb-5 flex flex-wrap items-center gap-2">
+        <x-admin.search :value="$search" placeholder="Cari nama atau slug..." />
+
         <x-secondary-button type="submit">Cari</x-secondary-button>
+
         @if ($search !== '')
-            <a href="{{ route('admin.categories.index') }}" class="inline-flex items-center px-2 text-sm text-gray-500 hover:text-gray-900">Reset</a>
+            <a href="{{ route('admin.categories.index') }}" class="px-2 text-sm text-gray-500 hover:text-primary">Reset</a>
         @endif
+
+        <span class="ml-auto text-sm text-gray-500">{{ $categories->total() }} kategori</span>
     </form>
 
     <div class="overflow-hidden rounded-md border border-gray-200 bg-white">
@@ -26,7 +30,6 @@
                     <tr>
                         <th class="px-4 py-3">Urutan</th>
                         <th class="px-4 py-3">Kategori</th>
-                        <th class="px-4 py-3">Slug</th>
                         <th class="px-4 py-3 text-center">Aktivitas</th>
                         <th class="px-4 py-3">Status</th>
                         <th class="px-4 py-3 text-right">Aksi</th>
@@ -34,21 +37,23 @@
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     @forelse ($categories as $category)
-                        <tr class="hover:bg-gray-50">
+                        <tr class="transition hover:bg-gray-50">
                             <td class="px-4 py-3 text-gray-500">{{ $category->sort_order }}</td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-3">
-                                    <span class="flex h-10 w-14 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-gray-100">
+                                    <span class="flex h-11 w-16 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-gray-100">
                                         @if ($category->image_url)
                                             <img src="{{ $category->image_url }}" alt="" class="h-full w-full object-cover" loading="lazy">
                                         @endif
                                     </span>
-                                    <span class="font-medium text-gray-900">{{ $category->name }}</span>
+                                    <div class="min-w-0">
+                                        <p class="font-medium leading-snug text-gray-900">{{ $category->name }}</p>
+                                        <p class="mt-0.5 font-mono text-xs text-gray-500">{{ $category->slug }}</p>
+                                    </div>
                                 </div>
                             </td>
-                            <td class="px-4 py-3 font-mono text-xs text-gray-500">{{ $category->slug }}</td>
                             <td class="px-4 py-3 text-center">
-                                <a href="{{ route('admin.activities.index', ['category' => $category->id]) }}" class="font-medium text-primary hover:underline">{{ $category->activities_count }}</a>
+                                <a href="{{ route('admin.activities.index', ['category' => $category->id]) }}" class="inline-flex min-w-7 justify-center rounded-sm bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-700 transition hover:bg-primary-light hover:text-primary-dark" title="Lihat aktivitas">{{ $category->activities_count }}</a>
                             </td>
                             <td class="px-4 py-3">
                                 @if ($category->is_published)
@@ -59,18 +64,18 @@
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center justify-end gap-3">
-                                    <a href="{{ route('admin.categories.edit', $category) }}" class="font-medium text-gray-700 hover:text-primary">Edit</a>
+                                    <a href="{{ route('admin.categories.edit', $category) }}" class="whitespace-nowrap rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-primary hover:text-primary">Edit</a>
                                     <form method="POST" action="{{ route('admin.categories.destroy', $category) }}" onsubmit="return confirm('Hapus kategori &quot;{{ e($category->name) }}&quot;? Tindakan ini tidak dapat dibatalkan.')">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="font-medium text-gray-500 hover:text-primary">Hapus</button>
+                                        <button type="submit" class="text-xs font-medium text-gray-500 transition hover:text-primary">Hapus</button>
                                     </form>
                                 </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-4 py-12 text-center text-gray-500">
+                            <td colspan="5" class="px-4 py-14 text-center text-gray-500">
                                 @if ($search !== '')
                                     Tidak ada kategori yang cocok dengan "{{ $search }}".
                                 @else

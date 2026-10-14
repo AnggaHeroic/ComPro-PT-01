@@ -3,7 +3,7 @@
 <div class="space-y-5">
     <div>
         <x-input-label for="service_category_id" value="Kategori" />
-        <x-select id="service_category_id" name="service_category_id" required>
+        <x-select id="service_category_id" name="service_category_id" required class="w-full">
             <option value="">— Pilih kategori —</option>
             @foreach ($categories as $category)
                 <option value="{{ $category->id }}" @selected((int) old('service_category_id', $activity->service_category_id) === $category->id)>{{ $category->name }}</option>

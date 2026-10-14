@@ -10,11 +10,8 @@
 
 <x-app-layout>
     <x-slot name="header">
-        <nav class="mb-2 text-xs text-gray-500" aria-label="Breadcrumb">
-            <a href="{{ route('admin.gallery.index') }}" class="hover:text-primary">Galeri</a>
-            <span class="mx-1">/</span>
-            <a href="{{ route('admin.gallery.index', ['category' => $activity->service_category_id]) }}" class="hover:text-primary">{{ $activity->category->name }}</a>
-        </nav>
+        <x-admin.back :href="route('admin.gallery.index', ['category' => $activity->service_category_id])" label="Kembali ke Galeri" />
+        <p class="mb-1 text-xs font-medium uppercase tracking-wider text-gray-400">{{ $activity->category->name }}</p>
 
         <div class="flex flex-wrap items-end justify-between gap-4">
             <div class="min-w-0">
