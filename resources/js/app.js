@@ -346,8 +346,8 @@ Alpine.data('serviceCarousel', (total, interval = 6000) => ({
 }));
 
 /**
- * Atur urutan baris tabel admin (kategori / aktivitas) dengan drag-and-drop
- * atau tombol panah. Setiap perubahan langsung disimpan ke server; bila gagal,
+ * Atur urutan baris tabel admin (kategori / aktivitas) dengan seret (pointer
+ * events: mouse, sentuh, stylus) atau tombol panah. Setiap perubahan langsung disimpan ke server; bila gagal,
  * urutan di layar dikembalikan seperti sebelumnya.
  *
  * Setiap baris punya data-id dan data-group (kosong untuk kategori, id kategori
@@ -357,6 +357,9 @@ Alpine.data('reorderList', ({ url }) => ({
     state: 'idle', // idle | saving | saved | error
     message: '',
     dragRow: null,
+    pointerId: null,
+    lastY: 0,
+    scrollTimer: null,
     snapshot: [],
     resetTimer: null,
 
@@ -372,23 +375,47 @@ Alpine.data('reorderList', ({ url }) => ({
         return this.rows(group).map((row) => Number(row.dataset.id));
     },
 
-    start(event) {
+    /**
+     * Mulai menyeret. Mouse: dari mana saja di baris (kecuali tautan/tombol).
+     * Sentuh dan stylus: hanya dari pegangan (data-drag-handle) agar halaman
+     * tetap bisa digulir dengan jari di bagian lain tabel.
+     */
+    down(event) {
         const row = event.target.closest('tr[data-id]');
 
         if (!row) return;
 
-        this.dragRow = row;
-        this.snapshot = this.rows();
-        row.classList.add('opacity-40');
+        const handle = event.target.closest('[data-drag-handle]');
 
-        event.dataTransfer.effectAllowed = 'move';
-        event.dataTransfer.setData('text/plain', row.dataset.id);
+        if (event.pointerType === 'mouse') {
+            if (event.button !== 0) return;
+            if (!handle && event.target.closest('a, button, input, select, textarea, label')) return;
+        } else if (!handle) {
+            return;
+        }
+
+        event.preventDefault();
+
+        this.dragRow = row;
+        this.pointerId = event.pointerId;
+        this.lastY = event.clientY;
+        this.snapshot = this.rows();
+
+        row.classList.add('opacity-60', 'shadow-lg', 'relative', 'z-10');
+        this.$refs.body.setPointerCapture?.(event.pointerId);
+
+        clearInterval(this.scrollTimer);
+        this.scrollTimer = setInterval(() => this.autoScroll(), 16);
     },
 
-    over(event) {
-        if (!this.dragRow) return;
+    drag(event) {
+        if (!this.dragRow || event.pointerId !== this.pointerId) return;
 
-        const target = event.target.closest('tr[data-id]');
+        event.preventDefault();
+        this.lastY = event.clientY;
+
+        const under = document.elementFromPoint(event.clientX, event.clientY);
+        const target = under?.closest('tr[data-id]');
 
         if (
             !target ||
@@ -398,26 +425,46 @@ Alpine.data('reorderList', ({ url }) => ({
             return;
         }
 
-        event.preventDefault();
-
         const rect = target.getBoundingClientRect();
         const after = event.clientY > rect.top + rect.height / 2;
 
         after ? target.after(this.dragRow) : target.before(this.dragRow);
     },
 
-    end() {
-        if (!this.dragRow) return;
+    drop(event) {
+        if (!this.dragRow || (event && event.pointerId !== this.pointerId)) return;
 
         const row = this.dragRow;
-        row.classList.remove('opacity-40');
+
+        clearInterval(this.scrollTimer);
+        this.scrollTimer = null;
         this.dragRow = null;
+
+        row.classList.remove('opacity-60', 'shadow-lg', 'relative', 'z-10');
+        this.$refs.body.releasePointerCapture?.(this.pointerId);
 
         const before = this.snapshot.map((item) => item.dataset.id).join();
         const after = this.rows().map((item) => item.dataset.id).join();
 
         if (before !== after) {
             this.save(row.dataset.group);
+        }
+    },
+
+    /**
+     * Gulir halaman otomatis saat baris diseret mendekati tepi atas/bawah layar
+     * (menyisakan ruang untuk header yang menempel di atas).
+     */
+    autoScroll() {
+        if (!this.dragRow) return;
+
+        const edge = 90;
+        const top = 120;
+
+        if (this.lastY < top) {
+            window.scrollBy(0, -Math.ceil((top - this.lastY) / 6));
+        } else if (this.lastY > window.innerHeight - edge) {
+            window.scrollBy(0, Math.ceil((this.lastY - (window.innerHeight - edge)) / 4));
         }
     },
 

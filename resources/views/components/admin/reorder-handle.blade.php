@@ -1,7 +1,7 @@
 @props(['label'])
 
 <div class="inline-flex items-center gap-1">
-    <span class="cursor-grab text-gray-400" aria-hidden="true" title="Seret untuk memindah">
+    <span data-drag-handle class="flex h-10 w-10 cursor-grab touch-none items-center justify-center rounded text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 active:cursor-grabbing" aria-hidden="true" title="Seret untuk memindah">
         <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>
     </span>
 

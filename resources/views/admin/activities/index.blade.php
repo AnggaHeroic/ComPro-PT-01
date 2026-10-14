@@ -82,8 +82,8 @@
                     </tr>
                 </thead>
                 <tbody
-                    class="divide-y divide-gray-100"
-                    @if ($reorder) x-ref="body" @dragover="over($event)" @drop.prevent @endif
+                    @class(['divide-y divide-gray-100', 'select-none' => $reorder])
+                    @if ($reorder) x-ref="body" @pointerdown="down($event)" @pointermove="drag($event)" @pointerup="drop($event)" @pointercancel="drop($event)" @endif
                 >
                     @forelse ($activities as $activity)
                         @php
@@ -96,15 +96,12 @@
                             @class([
                                 'transition',
                                 'hover:bg-gray-50' => ! $reorder,
-                                'cursor-grab bg-white hover:bg-primary-light/40' => $reorder,
+                                'bg-white hover:bg-primary-light/40' => $reorder,
                                 'border-t-4 border-gray-200' => $startsGroup,
                             ])
                             @if ($reorder)
                                 data-id="{{ $activity->id }}"
                                 data-group="{{ $activity->service_category_id }}"
-                                draggable="true"
-                                @dragstart="start($event)"
-                                @dragend="end()"
                             @endif
                         >
                             @if ($reorder)
@@ -117,7 +114,7 @@
                                 <div class="flex items-center gap-3">
                                     <span class="flex h-11 w-16 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-gray-100">
                                         @if ($activity->image_url)
-                                            <img src="{{ $activity->image_url }}" alt="" class="h-full w-full object-cover" loading="lazy" draggable="false">
+                                            <img src="{{ $activity->image_url }}" alt="" class="h-full w-full object-cover" loading="lazy">
                                         @endif
                                     </span>
                                     <div class="min-w-0">
@@ -135,7 +132,7 @@
                                 <span class="inline-block whitespace-nowrap rounded-sm bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">{{ $activity->category->name }}</span>
                             </td>
                             <td class="px-4 py-3 text-center">
-                                <a href="{{ route('admin.gallery.show', $activity) }}" class="inline-flex items-center gap-1 text-xs font-semibold {{ $activity->images_count > 0 ? 'text-primary-dark' : 'text-gray-400' }} hover:text-primary" title="Kelola galeri" @if ($reorder) draggable="false" @endif>
+                                <a href="{{ route('admin.gallery.show', $activity) }}" class="inline-flex items-center gap-1 text-xs font-semibold {{ $activity->images_count > 0 ? 'text-primary-dark' : 'text-gray-400' }} hover:text-primary" title="Kelola galeri">
                                     <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="M21 16l-5-5-8 9"/></svg>
                                     {{ $activity->images_count }}
                                 </a>

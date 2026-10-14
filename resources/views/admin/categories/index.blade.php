@@ -71,18 +71,15 @@
                     </tr>
                 </thead>
                 <tbody
-                    class="divide-y divide-gray-100"
-                    @if ($reorder) x-ref="body" @dragover="over($event)" @drop.prevent @endif
+                    @class(['divide-y divide-gray-100', 'select-none' => $reorder])
+                    @if ($reorder) x-ref="body" @pointerdown="down($event)" @pointermove="drag($event)" @pointerup="drop($event)" @pointercancel="drop($event)" @endif
                 >
                     @forelse ($categories as $category)
                         <tr
-                            @class(['transition', 'hover:bg-gray-50' => ! $reorder, 'cursor-grab bg-white hover:bg-primary-light/40' => $reorder])
+                            @class(['transition', 'hover:bg-gray-50' => ! $reorder, 'bg-white hover:bg-primary-light/40' => $reorder])
                             @if ($reorder)
                                 data-id="{{ $category->id }}"
                                 data-group=""
-                                draggable="true"
-                                @dragstart="start($event)"
-                                @dragend="end()"
                             @endif
                         >
                             @if ($reorder)
@@ -95,7 +92,7 @@
                                 <div class="flex items-center gap-3">
                                     <span class="flex h-11 w-16 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-gray-100">
                                         @if ($category->image_url)
-                                            <img src="{{ $category->image_url }}" alt="" class="h-full w-full object-cover" loading="lazy" draggable="false">
+                                            <img src="{{ $category->image_url }}" alt="" class="h-full w-full object-cover" loading="lazy">
                                         @endif
                                     </span>
                                     <div class="min-w-0">
@@ -105,7 +102,7 @@
                                 </div>
                             </td>
                             <td class="px-4 py-3 text-center">
-                                <a href="{{ route('admin.activities.index', ['category' => $category->id]) }}" class="inline-flex min-w-7 justify-center rounded-sm bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-700 transition hover:bg-primary-light hover:text-primary-dark" title="Lihat aktivitas" @if ($reorder) draggable="false" @endif>{{ $category->activities_count }}</a>
+                                <a href="{{ route('admin.activities.index', ['category' => $category->id]) }}" class="inline-flex min-w-7 justify-center rounded-sm bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-700 transition hover:bg-primary-light hover:text-primary-dark" title="Lihat aktivitas">{{ $category->activities_count }}</a>
                             </td>
                             <td class="px-4 py-3 text-center">
                                 @if ($category->is_published)
