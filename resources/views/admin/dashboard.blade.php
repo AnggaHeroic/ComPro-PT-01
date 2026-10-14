@@ -12,34 +12,59 @@
     <section class="relative isolate mb-8 overflow-hidden rounded bg-linear-to-br from-primary via-primary-dark to-[#6e0f0e] px-7 py-8 text-white sm:px-10 sm:py-10 lg:py-10">
         <div class="pointer-events-none absolute inset-0 -z-10 opacity-[0.12]" style="background-image: linear-gradient(to right, #fff 1px, transparent 1px), linear-gradient(to bottom, #fff 1px, transparent 1px); background-size: 40px 40px; background-size: 48px 48px; mask-image: radial-gradient(ellipse at 20% 20%, #000 10%, transparent 75%); -webkit-mask-image: radial-gradient(ellipse at 20% 20%, #000 10%, transparent 75%);"></div>
 
-        {{-- Ilustrasi dekoratif: monitor dengan grafik (hanya layar lebar, xl ke atas) --}}
-        <div class="pointer-events-none absolute right-14 top-1/2 hidden w-60 -translate-y-1/2 xl:block" aria-hidden="true">
-            <svg viewBox="0 0 320 224" fill="none" class="h-auto w-full drop-shadow-[0_14px_24px_rgba(0,0,0,0.28)]">
-                {{-- Badan monitor + layar --}}
-                <rect x="16" y="8" width="288" height="176" rx="10" fill="#fff" fill-opacity="0.1" stroke="#fff" stroke-opacity="0.5" stroke-width="2"/>
-                <rect x="28" y="20" width="264" height="152" rx="5" fill="#000" fill-opacity="0.24"/>
+        {{-- Ilustrasi dekoratif: halaman website yang sedang diedit lewat panel (hanya layar lebar, xl ke atas) --}}
+        <div class="pointer-events-none absolute right-12 top-1/2 hidden w-64 -translate-y-1/2 xl:block" aria-hidden="true">
+            <svg viewBox="0 0 320 230" fill="none" class="h-auto w-full drop-shadow-[0_14px_24px_rgba(0,0,0,0.28)]">
+                {{-- Jendela browser --}}
+                <rect x="8" y="10" width="262" height="176" rx="9" fill="#fff" fill-opacity="0.1" stroke="#fff" stroke-opacity="0.5" stroke-width="2"/>
+                <path d="M8 38h262" stroke="#fff" stroke-opacity="0.25"/>
+                <circle cx="22" cy="24" r="3" fill="#fff" fill-opacity="0.65"/>
+                <circle cx="33" cy="24" r="3" fill="#fff" fill-opacity="0.4"/>
+                <circle cx="44" cy="24" r="3" fill="#fff" fill-opacity="0.25"/>
+                <rect x="62" y="19" width="120" height="10" rx="5" fill="#fff" fill-opacity="0.2"/>
 
-                {{-- Bar judul layar --}}
-                <circle cx="41" cy="33" r="3" fill="#fff" fill-opacity="0.65"/>
-                <circle cx="52" cy="33" r="3" fill="#fff" fill-opacity="0.4"/>
-                <circle cx="63" cy="33" r="3" fill="#fff" fill-opacity="0.25"/>
-                <rect x="82" y="30" width="72" height="6" rx="3" fill="#fff" fill-opacity="0.3"/>
+                {{-- Hero halaman --}}
+                <rect x="22" y="50" width="234" height="52" rx="5" fill="#fff" fill-opacity="0.16"/>
+                <rect x="34" y="62" width="96" height="8" rx="4" fill="#fff" fill-opacity="0.9"/>
+                <rect x="34" y="76" width="64" height="5" rx="2.5" fill="#fff" fill-opacity="0.45"/>
+                <rect x="34" y="88" width="34" height="8" rx="2" fill="#fff" fill-opacity="0.95"/>
+                <rect x="176" y="58" width="68" height="36" rx="3" fill="#fff" fill-opacity="0.16"/>
+                <path d="M182 88l16-17 12 11 8-7 20 13" stroke="#fff" stroke-opacity="0.85" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="226" cy="68" r="4" fill="#fff" fill-opacity="0.7"/>
 
-                {{-- Grafik area --}}
-                <path d="M40 152H180M40 128H180M40 104H180M40 80H180" stroke="#fff" stroke-opacity="0.12"/>
-                <path d="M40 140 68 112 96 124 124 84 152 100 180 68V152H40Z" fill="#fff" fill-opacity="0.16"/>
-                <path d="M40 140 68 112 96 124 124 84 152 100 180 68" stroke="#fff" stroke-opacity="0.95" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                <circle cx="180" cy="68" r="4" fill="#fff"/>
+                {{-- Kartu layanan --}}
+                <rect x="22" y="112" width="72" height="62" rx="4" fill="#fff" fill-opacity="0.1" stroke="#fff" stroke-opacity="0.35"/>
+                <rect x="32" y="122" width="14" height="14" rx="3" fill="#fff" fill-opacity="0.55"/>
+                <rect x="32" y="144" width="46" height="5" rx="2.5" fill="#fff" fill-opacity="0.8"/>
+                <rect x="32" y="155" width="34" height="4" rx="2" fill="#fff" fill-opacity="0.35"/>
+                <rect x="104" y="112" width="72" height="62" rx="4" fill="#fff" fill-opacity="0.1" stroke="#fff" stroke-opacity="0.35"/>
+                <rect x="114" y="122" width="14" height="14" rx="3" fill="#fff" fill-opacity="0.55"/>
+                <rect x="114" y="144" width="46" height="5" rx="2.5" fill="#fff" fill-opacity="0.8"/>
+                <rect x="114" y="155" width="34" height="4" rx="2" fill="#fff" fill-opacity="0.35"/>
+                {{-- Kartu yang sedang diedit --}}
+                <rect x="186" y="112" width="72" height="62" rx="4" fill="#fff" fill-opacity="0.18" stroke="#fff" stroke-opacity="0.9" stroke-dasharray="4 3"/>
+                <rect x="196" y="122" width="14" height="14" rx="3" fill="#fff" fill-opacity="0.55"/>
+                <rect x="196" y="144" width="46" height="5" rx="2.5" fill="#fff" fill-opacity="0.8"/>
+                <rect x="196" y="155" width="34" height="4" rx="2" fill="#fff" fill-opacity="0.35"/>
+                <circle cx="256" cy="112" r="10" fill="#fff"/>
+                <path d="M251.5 117l.9-3.4 6.4-6.4 2.5 2.5-6.4 6.4z" fill="#cb1e1b"/>
 
-                {{-- Donat --}}
-                <circle cx="238" cy="94" r="26" stroke="#fff" stroke-opacity="0.2" stroke-width="10"/>
-                <circle cx="238" cy="94" r="26" stroke="#fff" stroke-opacity="0.92" stroke-width="10" stroke-linecap="round" stroke-dasharray="104 164" transform="rotate(-90 238 94)"/>
-                <rect x="206" y="134" width="58" height="5" rx="2.5" fill="#fff" fill-opacity="0.4"/>
-                <rect x="206" y="146" width="40" height="5" rx="2.5" fill="#fff" fill-opacity="0.22"/>
+                {{-- Panel edit (formulir) --}}
+                <rect x="190" y="134" width="124" height="88" rx="8" fill="#fff" fill-opacity="0.97"/>
+                <rect x="200" y="144" width="52" height="7" rx="3.5" fill="#374151"/>
+                <rect x="200" y="158" width="104" height="12" rx="3" fill="#f3f4f6" stroke="#d1d5db"/>
+                <rect x="205" y="162" width="46" height="4" rx="2" fill="#9ca3af"/>
+                <rect x="200" y="176" width="104" height="12" rx="3" fill="#f3f4f6" stroke="#d1d5db"/>
+                <rect x="205" y="180" width="62" height="4" rx="2" fill="#9ca3af"/>
 
-                {{-- Penyangga --}}
-                <path d="M140 184h40l6 24h-52z" fill="#fff" fill-opacity="0.14" stroke="#fff" stroke-opacity="0.4" stroke-width="1.5" stroke-linejoin="round"/>
-                <rect x="104" y="208" width="112" height="9" rx="4.5" fill="#fff" fill-opacity="0.22" stroke="#fff" stroke-opacity="0.4" stroke-width="1.5"/>
+                {{-- Pilihan status: terbit (hijau), draft (kuning), simpan (merah) --}}
+                <rect x="200" y="196" width="34" height="12" rx="6" fill="#dcfce7"/>
+                <circle cx="208" cy="202" r="3" fill="#16a34a"/>
+                <rect x="214" y="200" width="16" height="4" rx="2" fill="#16a34a"/>
+                <rect x="238" y="196" width="34" height="12" rx="6" fill="#fef9c3"/>
+                <circle cx="246" cy="202" r="3" fill="#ca8a04"/>
+                <rect x="252" y="200" width="16" height="4" rx="2" fill="#ca8a04"/>
+                <rect x="278" y="196" width="26" height="12" rx="3" fill="#cb1e1b"/>
             </svg>
         </div>
 
