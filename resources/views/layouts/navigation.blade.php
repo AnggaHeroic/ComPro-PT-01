@@ -17,6 +17,10 @@
     :class="sidebar ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
     class="fixed inset-y-0 left-0 z-50 flex w-64 flex-col overflow-hidden bg-linear-to-b from-secondary-dark to-[#222] text-white shadow-xl transition-transform duration-200 ease-out lg:shadow-none"
     aria-label="Navigasi admin"
+    {{-- Tersembunyi sejak render pertama di layar kecil (lihat app.css), lalu dilepas setelah Alpine siap,
+         sehingga sidebar tidak "muncul lalu meluncur menutup" setiap halaman dimuat. --}}
+    data-pending
+    x-init="$nextTick(() => $el.removeAttribute('data-pending'))"
 >
     {{-- Dekorasi: sama seperti panel login (grid halus, watermark rumah) --}}
     <div class="pointer-events-none absolute inset-0 opacity-[0.07]" style="background-image: linear-gradient(to right, #fff 1px, transparent 1px), linear-gradient(to bottom, #fff 1px, transparent 1px); background-size: 40px 40px; mask-image: linear-gradient(to bottom, transparent 8%, #000 40%, transparent 95%); -webkit-mask-image: linear-gradient(to bottom, transparent 8%, #000 40%, transparent 95%);"></div>

@@ -45,3 +45,15 @@
         padding-inline: 2rem;
     }
 }
+
+/*
+ * Sidebar admin di layar kecil: tertutup sejak render pertama, tanpa transisi.
+ * Atribut data-pending dilepas setelah Alpine memasang kelas -translate-x-full
+ * dengan nilai translate yang sama, jadi tidak ada animasi saat halaman dimuat.
+ */
+@media (max-width: 1023.98px) {
+    aside[data-pending] {
+        translate: -100% 0;
+        transition: none;
+    }
+}

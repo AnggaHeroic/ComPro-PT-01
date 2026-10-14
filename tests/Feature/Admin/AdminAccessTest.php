@@ -57,6 +57,26 @@ class AdminAccessTest extends TestCase
         }
     }
 
+    public function test_mobile_sidebar_starts_hidden_so_it_does_not_flash_and_slide_closed_on_page_load(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        $html = $this->get('/admin/categories')->assertOk()->getContent();
+
+        $start = strpos($html, '<aside');
+        $this->assertNotFalse($start, 'Sidebar tidak ditemukan.');
+        $aside = substr($html, $start, strpos($html, '</nav>', $start) - $start);
+
+        // Penanda "pending" dipasang sejak server dan dilepas Alpine setelah siap.
+        $this->assertStringContainsString('data-pending', $aside);
+        $this->assertStringContainsString("removeAttribute('data-pending')", $aside);
+        // Animasi geser tetap ada untuk buka/tutup lewat tombol menu.
+        $this->assertStringContainsString('transition-transform', $aside);
+
+        $css = file_get_contents(resource_path('css/app.css'));
+        $this->assertMatchesRegularExpression('/max-width:\s*1023\.98px\)\s*\{\s*aside\[data-pending\]\s*\{\s*translate:\s*-100% 0;\s*transition:\s*none;/', $css);
+    }
+
     public function test_admin_dashboard_link_is_only_visible_to_logged_in_admin_on_public_pages(): void
     {
         $dashboardUrl = route('admin.dashboard');
