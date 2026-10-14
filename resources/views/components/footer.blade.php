@@ -131,7 +131,7 @@
 
             {{-- Business Categories --}}
             <div @class(['lg:col-span-4' => ! $manyCategories, 'lg:col-span-5' => $manyCategories])>
-                <h3 class="font-display text-xs font-semibold uppercase tracking-[0.16em] text-white">
+                <h3 @class(['font-display text-xs font-semibold uppercase tracking-[0.16em] text-white', 'text-center' => $manyCategories])>
                     Bidang Usaha
                 </h3>
 
@@ -153,13 +153,15 @@
                 </ul>
 
                 @if ($hiddenCategories > 0)
-                    <a
-                        href="{{ route('services') }}"
-                        class="font-display group mt-6 inline-flex items-center gap-2 text-sm font-semibold text-white transition-colors hover:text-slate-300"
-                    >
-                        Lihat semua {{ $navCategories->count() }} bidang usaha
-                        <span class="transition-transform duration-200 group-hover:translate-x-1" aria-hidden="true">→</span>
-                    </a>
+                    <div class="mt-6 text-center">
+                        <a
+                            href="{{ route('services') }}"
+                            class="font-display group inline-flex items-center gap-2 text-sm font-semibold text-white transition-colors hover:text-slate-300"
+                        >
+                            Lihat semua {{ $navCategories->count() }} bidang usaha
+                            <span class="transition-transform duration-200 group-hover:translate-x-1" aria-hidden="true">→</span>
+                        </a>
+                    </div>
                 @endif
             </div>
         </div>
