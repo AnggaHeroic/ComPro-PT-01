@@ -162,6 +162,67 @@ class PublicCatalogTest extends TestCase
         }
     }
 
+    private function desktopDropdown(string $html): string
+    {
+        $start = strpos($html, 'id="desktop-services"');
+        $this->assertNotFalse($start, 'Dropdown desktop tidak ditemukan.');
+
+        return substr($html, $start, strpos($html, 'href="'.route('contact').'"', $start) - $start);
+    }
+
+    public function test_navbar_dropdown_is_unchanged_for_six_or_fewer_categories(): void
+    {
+        $this->makeCategories(6);
+
+        $dropdown = $this->desktopDropdown($this->get('/tentang-kami')->assertOk()->getContent());
+
+        $this->assertStringContainsString('class="absolute right-0 top-full z-50 mt-4 w-72 border border-slate-200 bg-white shadow-lg"', $dropdown);
+        $this->assertStringContainsString('Semua Layanan', $dropdown);
+        $this->assertStringContainsString('Kategori Nomor 06', $dropdown);
+        $this->assertStringNotContainsString('columns-2', $dropdown);
+        $this->assertStringNotContainsString('break-inside-avoid', $dropdown);
+        $this->assertStringNotContainsString('Lihat semua', $dropdown);
+    }
+
+    public function test_navbar_dropdown_becomes_two_numbered_columns_above_six_categories(): void
+    {
+        $this->makeCategories(9);
+
+        $dropdown = $this->desktopDropdown($this->get('/tentang-kami')->assertOk()->getContent());
+
+        $this->assertStringContainsString('w-[34rem] max-w-[calc(100vw-2rem)]', $dropdown);
+        $this->assertStringNotContainsString('w-72', $dropdown);
+        $this->assertStringContainsString('columns-2 gap-x-2', $dropdown);
+        $this->assertStringContainsString('[column-rule:1px_solid_rgb(226_232_240)]', $dropdown);
+        $this->assertSame(9, substr_count($dropdown, 'break-inside-avoid'));
+        $this->assertMatchesRegularExpression('#>\s*09\s*</span>\s*<span[^>]*>\s*Kategori Nomor 09\s*</span>#', $dropdown);
+        // Tautan "Semua Layanan" tetap ada di atas, dan tidak ada tautan "Lihat semua" selama <= 12.
+        $this->assertStringContainsString('Semua Layanan', $dropdown);
+        $this->assertStringNotContainsString('Lihat semua', $dropdown);
+    }
+
+    public function test_navbar_dropdown_caps_at_twelve_with_a_see_all_link(): void
+    {
+        $this->makeCategories(15);
+
+        $dropdown = $this->desktopDropdown($this->get('/tentang-kami')->assertOk()->getContent());
+
+        $this->assertSame(12, substr_count($dropdown, 'break-inside-avoid'));
+        $this->assertStringContainsString('Kategori Nomor 12', $dropdown);
+        $this->assertStringNotContainsString('Kategori Nomor 13', $dropdown);
+        $this->assertStringContainsString('Lihat semua 15 bidang usaha', $dropdown);
+    }
+
+    public function test_navbar_dropdown_marks_the_active_category_in_the_two_column_layout(): void
+    {
+        $this->makeCategories(8);
+
+        $dropdown = $this->desktopDropdown($this->get('/layanan-jasa/kategori-03')->assertOk()->getContent());
+
+        $this->assertSame(1, substr_count($dropdown, 'aria-current="page"'));
+        $this->assertMatchesRegularExpression('#href="[^"]*/layanan-jasa/kategori-03"[^>]*aria-current="page"#', $dropdown);
+    }
+
     public function test_footer_keeps_a_single_column_for_six_or_fewer_categories(): void
     {
         $this->makeCategories(6);

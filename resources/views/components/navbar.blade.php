@@ -16,6 +16,11 @@
             'number' => str_pad($index + 1, 2, '0', STR_PAD_LEFT),
         ])
         ->all();
+
+    // Dropdown desktop: <= 6 kategori satu kolom; > 6 dua kolom bernomor (maks. 12) + tautan ke semua.
+    $manyCategories = count($serviceCategories) > 6;
+    $dropdownCategories = array_slice($serviceCategories, 0, 12);
+    $hiddenCategories = max(0, count($serviceCategories) - 12);
 @endphp
 
 <header
@@ -137,7 +142,12 @@
                         x-transition:leave="transition ease-in duration-100"
                         x-transition:leave-start="opacity-100 translate-y-0"
                         x-transition:leave-end="opacity-0 -translate-y-2"
-                        class="absolute right-0 top-full z-50 mt-4 w-72 border border-slate-200 bg-white shadow-lg"
+                        @class([
+                            'absolute right-0 top-full z-50 mt-4',
+                            'w-72' => ! $manyCategories,
+                            'w-[34rem] max-w-[calc(100vw-2rem)]' => $manyCategories,
+                            'border border-slate-200 bg-white shadow-lg',
+                        ])
                     >
                         <div class="p-3">
 
@@ -164,6 +174,54 @@
                             </a>
 
                             
+                            @if ($manyCategories)
+                                {{-- Dua kolom, dibaca turun ke bawah, bernomor --}}
+                                <div class="columns-2 gap-x-2 [column-rule:1px_solid_rgb(226_232_240)]">
+                                    @foreach ($dropdownCategories as $category)
+                                        <a
+                                            href="{{ route('services.category', $category['slug']) }}"
+                                            class="group flex break-inside-avoid items-baseline gap-3 px-4 py-2.5"
+                                            @if ($activeCategorySlug === $category['slug'])
+                                                aria-current="page"
+                                            @endif
+                                        >
+                                            <span
+                                                class="font-display w-5 shrink-0 text-[11px] font-bold transition-colors
+                                                {{ $activeCategorySlug === $category['slug']
+                                                    ? 'text-primary'
+                                                    : 'text-slate-400 group-hover:text-primary' }}"
+                                                aria-hidden="true"
+                                            >
+                                                {{ $category['number'] }}
+                                            </span>
+
+                                            <span
+                                                class="font-display text-sm font-medium leading-snug
+                                                {{ $activeCategorySlug === $category['slug']
+                                                    ? 'text-primary'
+                                                    : 'text-secondary-dark group-hover:text-primary' }}"
+                                            >
+                                                {{ $category['name'] }}
+                                            </span>
+                                        </a>
+                                    @endforeach
+                                </div>
+
+                                @if ($hiddenCategories > 0)
+                                    <a
+                                        href="{{ route('services') }}"
+                                        class="group mt-2 flex items-center justify-between border-t border-slate-200 px-4 py-3.5"
+                                    >
+                                        <span class="font-display text-xs font-bold uppercase tracking-[0.14em] text-slate-500 group-hover:text-primary">
+                                            Lihat semua {{ count($serviceCategories) }} bidang usaha
+                                        </span>
+
+                                        <span class="text-primary transition-transform duration-200 group-hover:translate-x-1" aria-hidden="true">
+                                            →
+                                        </span>
+                                    </a>
+                                @endif
+                            @else
                             {{-- Service Categories --}}
                             @foreach ($serviceCategories as $category)
                                 <a
@@ -190,6 +248,7 @@
                                     @endif
                                 </a>
                             @endforeach
+                            @endif
                         </div>
                     </div>
                 </div>
