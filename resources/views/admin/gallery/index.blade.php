@@ -17,11 +17,13 @@
 
         <x-secondary-button type="submit">Cari</x-secondary-button>
 
-        @if ($search !== '' || $categoryId)
-            <a href="{{ route('admin.gallery.index') }}" class="px-2 text-sm text-gray-500 hover:text-primary">Reset</a>
-        @endif
-
-        <span class="px-1 text-sm text-gray-500">{{ $activities->total() }} aktivitas</span>
+                {{-- Jumlah data: baris sendiri di bawah pencarian pada mobile --}}
+                <div class="flex w-full items-center gap-2 sm:w-auto">
+            @if ($search !== '' || $categoryId)
+                <a href="{{ route('admin.gallery.index') }}" class="px-2 text-sm text-gray-500 hover:text-primary">Reset</a>
+            @endif
+            <span class="px-1 text-sm text-gray-500">{{ $activities->total() }} aktivitas</span>
+                </div>
     </form>
 
     <div class="overflow-x-auto">

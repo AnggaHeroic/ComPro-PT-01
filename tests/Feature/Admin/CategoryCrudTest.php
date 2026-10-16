@@ -473,6 +473,30 @@ class CategoryCrudTest extends TestCase
         $this->assertSame(0, ServiceCategory::count());
     }
 
+    public function test_list_toolbars_are_tidy_on_mobile_with_search_beside_the_button_and_count_below(): void
+    {
+        ServiceCategory::factory()->count(2)->create();
+        BusinessActivity::factory()->count(2)->create();
+
+        foreach (['/admin/categories', '/admin/activities', '/admin/gallery'] as $url) {
+            $html = $this->get($url)->assertOk()->getContent();
+
+            // Kolom pencarian mengisi sisa baris (tombol Cari di kanannya); lebar tetap di sm+.
+            $this->assertStringContainsString('relative min-w-0 flex-1 sm:w-72 sm:flex-none', $html, $url);
+            // Jumlah data (dan Reset) berada di baris sendiri di bawah pencarian pada mobile.
+            $this->assertStringContainsString('flex w-full items-center gap-2 sm:w-auto', $html, $url);
+        }
+
+        // Saklar urutan dan tombol tambah berbagi satu baris penuh di mobile; di sm+ rata kanan seperti sebelumnya.
+        foreach (['/admin/categories', '/admin/activities'] as $url) {
+            $this->assertStringContainsString(
+                'flex w-full items-center justify-between gap-4 sm:ml-auto sm:w-auto sm:justify-start',
+                $this->get($url)->getContent(),
+                $url,
+            );
+        }
+    }
+
     public function test_empty_draft_filter_shows_a_clear_message(): void
     {
         ServiceCategory::factory()->create(['is_published' => true]);

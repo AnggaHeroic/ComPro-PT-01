@@ -46,13 +46,15 @@
 
                 <x-secondary-button type="submit">Cari</x-secondary-button>
 
-                @if ($filtered || $categoryId)
-                    <a href="{{ route('admin.activities.index') }}" class="px-2 text-sm text-gray-500 hover:text-primary">Reset</a>
-                @endif
+                {{-- Jumlah data: baris sendiri di bawah pencarian pada mobile --}}
+                <div class="flex w-full items-center gap-2 sm:w-auto">
+                    @if ($filtered || $categoryId)
+                        <a href="{{ route('admin.activities.index') }}" class="px-2 text-sm text-gray-500 hover:text-primary">Reset</a>
+                    @endif
+                    <span class="px-1 text-sm text-gray-500">{{ $total }} aktivitas</span>
+                </div>
 
-                <span class="px-1 text-sm text-gray-500">{{ $total }} aktivitas</span>
-
-                <div class="ml-auto flex items-center gap-4">
+                <div class="flex w-full items-center justify-between gap-4 sm:ml-auto sm:w-auto sm:justify-start">
                     <x-admin.reorder-toggle
                         :href="route('admin.activities.index', $categoryParam + ['reorder' => 1])"
                         :disabled="$filtered || $total < 2"
