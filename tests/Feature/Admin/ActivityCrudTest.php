@@ -495,6 +495,15 @@ class ActivityCrudTest extends TestCase
             ->assertSee('2 terbit, 1 draft')
             ->assertSee('Kelola konten website dengan mudah.')
             ->assertSee(route('admin.categories.create'), false)
-            ->assertSee(route('admin.activities.create'), false);
+            ->assertSee(route('admin.activities.create'), false)
+            ;
+
+        // Tombol hero: grid dua kolom di mobile (dua tombol putih selebar penuh + dua tombol kaca berdampingan),
+        // kembali berupa baris yang membungkus mulai lebar sm.
+        $html = $this->get('/admin')->getContent();
+        $this->assertStringContainsString('mt-6 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap', $html);
+        $this->assertSame(2, substr_count($html, 'col-span-2 inline-flex items-center justify-center rounded bg-white'));
+        $this->assertSame(2, substr_count($html, 'sm:col-auto'));
+        $this->assertSame(2, substr_count($html, 'inline-flex items-center justify-center rounded border border-white/30 bg-white/10'));
     }
 }
