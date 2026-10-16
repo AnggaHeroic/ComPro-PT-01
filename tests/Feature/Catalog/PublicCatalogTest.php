@@ -154,6 +154,16 @@ class PublicCatalogTest extends TestCase
         // Panah cadangan (layar sempit) mengapit informasi halaman yang rata tengah.
         $this->assertSame(2, substr_count($html, 'min-[1366px]:hidden'));
         $this->assertStringContainsString('mt-6 flex items-center justify-center gap-3', $html);
+        // Panah samping tidak boleh punya display dasar (inline-flex) yang mengalahkan "hidden" di layar kecil:
+        // tampil mulai 1366px saja. Bila bocor, tombol di -right-12 keluar layar dan melebarkan halaman mobile.
+        preg_match_all('#<button[^>]*class="([^"]*(?:-left-12|-right-12) top-1/2[^"]*)"#', $html, $side);
+        $this->assertCount(2, $side[1]);
+        foreach ($side[1] as $class) {
+            $this->assertMatchesRegularExpression('/(?<![:\w-])hidden(?![\w-])/', $class);
+            $this->assertDoesNotMatchRegularExpression('/(?<![:\w-])inline-flex(?![\w-])/', $class);
+            $this->assertStringContainsString('min-[1366px]:inline-flex', $class);
+        }
+
         // Tombol panah tidak punya border.
         preg_match_all('#<button[^>]*aria-label="(?:Sebelumnya|Berikutnya)"[^>]*class="([^"]*)"#', $html, $m);
         $this->assertCount(4, $m[1]);
@@ -290,6 +300,15 @@ class PublicCatalogTest extends TestCase
 
         // Daftar lengkap tetap tersedia di halaman Layanan & Jasa.
         $this->get('/layanan-jasa')->assertSee('Kategori Nomor 15');
+    }
+
+    public function test_about_page_accent_line_cannot_widen_the_page_on_mobile(): void
+    {
+        // w-200 (50rem) lebih lebar daripada layar mobile; tanpa max-w-full seluruh halaman melebar ke samping
+        // sehingga header sticky terlihat bergeser.
+        $this->get('/tentang-kami')
+            ->assertOk()
+            ->assertSee('h-0.5 w-200 max-w-full bg-primary-alt', false);
     }
 
     public function test_carousel_page_count_grows_with_categories(): void

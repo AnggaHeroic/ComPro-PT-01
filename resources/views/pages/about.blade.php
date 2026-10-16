@@ -240,7 +240,7 @@
         <div class="border-y border-primary bg-secondary-dark">
             <div class="container-site py-10 sm:py-12 lg:py-14">
                 <div
-                    class="mx-auto mb-4 h-0.5 w-200 bg-primary-alt"
+                    class="mx-auto mb-4 h-0.5 w-200 max-w-full bg-primary-alt"
                 ></div>
                 <div class="mx-auto max-w-3xl text-center">
                     <span
