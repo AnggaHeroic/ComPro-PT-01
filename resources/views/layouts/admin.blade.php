@@ -17,7 +17,7 @@
             @include('layouts.navigation')
 
             <div class="lg:pl-64">
-                {{-- Mobile top bar (fixed) --}}
+                {{-- Mobile top bar: satu-satunya elemen yang menempel di mobile --}}
                 <div class="sticky top-0 z-30 flex h-14 items-center gap-3 border-b-[3px] border-primary bg-white px-4 shadow-sm lg:hidden">
                     <button type="button" @click="sidebar = true" aria-label="Buka menu" class="-ms-1 rounded p-2 text-gray-600 hover:bg-gray-100 focus:outline-none">
                         <x-icons.menu class="h-5 w-5" />
@@ -25,9 +25,9 @@
                     <x-application-logo class="h-8 w-auto mix-blend-multiply" />
                 </div>
 
-                {{-- Page header (fixed, sejajar tinggi dengan strip logo sidebar) --}}
+                {{-- Page header: menempel hanya di desktop (sejajar tinggi dengan strip logo sidebar); di mobile ikut tergulir --}}
                 @isset($header)
-                    <div class="sticky top-14 z-20 border-b-[3px] border-primary bg-white/95 shadow-sm backdrop-blur lg:top-0 lg:h-16">
+                    <div class="border-b-[3px] border-primary bg-white shadow-sm lg:sticky lg:top-0 lg:z-20 lg:h-16 lg:bg-white/95 lg:backdrop-blur">
                         <div class="mx-auto flex min-h-[61px] max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-2 sm:px-6 lg:h-[61px] lg:flex-nowrap lg:px-10 lg:py-0">
                             <div class="min-w-0 flex-1 border-l-4 border-primary pl-3 [&_h1]:truncate [&_h1]:text-xl [&_h1]:leading-tight [&_p]:mt-0.5 [&_p]:truncate [&_p]:text-xs">
                                 {{ $header }}

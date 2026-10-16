@@ -77,6 +77,20 @@ class AdminAccessTest extends TestCase
         $this->assertMatchesRegularExpression('/max-width:\s*1023\.98px\)\s*\{\s*aside\[data-pending\]\s*\{\s*translate:\s*-100% 0;\s*transition:\s*none;/', $css);
     }
 
+    public function test_admin_sticky_header_layers_do_not_stack_on_mobile(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        $html = $this->get('/admin')->assertOk()->getContent();
+
+        // Bar logo + hamburger: satu-satunya elemen sticky di mobile.
+        $this->assertStringContainsString('sticky top-0 z-30 flex h-14', $html);
+        // Header halaman tidak lagi sticky dengan offset tetap di mobile; hanya sticky mulai desktop.
+        $this->assertStringNotContainsString('sticky top-14', $html);
+        $this->assertStringContainsString('lg:sticky lg:top-0 lg:z-20 lg:h-16', $html);
+        $this->assertSame(1, preg_match_all('/(?<![:\w-])sticky(?![\w-])/', $html), 'Hanya satu elemen yang sticky tanpa awalan breakpoint.');
+    }
+
     public function test_admin_dashboard_link_is_only_visible_to_logged_in_admin_on_public_pages(): void
     {
         $dashboardUrl = route('admin.dashboard');
