@@ -1,7 +1,7 @@
 @props([
     'categories',
     'offset' => 0,
-    'gridClass' => 'grid gap-3 sm:grid-cols-2 lg:grid-cols-3',
+    'gridClass' => 'grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3',
 ])
 
 <div class="{{ $gridClass }}">

@@ -174,7 +174,7 @@
                 @php($servicePages = $navCategories->chunk(6))
 
                 @if ($servicePages->count() <= 1)
-                    <x-service-grid :categories="$navCategories" grid-class="mt-16 grid gap-3 sm:grid-cols-2 lg:grid-cols-3" />
+                    <x-service-grid :categories="$navCategories" grid-class="mt-16 grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3" />
                 @else
                     <div
                         class="mt-16"

@@ -118,7 +118,7 @@ class PublicCatalogTest extends TestCase
             ->assertSee('Kategori Nomor 06')
             ->assertDontSee('serviceCarousel(', false)
             ->assertDontSee('aria-roledescription="carousel"', false)
-            ->assertSee('class="mt-16 grid gap-3 sm:grid-cols-2 lg:grid-cols-3"', false);
+            ->assertSee('class="mt-16 grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3"', false);
     }
 
     public function test_home_service_cards_become_an_auto_sliding_carousel_above_six_categories(): void
