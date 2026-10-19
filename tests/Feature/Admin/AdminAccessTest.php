@@ -91,6 +91,36 @@ class AdminAccessTest extends TestCase
         $this->assertSame(1, preg_match_all('/(?<![:\w-])sticky(?![\w-])/', $html), 'Hanya satu elemen yang sticky tanpa awalan breakpoint.');
     }
 
+    public function test_admin_shortcut_is_present_on_every_public_page_including_404s_for_a_logged_in_admin(): void
+    {
+        \App\Models\ServiceCategory::factory()->create(['slug' => 'kat', 'is_published' => true]);
+        \App\Models\BusinessActivity::factory()->for(\App\Models\ServiceCategory::first(), 'category')->create(['slug' => 'akt']);
+
+        $pages = [
+            200 => ['/', '/tentang-kami', '/layanan-jasa', '/layanan-jasa/kat', '/layanan-jasa/kat/akt', '/kontak-kami'],
+            404 => ['/layanan-jasa/tidak-ada', '/layanan-jasa/kat/tidak-ada', '/halaman-yang-tidak-ada', '/a/b/c', '/layanan-jasa/kat/akt/lebih'],
+        ];
+
+        $this->actingAs(User::factory()->create());
+
+        foreach ($pages as $status => $urls) {
+            foreach ($urls as $url) {
+                $response = $this->get($url)->assertStatus($status);
+
+                // Tombol desktop (di kanan tombol Kontak Kami) dan entri menu hamburger.
+                $response->assertSee('aria-label="Kembali ke Dashboard Admin"', false)
+                    ->assertSee('Dashboard Admin')
+                    ->assertSee(route('admin.dashboard'), false);
+            }
+        }
+
+        // Pengunjung tidak melihat apa pun, termasuk di halaman 404.
+        auth()->logout();
+        foreach (['/halaman-yang-tidak-ada', '/layanan-jasa/tidak-ada', '/'] as $url) {
+            $this->get($url)->assertDontSee('Dashboard Admin')->assertDontSee(route('admin.dashboard'), false);
+        }
+    }
+
     public function test_admin_dashboard_link_is_only_visible_to_logged_in_admin_on_public_pages(): void
     {
         $dashboardUrl = route('admin.dashboard');

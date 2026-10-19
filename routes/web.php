@@ -63,3 +63,7 @@ Route::middleware('auth')
         Route::get('/profil', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profil', [ProfileController::class, 'update'])->name('profile.update');
     });
+
+// Tanpa rute fallback, URL yang tidak cocok dengan rute mana pun dijawab 404 tanpa middleware web
+// (tanpa sesi), sehingga tombol "Kembali ke Dashboard Admin" tidak muncul bagi admin di halaman itu.
+Route::any('{path}', fn () => abort(404))->where('path', '.*')->fallback();
