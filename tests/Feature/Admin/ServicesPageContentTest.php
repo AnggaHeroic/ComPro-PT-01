@@ -115,4 +115,11 @@ class ServicesPageContentTest extends TestCase
         $this->get('/admin/pages/services')->assertRedirect('/login');
         $this->put('/admin/pages/services', $this->texts())->assertRedirect('/login');
     }
+
+    public function test_pages_are_listed_in_the_same_order_as_the_navbar(): void
+    {
+        $this->assertSame(['home', 'about', 'services', 'contact'], array_keys(PageContents::definitions()));
+
+        $this->get('/admin/pages')->assertSeeInOrder(['Beranda', 'Tentang Kami', 'Layanan &amp; Jasa', 'Kontak Kami'], false);
+    }
 }
