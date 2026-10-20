@@ -354,14 +354,19 @@
                 {{-- Objective Grid: kartu bertambah ke bawah mengikuti isi dari admin --}}
                 <div class="mt-10 grid grid-cols-1 gap-x-8 sm:grid-cols-2 lg:grid-cols-3">
                     @foreach ($content->cards('objective_items') as $objective)
-                        <article class="border-t border-slate-300 py-7 sm:py-8">
+                        <article class="relative border-t border-slate-300 py-7 sm:py-8">
+                            {{-- Aksen garis merah di tengah kartu --}}
+                            <span
+                                class="absolute -top-px left-1/2 h-0.5 w-14 -translate-x-1/2 bg-primary"
+                                aria-hidden="true"
+                            ></span>
                             <h3
                                 class="font-display text-lg font-semibold tracking-tight text-secondary-dark sm:text-xl"
                             >
                                 {{ $objective['title'] }}
                             </h3>
                             <p
-                                class="font-body mt-3 max-w-sm text-sm leading-7 text-slate-600"
+                                class="font-body mt-3 max-w-sm text-justify text-sm leading-7 text-slate-600 hyphens-auto"
                             >
                                 {{ $objective['text'] }}
                             </p>
