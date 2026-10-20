@@ -37,6 +37,15 @@
                                         remove-label="Kembalikan gambar bawaan"
                                         :hint="$field['hint'] ?? null"
                                     />
+                                @elseif (($field['type'] ?? 'text') === 'list')
+                                    <x-admin.list-field
+                                        :name="'content['.$key.'][]'"
+                                        :items="old('content.'.$key, $content->list($key))"
+                                        :item-label="$field['item_label'] ?? 'Butir'"
+                                        :max="$field['max'] ?? 300"
+                                        :max-items="$field['max_items'] ?? 10"
+                                        :min-items="$field['min_items'] ?? 1"
+                                    />
                                 @elseif (($field['type'] ?? 'text') === 'textarea')
                                     <x-textarea :id="'content_'.$key" :name="'content['.$key.']'" rows="4" :maxlength="$field['max'] ?? 200" :required="! ($field['optional'] ?? false)">{{ old('content.'.$key, $content($key)) }}</x-textarea>
                                 @else
@@ -46,7 +55,7 @@
                                 @if (! empty($field['hint']) && ($field['type'] ?? 'text') !== 'image')
                                     <p class="mt-1.5 text-xs text-gray-500">{{ $field['hint'] }}</p>
                                 @endif
-                                <x-input-error :messages="$errors->get('content.'.$key)" class="mt-2" />
+                                <x-input-error :messages="collect($errors->getMessages())->filter(fn ($messages, $errorKey) => $errorKey === 'content.'.$key || str_starts_with($errorKey, 'content.'.$key.'.'))->flatten()->unique()->all()" class="mt-2" />
                             </div>
                         @endforeach
                     </div>

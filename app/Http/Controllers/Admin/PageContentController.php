@@ -60,6 +60,21 @@ class PageContentController extends Controller
                     continue;
                 }
 
+                if (($field['type'] ?? 'text') === 'list') {
+                    $items = array_values(array_map('trim', (array) ($submitted[$key] ?? [])));
+
+                    // Sama dengan bawaan: tidak perlu disimpan.
+                    $value = $items === $field['default'] ? '' : json_encode($items, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+                    if ($value === '') {
+                        PageContent::where(['page' => $page, 'key' => $key])->delete();
+                    } else {
+                        PageContent::updateOrCreate(['page' => $page, 'key' => $key], ['value' => $value]);
+                    }
+
+                    continue;
+                }
+
                 $value = trim((string) ($submitted[$key] ?? ''));
 
                 // Sama dengan teks bawaan: tidak perlu disimpan.

@@ -9,7 +9,42 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class PageContentRequest extends FormRequest
 {
-    use IndonesianMessages;
+    use IndonesianMessages {
+        messages as baseMessages;
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $content = $this->input('content');
+
+        if (! is_array($content)) {
+            return;
+        }
+
+        // Baris daftar yang dibiarkan kosong dibuang begitu saja.
+        foreach (PageContents::fields((string) $this->route('page')) as $key => $field) {
+            if (($field['type'] ?? 'text') === 'list' && is_array($content[$key] ?? null)) {
+                $content[$key] = array_values(array_filter(
+                    array_map(fn ($item) => is_string($item) ? trim($item) : '', $content[$key]),
+                    fn (string $item) => $item !== '',
+                ));
+            }
+        }
+
+        $this->merge(['content' => $content]);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            ...$this->baseMessages(),
+            'min.array' => ':attribute minimal :min butir.',
+            'max.array' => ':attribute maksimal :max butir.',
+        ];
+    }
 
     public function authorize(): bool
     {
@@ -35,6 +70,13 @@ class PageContentRequest extends FormRequest
                 continue;
             }
 
+            if (($field['type'] ?? 'text') === 'list') {
+                $rules["content.{$key}"] = ['required', 'array', 'min:'.($field['min_items'] ?? 1), 'max:'.($field['max_items'] ?? 10)];
+                $rules["content.{$key}.*"] = ['required', 'string', 'max:'.($field['max'] ?? 300)];
+
+                continue;
+            }
+
             $rules["content.{$key}"] = [
                 ($field['optional'] ?? false) ? 'nullable' : 'required',
                 'string',
@@ -54,6 +96,7 @@ class PageContentRequest extends FormRequest
 
         foreach (PageContents::fields((string) $this->route('page')) as $key => $field) {
             $attributes["content.{$key}"] = $field['label'];
+            $attributes["content.{$key}.*"] = $field['item_label'] ?? $field['label'];
             $attributes["image_{$key}"] = $field['label'];
         }
 

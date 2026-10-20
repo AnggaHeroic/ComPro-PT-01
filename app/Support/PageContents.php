@@ -151,9 +151,11 @@ class PageContents
                             'vision_title' => ['label' => 'Visi: judul', 'default' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.', 'type' => 'textarea', 'max' => 200],
                             'vision_text' => ['label' => 'Visi: uraian', 'default' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer tincidunt, justo vitae consequat efficitur, neque erat posuere lorem, sed tincidunt erat mauris vitae libero.', 'type' => 'textarea', 'max' => 500],
                             'mission_label' => ['label' => 'Misi: label', 'default' => 'Misi Utama', 'max' => 40],
-                            'mission_1' => ['label' => 'Misi 1', 'default' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer tincidunt, justo vitae consequat efficitur.', 'type' => 'textarea', 'max' => 300],
-                            'mission_2' => ['label' => 'Misi 2', 'default' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse potenti. Praesent tincidunt mauris non consectetur interdum.', 'type' => 'textarea', 'max' => 300],
-                            'mission_3' => ['label' => 'Misi 3', 'default' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur tincidunt, mauris vitae consequat efficitur.', 'type' => 'textarea', 'max' => 300],
+                            'mission_items' => ['label' => 'Daftar misi', 'type' => 'list', 'item_label' => 'Misi', 'default' => [
+                                'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer tincidunt, justo vitae consequat efficitur.',
+                                'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse potenti. Praesent tincidunt mauris non consectetur interdum.',
+                                'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur tincidunt, mauris vitae consequat efficitur.',
+                            ], 'max' => 300, 'min_items' => 1, 'max_items' => 8, 'hint' => 'Tambah, hapus, atau ubah urutan misi. Tampilan kartu menyesuaikan jumlahnya.'],
                         ],
                     ],
                     'objectives' => [
@@ -219,12 +221,28 @@ class PageContents
     /** Nilai yang dipakai: hasil suntingan admin, atau teks bawaan. */
     public function get(string $key): string
     {
-        $this->stored ??= PageContent::where('page', $this->page)->pluck('value', 'key')->all();
+        $this->load();
 
         // Kolom opsional boleh disimpan kosong (artinya disembunyikan); selebihnya kosong = bawaan.
         return array_key_exists($key, $this->stored)
             ? (string) $this->stored[$key]
             : (string) (self::fields($this->page)[$key]['default'] ?? '');
+    }
+
+    /**
+     * Daftar butir (kolom bertipe list). Disimpan sebagai JSON; bawaan dipakai bila belum diubah.
+     *
+     * @return list<string>
+     */
+    public function list(string $key): array
+    {
+        $this->load();
+
+        $items = isset($this->stored[$key]) ? json_decode($this->stored[$key], true) : null;
+
+        return is_array($items) && $items !== []
+            ? array_values(array_filter($items, 'is_string'))
+            : (array) (self::fields($this->page)[$key]['default'] ?? []);
     }
 
     /** URL gambar: unggahan admin bila ada, selain itu gambar bawaan. */
@@ -240,9 +258,14 @@ class PageContents
     /** Path gambar unggahan admin (relatif terhadap disk), atau null bila memakai bawaan. */
     public function customImagePath(string $key): ?string
     {
-        $this->get($key);
+        $this->load();
 
         return filled($this->stored[$key] ?? null) ? $this->stored[$key] : null;
+    }
+
+    private function load(): void
+    {
+        $this->stored ??= PageContent::where('page', $this->page)->pluck('value', 'key')->all();
     }
 
     public function __invoke(string $key): string

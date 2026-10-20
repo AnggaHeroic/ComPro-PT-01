@@ -305,54 +305,24 @@
                         </span>
                     </div>
 
-                    {{-- Mission List --}}
+                    {{-- Mission List: jumlah butir mengikuti isi dari admin --}}
                     <div class="mt-4">
-
-                        {{-- Mission 01 --}}
-                        <div
-                            class="flex items-start gap-3 border-t border-slate-200 py-3.5"
-                        >
-                            <span
-                                class="mt-[8px] h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
-                                aria-hidden="true"
-                            ></span>
-
-                            <p
-                                class="font-body text-sm leading-6 text-secondary-dark"
+                        @foreach ($content->list('mission_items') as $mission)
+                            <div
+                                class="flex items-start gap-3 border-t border-slate-200 py-3.5 last:border-b"
                             >
-                                {{ $content('mission_1') }}
-                            </p>
-                        </div>
+                                <span
+                                    class="mt-[8px] h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
+                                    aria-hidden="true"
+                                ></span>
 
-                        {{-- Mission 02 --}}
-                        <div
-                            class="flex items-start gap-3 border-t border-slate-200 py-3.5"
-                        >
-                            <span
-                                class="mt-[8px] h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
-                                aria-hidden="true"
-                            ></span>
-                            <p
-                                class="font-body text-sm leading-6 text-secondary-dark"
-                            >
-                                {{ $content('mission_2') }}
-                            </p>
-                        </div>
-
-                        {{-- Mission 03 --}}
-                        <div
-                            class="flex items-start gap-3 border-y border-slate-200 py-3.5"
-                        >
-                            <span
-                                class="mt-[8px] h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
-                                aria-hidden="true"
-                            ></span>
-                            <p
-                                class="font-body text-sm leading-6 text-secondary-dark"
-                            >
-                                {{ $content('mission_3') }}
-                            </p>
-                        </div>
+                                <p
+                                    class="font-body text-sm leading-6 text-secondary-dark"
+                                >
+                                    {{ $mission }}
+                                </p>
+                            </div>
+                        @endforeach
                     </div>
                 </article>
             </div>

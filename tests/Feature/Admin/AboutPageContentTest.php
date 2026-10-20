@@ -55,7 +55,7 @@ class AboutPageContentTest extends TestCase
         $this->put('/admin/pages/about', $this->texts([
             'hero_title_line2' => 'CV. Maju Jaya',
             'facts_1_value' => '2015',
-            'mission_2' => 'Misi kedua yang baru.',
+            'mission_items' => ['Misi pertama.', 'Misi kedua yang baru.'],
         ]))->assertSessionHasNoErrors();
 
         auth()->logout();
@@ -152,5 +152,61 @@ class AboutPageContentTest extends TestCase
         $after = $normalize($this->get('/tentang-kami')->getContent());
 
         $this->assertSame($before, str_replace(['CV. Maju Jaya', 'Lihat Semua'], ['PT. Putra Maju Sukses', 'Lihat Layanan'], $after));
+    }
+
+    public function test_missions_are_a_list_that_can_grow_shrink_and_be_reordered(): void
+    {
+        $five = ['Misi A', 'Misi B', 'Misi C', 'Misi D', 'Misi E'];
+        $this->put('/admin/pages/about', $this->texts(['mission_items' => $five]))->assertSessionHasNoErrors();
+
+        auth()->logout();
+        $html = $this->get('/tentang-kami')->getContent();
+        $this->assertSame(5, preg_match_all('/<span\s+class="mt-\[8px\] h-1\.5 w-1\.5 shrink-0 rounded-full bg-primary"/', $html));
+        $this->assertLessThan(strpos($html, 'Misi B'), strpos($html, 'Misi A'));
+
+        $this->actingAs(User::first());
+        $this->put('/admin/pages/about', $this->texts(['mission_items' => ['Misi E', 'Misi A']]))->assertSessionHasNoErrors();
+
+        auth()->logout();
+        $html = $this->get('/tentang-kami')->getContent();
+        $this->assertSame(2, preg_match_all('/<span\s+class="mt-\[8px\] h-1\.5 w-1\.5 shrink-0 rounded-full bg-primary"/', $html));
+        $this->assertLessThan(strpos($html, 'Misi A'), strpos($html, 'Misi E'));
+        $this->assertStringNotContainsString('Misi C', $html);
+    }
+
+    public function test_blank_mission_rows_are_dropped_and_limits_are_enforced(): void
+    {
+        $this->put('/admin/pages/about', $this->texts(['mission_items' => ['Satu', '', '   ', 'Dua']]))->assertSessionHasNoErrors();
+        $this->assertSame(['Satu', 'Dua'], PageContents::for('about')->list('mission_items'));
+
+        $this->put('/admin/pages/about', $this->texts(['mission_items' => ['', ' ']]))
+            ->assertSessionHasErrors('content.mission_items');
+
+        $this->put('/admin/pages/about', $this->texts(['mission_items' => array_fill(0, 9, 'x')]))
+            ->assertSessionHasErrors('content.mission_items');
+
+        $this->put('/admin/pages/about', $this->texts(['mission_items' => [str_repeat('a', 301)]]))
+            ->assertSessionHasErrors('content.mission_items.0');
+
+        // Setelah gagal validasi, daftar tersimpan tidak berubah.
+        $this->assertSame(['Satu', 'Dua'], PageContents::for('about')->list('mission_items'));
+    }
+
+    public function test_default_missions_are_not_stored_and_the_form_lists_them(): void
+    {
+        $this->put('/admin/pages/about', $this->texts())->assertSessionHasNoErrors();
+        $this->assertNull(PageContent::where('key', 'mission_items')->first());
+
+        $this->get('/admin/pages/about')
+            ->assertSee('name="content[mission_items][]"', false)
+            ->assertSee('Tambah Misi');
+    }
+
+    public function test_mission_text_is_escaped(): void
+    {
+        $this->put('/admin/pages/about', $this->texts(['mission_items' => ['<script>alert(1)</script>']]));
+
+        auth()->logout();
+        $this->get('/tentang-kami')->assertDontSee('<script>alert(1)</script>', false)->assertSee('&lt;script&gt;', false);
     }
 }
