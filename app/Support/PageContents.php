@@ -235,6 +235,46 @@ class PageContents
                     ],
                 ],
             ],
+            'services' => [
+                'label' => 'Layanan & Jasa',
+                'description' => 'Teks pada halaman utama Layanan & Jasa. Daftar kategori dan aktivitas usaha dikelola terpisah lewat menu Kategori dan Aktivitas Usaha.',
+                'sections' => [
+                    'hero' => [
+                        'label' => 'Bagian utama',
+                        'description' => 'Warnai kata pada judul dengan tombol Warnai merah; Enter untuk pindah baris.',
+                        'fields' => [
+                            'hero_label' => ['label' => 'Label kecil', 'default' => 'Layanan & Jasa', 'max' => 50],
+                            'hero_title' => ['label' => 'Judul', 'type' => 'title', 'default' => "Beragam bidang usaha.\n*Satu cakupan layanan.*", 'max' => 120],
+                            'hero_description' => ['label' => 'Deskripsi', 'default' => 'PT. Putra Maju Sukses memiliki berbagai bidang usaha yang mencakup kebutuhan teknologi, rumah tangga, olahraga, industri, konstruksi, dan berbagai kebutuhan lainnya.', 'type' => 'textarea', 'max' => 400],
+                        ],
+                    ],
+                    'categories' => [
+                        'label' => 'Daftar bidang usaha',
+                        'description' => 'Kartu di bawah judul ini berasal dari menu Kategori (nama, deskripsi, gambar, dan urutan diatur di sana).',
+                        'fields' => [
+                            'categories_label' => ['label' => 'Label kecil', 'default' => 'Bidang Usaha', 'max' => 50],
+                            'categories_title' => ['label' => 'Judul', 'default' => 'Pilih bidang yang ingin Anda lihat.', 'max' => 100],
+                            'categories_description' => ['label' => 'Deskripsi', 'default' => 'Jelajahi berbagai bidang usaha dan layanan yang tersedia di PT. Putra Maju Sukses.', 'type' => 'textarea', 'max' => 250],
+                            'categories_card_link' => ['label' => 'Teks tautan pada setiap kartu', 'default' => 'Lihat layanan', 'max' => 30, 'hint' => 'Sama untuk semua kartu; mengarah ke halaman kategori masing-masing.'],
+                        ],
+                    ],
+                    'cta' => [
+                        'label' => 'Ajakan menghubungi',
+                        'fields' => [
+                            'cta_label' => ['label' => 'Label kecil', 'default' => 'Hubungi Kami', 'max' => 50],
+                            'cta_title' => ['label' => 'Judul', 'type' => 'title', 'default' => 'Kenali layanan kami *lebih lanjut.*', 'max' => 100],
+                            'cta_description' => ['label' => 'Deskripsi', 'default' => 'Hubungi PT. Putra Maju Sukses untuk mengetahui lebih lanjut mengenai bidang usaha dan layanan yang tersedia.', 'type' => 'textarea', 'max' => 250],
+                            'cta_button' => ['label' => 'Tombol', 'default' => 'Hubungi Kami', 'max' => 30, 'hint' => 'Mengarah ke halaman Kontak Kami.'],
+                        ],
+                    ],
+                    'seo' => [
+                        'label' => 'Mesin pencari',
+                        'fields' => [
+                            'seo_description' => ['label' => 'Deskripsi singkat untuk Google', 'default' => 'PT. Putra Maju Sukses merupakan perusahaan yang bergerak dalam berbagai bidang perdagangan dan layanan.', 'type' => 'textarea', 'max' => 200, 'hint' => 'Tidak tampil di halaman; dipakai mesin pencari.'],
+                        ],
+                    ],
+                ],
+            ],
         ];
     }
 

@@ -6,8 +6,9 @@
 
     <x-slot name="actions">
         <x-admin.back :href="route('admin.pages.index')" />
-        @if ($page === 'home')
-            <x-secondary-button :href="route('home')" target="_blank" rel="noopener" size="sm">Lihat halaman</x-secondary-button>
+        @php($publicRoute = ['home' => 'home', 'about' => 'about', 'contact' => 'contact', 'services' => 'services'][$page] ?? null)
+        @if ($publicRoute)
+            <x-secondary-button :href="route($publicRoute)" target="_blank" rel="noopener" size="sm">Lihat halaman</x-secondary-button>
         @endif
     </x-slot>
 

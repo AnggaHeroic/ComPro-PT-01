@@ -39,6 +39,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         View::composer('pages.home', fn ($view) => $view->with(['content' => PageContents::for('home'), 'contact' => PageContents::for('contact')]));
+        View::composer('services.index', fn ($view) => $view->with('content', PageContents::for('services')));
         View::composer('pages.contact', fn ($view) => $view->with('content', PageContents::for('contact')));
         View::composer('pages.about', fn ($view) => $view->with('content', PageContents::for('about')));
 
