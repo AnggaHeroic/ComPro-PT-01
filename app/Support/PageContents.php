@@ -18,6 +18,11 @@ class PageContents
     /** @var array<string, string>|null */
     private ?array $stored = null;
 
+    /** Nilai yang belum disimpan, hanya dipakai saat pratinjau bagian dirender (tidak pernah ke database). @var array<string, array<string, string>> */
+    private static array $overrides = [];
+
+    private static bool $previewing = false;
+
     public function __construct(private readonly string $page)
     {
     }
@@ -287,6 +292,84 @@ class PageContents
         ];
     }
 
+    /**
+     * Mulai mode pratinjau bagian: isian form yang belum disimpan dipakai sementara untuk
+     * merender halaman publik. Panggil endPreview() setelah selesai.
+     *
+     * @param  array<string, mixed>  $submitted  isian content[...] dari form admin
+     */
+    public static function beginPreview(string $page, array $submitted): void
+    {
+        $values = [];
+
+        foreach (self::fields($page) as $key => $field) {
+            $type = $field['type'] ?? 'text';
+
+            if ($type === 'image' || ! array_key_exists($key, $submitted)) {
+                continue;
+            }
+
+            $raw = $submitted[$key];
+
+            if ($type === 'list' && is_array($raw)) {
+                $items = array_values(array_filter(
+                    array_map(fn ($item) => is_string($item) ? trim($item) : '', $raw),
+                    fn (string $item) => $item !== '',
+                ));
+                $value = $items === [] ? null : json_encode($items, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            } elseif ($type === 'cards' && is_array($raw)) {
+                $cards = [];
+                foreach ($raw as $card) {
+                    $title = is_array($card) ? trim((string) ($card['title'] ?? '')) : '';
+                    $text = is_array($card) ? trim((string) ($card['text'] ?? '')) : '';
+
+                    if ($title !== '' || $text !== '') {
+                        $cards[] = ['title' => $title, 'text' => $text];
+                    }
+                }
+                $value = $cards === [] ? null : json_encode($cards, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            } elseif (is_string($raw)) {
+                $value = trim(str_replace(["\r\n", "\r"], "\n", $raw));
+                $value = mb_substr($value, 0, (int) ($field['max'] ?? 500));
+
+                // Kolom wajib yang sedang dikosongkan: pakai nilai tersimpan agar pratinjau tidak rusak.
+                if ($value === '' && ! ($field['optional'] ?? false)) {
+                    $value = null;
+                }
+            } else {
+                $value = null;
+            }
+
+            if ($value !== null) {
+                $values[$key] = $value;
+            }
+        }
+
+        self::$overrides[$page] = $values;
+        self::$previewing = true;
+    }
+
+    public static function endPreview(): void
+    {
+        self::$overrides = [];
+        self::$previewing = false;
+    }
+
+    public static function previewing(): bool
+    {
+        return self::$previewing;
+    }
+
+    /** Atribut penanda bagian; kosong di halaman publik biasa, hanya terisi saat pratinjau bagian. */
+    public function mark(string $section): HtmlString
+    {
+        if (! self::$previewing || ! isset(self::definitions()[$this->page]['sections'][$section])) {
+            return new HtmlString('');
+        }
+
+        return new HtmlString(' data-cms-section="'.e($section).'"');
+    }
+
     /** Tautan telepon: hanya angka dan tanda + yang dipertahankan. */
     public static function telHref(string $phone): string
     {
@@ -419,7 +502,10 @@ class PageContents
 
     private function load(): void
     {
-        $this->stored ??= PageContent::where('page', $this->page)->pluck('value', 'key')->all();
+        $this->stored ??= array_merge(
+            PageContent::where('page', $this->page)->pluck('value', 'key')->all(),
+            self::$overrides[$this->page] ?? [],
+        );
     }
 
     public function __invoke(string $key): string

@@ -32,7 +32,7 @@ class PageEditorTest extends TestCase
         return ['content' => array_merge($texts, $overrides)];
     }
 
-    public function test_edit_form_has_numbered_tabs_per_section_and_no_preview(): void
+    public function test_edit_form_has_numbered_tabs_per_section_and_a_preview_per_section(): void
     {
         $response = $this->get('/admin/pages/about')->assertOk();
 
@@ -43,7 +43,8 @@ class PageEditorTest extends TestCase
         $response->assertSee('x-data="pageEditor(', false)
             ->assertSee('name="bagian"', false)
             ->assertSee("x-text=\"n + '/", false)
-            ->assertDontSee('cms-preview')
+            ->assertSee('Pratinjau bagian ini')
+            ->assertSee('sectionPreview(', false)
             ->assertDontSee('Pratinjau halaman');
     }
 
@@ -52,7 +53,7 @@ class PageEditorTest extends TestCase
         foreach (['/', '/tentang-kami', '/layanan-jasa', '/kontak-kami'] as $url) {
             $this->get($url.'?cms-preview=1')->assertOk()
                 ->assertDontSee('data-cms-section', false)
-                ->assertDontSee('cms-select', false);
+                ->assertDontSee('pointer-events: none', false);
         }
     }
 
@@ -89,5 +90,74 @@ class PageEditorTest extends TestCase
         PageContent::create(['page' => 'about', 'key' => 'cta_button', 'value' => 'X']);
 
         $this->get('/admin/pages')->assertSee('Terakhir diubah');
+    }
+
+    public function test_section_preview_renders_the_public_page_with_unsaved_values_and_isolates_one_section(): void
+    {
+        $response = $this->post('/admin/pages/about/preview/objectives', $this->texts('about', [
+            'objectives_title' => 'Judul *belum disimpan*',
+            'objective_items' => [['title' => 'Tujuan Sementara', 'text' => 'Uraian sementara.']],
+        ]))->assertOk();
+
+        $html = $response->getContent();
+        $this->assertStringContainsString('text/html', $response->headers->get('Content-Type'));
+        $this->assertStringContainsString('noindex', $response->headers->get('X-Robots-Tag'));
+
+        // Isian yang belum disimpan dipakai.
+        $this->assertStringContainsString('<span class="text-primary">belum disimpan</span>', $html);
+        $this->assertStringContainsString('Tujuan Sementara', $html);
+        $this->assertStringNotContainsString('Memenuhi Kebutuhan', $html);
+
+        // Penanda bagian + skrip yang menyisakan bagian yang diminta saja.
+        $this->assertStringContainsString('data-cms-section="objectives"', $html);
+        $this->assertStringContainsString('var key = "objectives";', $html);
+        $this->assertStringContainsString('pointer-events: none', $html);
+
+        // Tidak ada yang disimpan.
+        $this->assertSame(0, PageContent::count());
+    }
+
+    public function test_preview_covers_every_section_of_every_page_and_leaves_public_pages_clean(): void
+    {
+        foreach (PageContents::definitions() as $page => $definition) {
+            foreach (array_keys($definition['sections']) as $section) {
+                $html = $this->post("/admin/pages/{$page}/preview/{$section}", $this->texts($page))->assertOk()->getContent();
+
+                if ($section !== 'seo') {
+                    $this->assertStringContainsString('data-cms-section="'.$section.'"', $html, "{$page}/{$section}");
+                }
+            }
+        }
+
+        // Setelah pratinjau, halaman publik biasa tidak membawa penanda atau nilai sementara.
+        auth()->logout();
+        foreach (['/', '/tentang-kami', '/layanan-jasa', '/kontak-kami'] as $url) {
+            $this->get($url)->assertOk()->assertDontSee('data-cms-section', false);
+        }
+    }
+
+    public function test_preview_of_contact_values_also_reaches_the_navbar_and_footer(): void
+    {
+        $html = $this->post('/admin/pages/contact/preview/identity', $this->texts('contact', [
+            'contact_phone' => '0361 999 888',
+            'footer_description' => 'Deskripsi footer sementara.',
+        ]))->getContent();
+
+        $this->assertStringContainsString('data-cms-section="identity"', $html);
+        $this->assertStringContainsString('Deskripsi footer sementara.', $html);
+        $this->assertStringContainsString('tel:0361999888', $html);
+    }
+
+    public function test_preview_ignores_blank_required_values_unknown_sections_and_guests(): void
+    {
+        // Kolom wajib yang sedang dikosongkan memakai nilai tersimpan, bukan membuat pratinjau kosong.
+        $html = $this->post('/admin/pages/about/preview/hero', $this->texts('about', ['hero_title' => '']))->getContent();
+        $this->assertStringContainsString('PT. Putra Maju Sukses', $html);
+
+        $this->post('/admin/pages/about/preview/tidak-ada', [])->assertNotFound();
+        $this->post('/admin/pages/tidak-ada/preview/hero', [])->assertNotFound();
+
+        auth()->logout();
+        $this->post('/admin/pages/about/preview/hero', [])->assertRedirect('/login');
     }
 }

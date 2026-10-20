@@ -659,6 +659,98 @@ Alpine.data('pageEditor', ({ active, sections }) => ({
 }));
 
 /**
+ * Pratinjau satu bagian halaman publik di form konten. Isian form (yang belum disimpan)
+ * dikirim ke server, yang merender halaman publik lalu menyisakan bagian itu saja;
+ * hasilnya ditampilkan di iframe (lebar 1280 px) yang diperkecil agar muat.
+ */
+Alpine.data('sectionPreview', ({ url }) => ({
+    open: true,
+    loading: false,
+    error: false,
+    loadedOnce: false,
+    scale: 0.5,
+    height: 400,
+    timer: null,
+
+    init() {
+        const form = this.$el.closest('form');
+        const refresh = () => {
+            // Hanya bagian yang sedang tampil yang diperbarui.
+            if (this.$el.offsetParent !== null) this.schedule(900);
+        };
+
+        form.addEventListener('input', refresh);
+        form.addEventListener('change', refresh);
+
+        new ResizeObserver(() => this.rescale()).observe(this.$refs.box);
+    },
+
+    schedule(delay = 0) {
+        clearTimeout(this.timer);
+        this.timer = setTimeout(() => this.load(), delay);
+    },
+
+    rescale() {
+        const width = this.$refs.box.clientWidth;
+
+        if (width > 0) this.scale = width / 1280;
+    },
+
+    async load() {
+        const data = new FormData(this.$el.closest('form'));
+
+        // File tidak dikirim ke pratinjau; hanya teks.
+        Array.from(data.entries()).forEach(([name, value]) => {
+            if (value instanceof File) data.delete(name);
+        });
+        data.delete('_method');
+        data.delete('bagian');
+
+        this.loading = true;
+        this.error = false;
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                body: data,
+                headers: { 'X-Requested-With': 'XMLHttpRequest', Accept: 'text/html' },
+            });
+
+            if (!response.ok) throw new Error(String(response.status));
+
+            this.$refs.frame.srcdoc = await response.text();
+            this.loadedOnce = true;
+        } catch (error) {
+            this.error = true;
+            this.loading = false;
+        }
+    },
+
+    /** Setelah dokumen (dan gambarnya) selesai dimuat: sesuaikan tinggi iframe dengan isinya. */
+    measure() {
+        const frame = this.$refs.frame;
+        const doc = frame.contentDocument;
+
+        if (!frame.srcdoc || !doc?.documentElement) return;
+
+        this.loading = false;
+
+        // Dua kali ukur: bagian dengan tinggi minimum (mis. hero) menyesuaikan diri dengan viewport.
+        // (tinggi body = tinggi isi; scrollHeight dokumen tidak bisa lebih kecil dari viewport iframe)
+        const bodyHeight = () => Math.ceil(doc.body.getBoundingClientRect().height);
+
+        frame.style.height = '900px';
+        let height = bodyHeight();
+        frame.style.height = height + 'px';
+        height = bodyHeight();
+        frame.style.height = height + 'px';
+
+        this.height = height;
+        this.rescale();
+    },
+}));
+
+/**
  * Dialog konfirmasi admin. Dipakai otomatis untuk semua form non-GET di admin
  * (lihat listener di bawah) dan bisa dipanggil langsung:
  *   const ok = await Alpine.store('confirm').ask({ title, message, label, tone });

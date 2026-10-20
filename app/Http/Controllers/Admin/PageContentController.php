@@ -6,10 +6,13 @@ use App\Http\Controllers\Admin\Concerns\StoresUploadedImage;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\PageContentRequest;
 use App\Models\PageContent;
+use App\Models\ServiceCategory;
 use App\Services\ImageUploader;
 use App\Support\PageContents;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Throwable;
 
 class PageContentController extends Controller
@@ -115,6 +118,37 @@ class PageContentController extends Controller
         return redirect()
             ->route('admin.pages.edit', array_filter(['page' => $page, 'bagian' => $section]))
             ->with('success', 'Konten halaman berhasil disimpan.');
+    }
+
+    /**
+     * Pratinjau satu bagian halaman dengan isian form yang belum disimpan. Halaman publik
+     * dirender biasa (dengan isian sementara), lalu skrip kecil menyembunyikan semua bagian
+     * lain sehingga hanya bagian yang diminta yang terlihat. Tidak ada yang disimpan.
+     */
+    public function preview(Request $request, string $page, string $section): Response
+    {
+        abort_unless(PageContents::has($page) && isset(PageContents::definitions()[$page]['sections'][$section]), 404);
+
+        PageContents::beginPreview($page, (array) $request->input('content', []));
+
+        try {
+            $html = match ($page) {
+                'home' => view('pages.home'),
+                'about' => view('pages.about'),
+                'contact' => view('pages.contact'),
+                'services' => view('services.index', ['categories' => ServiceCategory::published()->ordered()->get()]),
+            };
+            $html = $html->render();
+        } finally {
+            PageContents::endPreview();
+        }
+
+        $isolate = view('admin.pages.preview-isolate', ['section' => $section])->render();
+        $html = str_contains($html, '</body>')
+            ? substr_replace($html, $isolate, strrpos($html, '</body>'), 0)
+            : $html.$isolate;
+
+        return response($html)->header('Content-Type', 'text/html; charset=UTF-8')->header('X-Robots-Tag', 'noindex, nofollow');
     }
 
     public function reset(string $page, ImageUploader $images): RedirectResponse

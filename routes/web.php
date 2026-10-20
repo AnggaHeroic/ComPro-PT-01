@@ -69,6 +69,7 @@ Route::middleware('auth')
                 Route::get('/{page}', 'edit')->name('edit');
                 Route::put('/{page}', 'update')->name('update');
                 Route::delete('/{page}', 'reset')->name('reset');
+                Route::post('/{page}/preview/{section}', 'preview')->name('preview');
             });
 
         Route::get('/profil', [ProfileController::class, 'edit'])->name('profile.edit');

@@ -6,7 +6,7 @@
     $hiddenCategories = max(0, $navCategories->count() - 12);
 @endphp
 
-<footer class="border-t border-slate-800 bg-secondary-dark text-white">
+<footer{!! $siteInfo->mark('identity') !!} class="border-t border-slate-800 bg-secondary-dark text-white">
 
     {{-- Main Footer --}}
     <div class="container-site py-16 lg:py-20">

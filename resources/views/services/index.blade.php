@@ -5,7 +5,7 @@
 @section('content')
 
     {{-- HERO --}}
-    <section class="bg-white">
+    <section{!! $content->mark('hero') !!} class="bg-white">
         <div class="container-site">
             <div class="border-b border-slate-200 py-20 sm:py-24 lg:py-28">
                 <div class="mx-auto max-w-5xl text-center">
@@ -42,7 +42,7 @@
     </section>
 
     {{-- BUSINESS CATEGORIES --}}
-    <section class="bg-surface">
+    <section{!! $content->mark('categories') !!} class="bg-surface">
         <div class="container-site py-16 sm:py-20 lg:py-24">
             <div class="max-w-2xl">
                 <span class="font-display text-xs font-bold uppercase tracking-[0.18em] text-primary">
@@ -104,7 +104,7 @@
     </section>
 
     {{-- CTA --}}
-    <section class="bg-white">
+    <section{!! $content->mark('cta') !!} class="bg-white">
         <div class="container-site">
             <div class="border-y border-slate-200 py-14 sm:py-16 lg:py-20">
                 <div class="grid items-center gap-8 lg:grid-cols-12 lg:gap-12">

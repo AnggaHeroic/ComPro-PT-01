@@ -84,6 +84,10 @@
                                     <p class="mb-5 rounded bg-gray-50 px-3 py-2 text-xs text-gray-500">Bagian ini tidak tampil di halaman; hanya dibaca mesin pencari.</p>
                                 @endif
 
+                                @unless (in_array($sectionKey, $noPreview, true))
+                                    <x-admin.section-preview :url="route('admin.pages.preview', ['page' => $page, 'section' => $sectionKey])" :section="$sectionKey" />
+                                @endunless
+
                                 <div class="space-y-6">
                                     @foreach ($section['fields'] as $key => $field)
                                         @php
