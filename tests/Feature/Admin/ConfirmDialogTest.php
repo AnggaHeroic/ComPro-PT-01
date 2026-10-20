@@ -72,7 +72,7 @@ class ConfirmDialogTest extends TestCase
 
         $this->get('/admin/pages/home')
             ->assertDontSee('onsubmit', false)
-            ->assertSee('data-confirm-title="Kembalikan ke bawaan?"', false);
+            ->assertSee('data-confirm-title="Kembali ke setelan default?"', false);
     }
 
     public function test_confirmation_logic_is_wired_in_the_script(): void
@@ -106,5 +106,20 @@ class ConfirmDialogTest extends TestCase
                 ->assertSee('Perubahan baru disimpan saat Anda menekan Selesai.')
                 ->assertDontSee('Perubahan langsung tersimpan');
         }
+    }
+
+    public function test_optional_text_fields_are_not_marked_required_in_the_browser(): void
+    {
+        $html = $this->get('/admin/pages/contact')->getContent();
+
+        // Kata kunci peta opsional: tidak boleh memblokir penyimpanan saat dikosongkan.
+        preg_match('/<input[^>]*name="content\[location_map_query\]"[^>]*>/s', $html, $optional);
+        $this->assertNotEmpty($optional);
+        $this->assertStringNotContainsString('required', $optional[0]);
+
+        preg_match('/<input[^>]*name="content\[contact_email\]"[^>]*>/s', $html, $required);
+        $this->assertStringContainsString('required', $required[0]);
+
+        $this->get('/admin/pages/about')->assertSee('Kembali ke setelan default')->assertDontSee('Kembalikan semua teks');
     }
 }

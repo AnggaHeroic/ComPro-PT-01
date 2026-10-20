@@ -67,7 +67,7 @@
                                 @elseif (($field['type'] ?? 'text') === 'textarea')
                                     <x-textarea :id="'content_'.$key" :name="'content['.$key.']'" rows="4" :maxlength="$field['max'] ?? 200" :required="! ($field['optional'] ?? false)">{{ old('content.'.$key, $content($key)) }}</x-textarea>
                                 @else
-                                    <x-text-input :id="'content_'.$key" :name="'content['.$key.']'" type="text" :value="old('content.'.$key, $content($key))" :maxlength="$field['max'] ?? 200" required />
+                                    <x-text-input :id="'content_'.$key" :name="'content['.$key.']'" type="text" :value="old('content.'.$key, $content($key))" :maxlength="$field['max'] ?? 200" :required="! ($field['optional'] ?? false)" />
                                 @endif
 
                                 @if (! empty($field['hint']) && ($field['type'] ?? 'text') !== 'image')
@@ -88,10 +88,10 @@
         method="POST"
         action="{{ route('admin.pages.reset', $page) }}"
         class="mt-6 max-w-3xl"
-        data-confirm-title="Kembalikan ke bawaan?" data-confirm-message="Semua teks dan foto halaman ini akan dikembalikan ke bawaan. Perubahan yang pernah disimpan akan hilang." data-confirm-label="Ya, kembalikan"
+        data-confirm-title="Kembali ke setelan default?" data-confirm-message="Semua teks dan foto halaman ini akan dikembalikan ke setelan default. Perubahan yang pernah disimpan akan hilang." data-confirm-label="Ya, kembalikan"
     >
         @csrf
         @method('DELETE')
-        <button type="submit" class="text-sm font-medium text-red-700 underline-offset-2 hover:underline">Kembalikan semua teks ke bawaan</button>
+        <button type="submit" class="text-sm font-medium text-red-700 underline-offset-2 hover:underline">Kembali ke setelan default</button>
     </form>
 </x-app-layout>

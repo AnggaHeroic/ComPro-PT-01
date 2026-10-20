@@ -126,6 +126,6 @@ class PageContentController extends Controller
 
         return redirect()
             ->route('admin.pages.edit', $page)
-            ->with('success', 'Semua teks dan gambar dikembalikan ke bawaan.');
+            ->with('success', 'Semua teks dan gambar dikembalikan ke setelan default.');
     }
 }
