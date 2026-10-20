@@ -39,5 +39,9 @@
 
     {{-- Global Footer --}}
     @include('components.footer')
+
+    @if (\App\Support\PageContents::previewing())
+        @include('partials.cms-preview')
+    @endif
 </body>
 </html>

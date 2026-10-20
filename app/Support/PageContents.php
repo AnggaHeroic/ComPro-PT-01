@@ -38,7 +38,7 @@ class PageContents
                 'description' => 'Teks pada halaman utama website.',
                 'sections' => [
                     'hero' => [
-                        'label' => 'Bagian utama (Hero)',
+                        'label' => 'Bagian utama',
                         'description' => 'Bagian paling atas halaman. Warnai kata pada judul dengan tombol Warnai merah.',
                         'fields' => [
                             'hero_eyebrow' => ['label' => 'Teks kecil di atas judul', 'default' => 'PT. Putra Maju Sukses', 'max' => 80],
@@ -285,6 +285,27 @@ class PageContents
                 ],
             ],
         ];
+    }
+
+    /** Mode pratinjau admin: halaman publik dibuka di iframe dengan ?cms-preview, hanya untuk admin yang login. */
+    public static function previewing(): bool
+    {
+        return request()->query('cms-preview') !== null && auth()->check();
+    }
+
+    /**
+     * Atribut penanda bagian halaman. Kosong di halaman publik biasa; di mode pratinjau
+     * dipakai agar admin bisa mengklik bagian dan langsung membuka form-nya.
+     */
+    public function mark(string $section): HtmlString
+    {
+        $label = self::definitions()[$this->page]['sections'][$section]['label'] ?? null;
+
+        if ($label === null || ! self::previewing()) {
+            return new HtmlString('');
+        }
+
+        return new HtmlString(' data-cms-section="'.e($section).'" data-cms-label="'.e($label).'"');
     }
 
     /** Tautan telepon: hanya angka dan tanda + yang dipertahankan. */

@@ -23,7 +23,7 @@
     $hiddenCategories = max(0, count($serviceCategories) - 12);
 @endphp
 
-<header
+<header{!! $siteInfo->mark('identity') !!}
     x-data="{
         open: false,
         servicesOpen: {{ request()->routeIs('services.category', 'services.detail') ? 'true' : 'false' }},

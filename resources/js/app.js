@@ -630,6 +630,127 @@ Alpine.data('reorderList', ({ url }) => ({
 }));
 
 /**
+ * Form konten halaman admin: tab per bagian + pratinjau halaman publik di iframe.
+ * Mengklik sebuah bagian pada pratinjau (halaman publik dibuka dengan ?cms-preview)
+ * membuka form bagian itu saja; memilih tab menyorot bagiannya di pratinjau.
+ */
+Alpine.data('pageEditor', ({ active, sections, noPreview = [], external = {}, previewUrl = null }) => ({
+    active,
+    sections,
+    noPreview,
+    external,
+    previewUrl,
+    notice: null,
+    wide: false,
+    previewOpen: false,
+    scale: 0.3,
+    frameHeight: 1200,
+    noticeTimer: null,
+
+    init() {
+        const query = window.matchMedia('(min-width: 1280px)');
+
+        this.wide = query.matches;
+        this.previewOpen = this.wide && this.previewUrl !== null;
+
+        query.addEventListener('change', (event) => {
+            this.wide = event.matches;
+            if (this.wide && this.previewUrl) this.previewOpen = true;
+            this.$nextTick(() => this.fit());
+        });
+
+        window.addEventListener('message', (event) => {
+            if (event.origin !== window.location.origin || !event.data) return;
+
+            if (event.data.type === 'cms-select') {
+                this.select(event.data.section, true);
+            } else if (event.data.type === 'cms-ready') {
+                this.syncActive(false);
+            }
+        });
+
+        this.$watch('previewOpen', (open) => {
+            if (open) this.$nextTick(() => this.fit());
+        });
+
+        window.addEventListener('resize', () => this.fit());
+        this.$nextTick(() => this.fit());
+    },
+
+    /** Skala iframe (lebar 1280 px, tampilan desktop) agar muat di lebar panel pratinjau. */
+    fit() {
+        const pane = this.$refs.pane;
+
+        if (!pane || pane.clientWidth === 0) return;
+
+        this.scale = pane.clientWidth / 1280;
+        this.frameHeight = Math.ceil(pane.clientHeight / this.scale);
+    },
+
+    openPreview() {
+        this.previewOpen = true;
+        this.$nextTick(() => this.fit());
+    },
+
+    reloadPreview() {
+        const frame = this.$refs.frame;
+
+        if (frame) frame.src = this.previewUrl;
+    },
+
+    /** Pilih bagian: tampilkan form-nya dan sorot bagian itu di pratinjau. */
+    select(key, fromPreview = false) {
+        if (!this.sections.includes(key)) {
+            // Mis. logo/footer yang diatur di halaman lain.
+            const info = this.external[key];
+
+            if (fromPreview && info) {
+                this.notice = info;
+                clearTimeout(this.noticeTimer);
+                this.noticeTimer = setTimeout(() => (this.notice = null), 8000);
+
+                if (info.here && this.sections.includes(key)) this.active = key;
+            }
+
+            return;
+        }
+
+        this.notice = null;
+        this.active = key;
+        this.syncActive(!fromPreview);
+
+        if (fromPreview) {
+            this.$nextTick(() => this.$refs.top?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+        }
+    },
+
+    /** Kirim bagian aktif ke pratinjau (sorot; gulir bila dipilih lewat tab). */
+    syncActive(scroll = false) {
+        const frame = this.$refs.frame;
+
+        if (!frame?.contentWindow || this.noPreview.includes(this.active)) return;
+
+        frame.contentWindow.postMessage(
+            { type: 'cms-active', section: this.active, scroll },
+            window.location.origin,
+        );
+    },
+
+    /**
+     * Kolom wajib yang kosong di bagian yang sedang disembunyikan tidak bisa difokuskan
+     * browser; buka bagiannya lebih dulu lalu tampilkan pesannya.
+     */
+    onInvalid(event) {
+        const section = event.target.closest('[data-section]')?.dataset.section;
+
+        if (section && section !== this.active) {
+            this.active = section;
+            this.$nextTick(() => event.target.reportValidity());
+        }
+    },
+}));
+
+/**
  * Dialog konfirmasi admin. Dipakai otomatis untuk semua form non-GET di admin
  * (lihat listener di bawah) dan bisa dipanggil langsung:
  *   const ok = await Alpine.store('confirm').ask({ title, message, label, tone });

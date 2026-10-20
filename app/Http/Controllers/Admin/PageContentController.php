@@ -18,7 +18,11 @@ class PageContentController extends Controller
 
     public function index(): View
     {
-        return view('admin.pages.index', ['pages' => PageContents::definitions()]);
+        return view('admin.pages.index', [
+            'pages' => PageContents::definitions(),
+            'lastEdited' => PageContent::query()->selectRaw('page, max(updated_at) as last')->groupBy('page')->pluck('last', 'page'),
+            'customised' => PageContent::query()->selectRaw('page, count(*) as total')->groupBy('page')->pluck('total', 'page'),
+        ]);
     }
 
     public function edit(string $page): View
@@ -104,8 +108,12 @@ class PageContentController extends Controller
             $images->release($path);
         }
 
+        // Tetap di bagian yang sedang diedit.
+        $section = $request->input('bagian');
+        $section = is_string($section) && array_key_exists($section, PageContents::definitions()[$page]['sections']) ? $section : null;
+
         return redirect()
-            ->route('admin.pages.edit', $page)
+            ->route('admin.pages.edit', array_filter(['page' => $page, 'bagian' => $section]))
             ->with('success', 'Konten halaman berhasil disimpan.');
     }
 

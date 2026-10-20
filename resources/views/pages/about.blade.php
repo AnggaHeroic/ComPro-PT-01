@@ -6,7 +6,7 @@
 
 @section('content')
     {{-- Hero Section --}}
-    <section class="bg-white">
+    <section{!! $content->mark('hero') !!} class="bg-white">
         <div class="container-site">
             <div class="relative border-b border-slate-200">
 
@@ -90,7 +90,7 @@
     </section>
 
     {{-- Tentang Perusahaan --}}
-    <section class="bg-white">
+    <section{!! $content->mark('profile') !!} class="bg-white">
         <div class="container-site">
             <div class="grid gap-12 border-b border-slate-200 py-20 lg:grid-cols-12 lg:gap-20 lg:py-24">
 
@@ -161,7 +161,7 @@
                             class="h-full min-h-[280px] w-full object-cover"
                         >
                     </div>
-                    <div class="mt-6 border border-slate-300 bg-white px-7 sm:px-8">
+                    <div{!! $content->mark('facts') !!} class="mt-6 border border-slate-300 bg-white px-7 sm:px-8">
                         <div class="divide-y divide-slate-200">
                             <div class="py-5">
                                 <span class="font-display text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
@@ -204,7 +204,7 @@
     </section>
 
     {{-- Visi & Misi --}}
-    <section class="border-t border-slate-200 bg-surface">
+    <section{!! $content->mark('direction') !!} class="border-t border-slate-200 bg-surface">
 
         {{-- Section Heading --}}
         <div class="border-y border-primary bg-secondary-dark">
@@ -311,7 +311,7 @@
     </section>
 
     {{-- Tujuan Perusahaan --}}
-    <section class="bg-white">
+    <section{!! $content->mark('objectives') !!} class="bg-white">
         <div class="container-site">
             <div class="border-y border-slate-200 py-14 sm:py-16 lg:py-20">
 
@@ -348,7 +348,7 @@
                 </div>
             </div>
         </div>
-        <section class="bg-surface">
+        <section{!! $content->mark('cta') !!} class="bg-surface">
             <div class="container-site">
                 <div class="border-y border-slate-200 py-14 sm:py-16 lg:py-20">
                     <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
