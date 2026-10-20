@@ -8,7 +8,7 @@
 
         <title>Admin — {{ config('app.name') }}</title>
 
-        <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
+        <x-favicon />
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>

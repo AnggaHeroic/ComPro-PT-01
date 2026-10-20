@@ -197,4 +197,37 @@ class ContactPageContentTest extends TestCase
         auth()->logout();
         $this->assertStringContainsString('src="'.asset('images/logo.png').'"', $this->get('/')->getContent());
     }
+
+    public function test_logo_also_drives_the_admin_panel_login_page_and_favicon(): void
+    {
+        $default = asset('images/logo.png');
+
+        $this->get('/admin')
+            ->assertSee('<link rel="icon" href="'.$default.'">', false)
+            ->assertSee('src="'.$default.'"', false);
+
+        $this->put('/admin/pages/contact', $this->texts(['company_logo_alt' => 'Logo Admin']) + [
+            'image_company_logo' => UploadedFile::fake()->image('logo.png', 500, 160),
+        ])->assertSessionHasNoErrors();
+        $url = Storage::disk('public')->url(PageContent::where('key', 'company_logo')->value('value'));
+
+        // Panel admin: bilah atas mobile dan sidebar memakai logo baru, begitu pula favicon.
+        $admin = $this->get('/admin/categories')->getContent();
+        $this->assertSame(2, substr_count($admin, 'src="'.$url.'"'));
+        $this->assertStringContainsString('<link rel="icon" href="'.$url.'">', $admin);
+        $this->assertStringContainsString('alt="Logo Admin"', $admin);
+        $this->assertStringNotContainsString($default, $admin);
+
+        // Halaman login (tamu): logo di panel kiri dan di form, serta favicon.
+        auth()->logout();
+        $login = $this->get('/login')->getContent();
+        $this->assertSame(2, substr_count($login, 'src="'.$url.'"'));
+        $this->assertStringContainsString('<link rel="icon" href="'.$url.'">', $login);
+        $this->assertStringNotContainsString($default, $login);
+
+        // Halaman publik: favicon + navbar + footer.
+        $home = $this->get('/')->getContent();
+        $this->assertStringContainsString('<link rel="icon" href="'.$url.'">', $home);
+        $this->assertSame(3, substr_count($home, $url));
+    }
 }

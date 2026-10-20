@@ -252,9 +252,9 @@ class PageContents
                     ],
                     'identity' => [
                         'label' => 'Identitas perusahaan',
-                        'description' => 'Logo dan deskripsi singkat ini tampil di navbar dan footer seluruh halaman website. Email, telepon, dan alamat di atas juga dipakai footer.',
+                        'description' => 'Logo tampil di navbar, footer, panel admin, halaman login, dan sebagai favicon. Deskripsi singkat tampil di footer. Email, telepon, dan alamat di atas juga dipakai footer.',
                         'fields' => [
-                            'company_logo' => ['label' => 'Logo', 'type' => 'image', 'default' => '/images/logo.png', 'hint' => 'Dipakai di navbar dan footer dengan tinggi tetap; lebar menyesuaikan. Gunakan logo berlatar transparan atau putih, karena di footer logo tampil di dalam kotak putih.'],
+                            'company_logo' => ['label' => 'Logo', 'type' => 'image', 'default' => '/images/logo.png', 'hint' => 'Dipakai di navbar, footer, panel admin, halaman login, dan sebagai ikon tab browser (favicon). Tinggi tetap, lebar menyesuaikan. Gunakan logo berlatar transparan atau putih, karena di footer logo tampil di dalam kotak putih.'],
                             'company_logo_alt' => ['label' => 'Nama perusahaan pada logo (untuk pembaca layar)', 'default' => 'PT. Putra Maju Sukses', 'max' => 80],
                             'footer_description' => ['label' => 'Deskripsi singkat di bawah logo footer', 'default' => 'PT. Putra Maju Sukses merupakan perusahaan yang bergerak dalam berbagai bidang perdagangan dan layanan untuk memenuhi beragam kebutuhan pelanggan dan mitra bisnis.', 'type' => 'textarea', 'max' => 300],
                         ],
