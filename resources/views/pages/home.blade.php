@@ -289,7 +289,7 @@
 
                                 {{-- PHONE --}}
                                 <a
-                                    href="tel:081130521216"
+                                    href="{{ \App\Support\PageContents::telHref($contact('contact_phone')) }}"
                                     class="group flex gap-4 py-3.5 first:pt-0"
                                 >
                                     <x-icons.phone
@@ -306,14 +306,14 @@
                                         <span
                                             class="font-body mt-1 block text-sm text-secondary-dark transition-colors group-hover:text-primary"
                                         >
-                                            081130521216
+                                            {{ $contact('contact_phone') }}
                                         </span>
                                     </div>
                                 </a>
 
                                 {{-- EMAIL --}}
                                 <a
-                                    href="mailto:sputramaju@gmail.com"
+                                    href="mailto:{{ $contact('contact_email') }}"
                                     class="group flex gap-4 py-3.5"
                                 >
                                     <x-icons.mail
@@ -330,14 +330,14 @@
                                         <span
                                             class="font-body mt-1 block break-all text-sm text-secondary-dark transition-colors group-hover:text-primary"
                                         >
-                                            sputramaju@gmail.com
+                                            {{ $contact('contact_email') }}
                                         </span>
                                     </div>
                                 </a>
 
                                 {{-- ADDRESS --}}
                                 <a
-                                    href="https://www.google.com/maps/search/?api=1&query={{ urlencode('Jalan Tukad Batanghari Nomor 6, Panjer, Denpasar Selatan, Kota Denpasar') }}"
+                                    href="{{ \App\Support\PageContents::mapsSearchUrl($contact('contact_address')) }}"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     class="group flex gap-4 py-3.5 last:pb-0"
@@ -357,9 +357,7 @@
                                         <span
                                             class="font-body mt-1 block max-w-sm text-sm leading-6 text-secondary-dark transition-colors group-hover:text-primary"
                                         >
-                                            Jalan Tukad Batanghari No. 6,
-                                            Panjer, Denpasar Selatan,
-                                            Kota Denpasar
+                                            {{ $contact('contact_address') }}
                                         </span>
                                     </div>
                                 </a>

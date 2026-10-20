@@ -181,7 +181,77 @@ class PageContents
                     ],
                 ],
             ],
+            'contact' => [
+                'label' => 'Kontak Kami',
+                'description' => 'Teks, foto, dan data kontak perusahaan. Telepon, email, dan alamat juga tampil di bagian kontak Beranda.',
+                'sections' => [
+                    'hero' => [
+                        'label' => 'Bagian utama',
+                        'description' => 'Warnai kata pada judul dengan tombol Warnai merah.',
+                        'fields' => [
+                            'hero_label' => ['label' => 'Label kecil', 'default' => 'Kontak Kami', 'max' => 50],
+                            'hero_title' => ['label' => 'Judul', 'type' => 'title', 'default' => 'Mari terhubung dengan *PT. Putra Maju Sukses.*', 'max' => 140],
+                            'hero_description' => ['label' => 'Deskripsi', 'default' => 'Hubungi kami untuk mendapatkan informasi lebih lanjut mengenai bidang usaha, produk, dan layanan yang tersedia.', 'type' => 'textarea', 'max' => 300],
+                            'hero_image' => ['label' => 'Foto', 'type' => 'image', 'default' => 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1600&q=80', 'hint' => 'Dipakai di bagian utama (latar di desktop, kotak foto di mobile) dan sebagai latar bagian "Ada pertanyaan?" di bawah.'],
+                            'hero_image_alt' => ['label' => 'Keterangan foto (untuk pembaca layar)', 'default' => 'Interior ruang kantor modern', 'max' => 120],
+                        ],
+                    ],
+                    'info' => [
+                        'label' => 'Informasi kontak',
+                        'description' => 'Email, telepon, dan alamat ini juga tampil di bagian kontak halaman Beranda. Footer website belum terhubung dan akan disambungkan pada tahap footer.',
+                        'fields' => [
+                            'info_label' => ['label' => 'Label kecil', 'default' => 'Informasi Kontak', 'max' => 50],
+                            'info_title' => ['label' => 'Judul', 'default' => 'Terhubung dengan kami.', 'max' => 80],
+                            'contact_email' => ['label' => 'Email', 'default' => 'sputramaju@gmail.com', 'max' => 120, 'rules' => ['email:rfc']],
+                            'email_description' => ['label' => 'Keterangan email', 'default' => 'Kirim email untuk pertanyaan umum dan informasi bisnis.', 'type' => 'textarea', 'max' => 160],
+                            'contact_phone' => ['label' => 'Telepon', 'default' => '081130521216', 'max' => 30, 'rules' => ['regex:/^[0-9+\-\s()]+$/'], 'hint' => 'Angka saja atau dengan tanda + - ( ). Tombol telepon memakai nomor ini.'],
+                            'phone_description' => ['label' => 'Keterangan telepon', 'default' => 'Hubungi kami pada jam operasional untuk respon lebih cepat.', 'type' => 'textarea', 'max' => 160],
+                            'contact_address' => ['label' => 'Alamat', 'default' => 'Jalan Tukad Batanghari Nomor 6, Panjer, Denpasar Selatan, Kota Denpasar', 'type' => 'textarea', 'max' => 250, 'hint' => 'Dipakai juga untuk tautan dan peta Google Maps.'],
+                            'address_description' => ['label' => 'Keterangan alamat', 'default' => 'Kunjungi kantor kami untuk diskusi lebih lanjut.', 'type' => 'textarea', 'max' => 160],
+                        ],
+                    ],
+                    'location' => [
+                        'label' => 'Lokasi',
+                        'fields' => [
+                            'location_label' => ['label' => 'Label kecil', 'default' => 'Lokasi Kami', 'max' => 50],
+                            'location_title' => ['label' => 'Judul', 'default' => 'Temukan kami di sini.', 'max' => 80],
+                            'location_map_query' => ['label' => 'Kata kunci peta (opsional)', 'default' => '', 'max' => 250, 'optional' => true, 'hint' => 'Kosongkan untuk memakai alamat di atas. Isi bila peta kurang tepat, misalnya nama tempat atau koordinat.'],
+                        ],
+                    ],
+                    'cta' => [
+                        'label' => 'Ajakan di bagian bawah',
+                        'fields' => [
+                            'cta_label' => ['label' => 'Label kecil', 'default' => 'Ada Pertanyaan?', 'max' => 50],
+                            'cta_title' => ['label' => 'Judul', 'default' => 'Kami siap membantu Anda.', 'max' => 80],
+                            'cta_description' => ['label' => 'Deskripsi', 'default' => 'Tim kami siap memberikan informasi lebih lanjut mengenai produk, layanan, dan peluang kerja sama dengan PT. Putra Maju Sukses.', 'type' => 'textarea', 'max' => 300],
+                            'cta_button' => ['label' => 'Tombol', 'default' => 'Kirim Email', 'max' => 30, 'hint' => 'Tombol membuka email ke alamat email di atas.'],
+                        ],
+                    ],
+                    'seo' => [
+                        'label' => 'Mesin pencari',
+                        'fields' => [
+                            'seo_description' => ['label' => 'Deskripsi singkat untuk Google', 'default' => 'PT. Putra Maju Sukses merupakan perusahaan yang bergerak dalam berbagai bidang perdagangan dan layanan.', 'type' => 'textarea', 'max' => 200, 'hint' => 'Tidak tampil di halaman; dipakai mesin pencari.'],
+                        ],
+                    ],
+                ],
+            ],
         ];
+    }
+
+    /** Tautan telepon: hanya angka dan tanda + yang dipertahankan. */
+    public static function telHref(string $phone): string
+    {
+        return 'tel:'.preg_replace('/[^0-9+]/', '', $phone);
+    }
+
+    public static function mapsSearchUrl(string $query): string
+    {
+        return 'https://www.google.com/maps/search/?api=1&query='.rawurlencode($query);
+    }
+
+    public static function mapsEmbedUrl(string $query): string
+    {
+        return 'https://www.google.com/maps?q='.rawurlencode($query).'&output=embed';
     }
 
     public static function has(string $page): bool

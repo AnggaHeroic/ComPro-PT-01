@@ -38,7 +38,8 @@ class AppServiceProvider extends ServiceProvider
             ]);
         });
 
-        View::composer('pages.home', fn ($view) => $view->with('content', PageContents::for('home')));
+        View::composer('pages.home', fn ($view) => $view->with(['content' => PageContents::for('home'), 'contact' => PageContents::for('contact')]));
+        View::composer('pages.contact', fn ($view) => $view->with('content', PageContents::for('contact')));
         View::composer('pages.about', fn ($view) => $view->with('content', PageContents::for('about')));
 
         View::composer(['components.navbar', 'components.footer', 'pages.home'], function ($view) {
