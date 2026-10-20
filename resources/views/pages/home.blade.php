@@ -2,7 +2,7 @@
 
 @section('title', 'Beranda')
 
-@section('description', 'PT. Putra Maju Sukses merupakan perusahaan yang bergerak dalam berbagai bidang perdagangan dan layanan.')
+@section('description', $content('seo_description'))
 
 @section('content')
 
@@ -11,34 +11,30 @@
         <div class="container-site">
             <div class="max-w-6xl pt-16 pb-28 sm:pt-20 sm:pb-32 lg:pt-20 lg:pb-32">
                 <p class="font-display text-sm font-semibold uppercase tracking-[0.2em] text-primary">
-                    PT. Putra Maju Sukses
+                    {{ $content('hero_eyebrow') }}
                 </p>
                 <h1
                     class="font-display mt-7 max-w-5xl text-5xl font-bold leading-[1] tracking-tight text-secondary-dark sm:text-6xl lg:text-8xl"
                 >
-                    Produk dan
-                    <span class="text-primary">Solusi</span>
-                    untuk Berbagai Kebutuhan Bisnis.
+                    {{ $content('hero_title_before') }}
+                    <span class="text-primary">{{ $content('hero_title_highlight') }}</span>
+                    {{ $content('hero_title_after') }}
                 </h1>
 
                 <div class="mt-10 grid gap-8 lg:grid-cols-2 lg:items-end">
                     <p class="max-w-xl text-base leading-7 text-slate-600 sm:text-lg">
-                        PT. Putra Maju Sukses bergerak dalam berbagai
-                        bidang perdagangan dan layanan, mencakup
-                        teknologi informasi, kebutuhan rumah tangga,
-                        olahraga, peralatan industri, konstruksi,
-                        dan berbagai kebutuhan lainnya.
+                        {{ $content('hero_description') }}
                     </p>
                     <div class="flex flex-wrap gap-3 lg:justify-end">
                         <x-button href="{{ route('about') }}">
-                            Tentang Kami
+                            {{ $content('hero_button_primary') }}
                             <x-icons.arrow-right class="h-4 w-4" />
                         </x-button>
                         <x-button
                             href="{{ route('services') }}"
                             variant="secondary"
                         >
-                            Layanan & Jasa
+                            {{ $content('hero_button_secondary') }}
                         </x-button>
                     </div>
                 </div>
@@ -54,7 +50,7 @@
                 {{-- Section Label --}}
                 <div>
                     <span class="font-display text-xs font-bold uppercase tracking-[0.18em] text-primary">
-                        Tentang Perusahaan
+                        {{ $content('intro_label') }}
                     </span>
                 </div>
 
@@ -64,10 +60,10 @@
                         class="font-display text-4xl font-bold leading-[1.05] tracking-tight text-secondary-dark sm:text-5xl lg:text-6xl"
                     >
                         <span class="block">
-                            Beragam bidang.
+                            {{ $content('intro_title_line1') }}
                         </span>
                         <span class="block text-primary">
-                            Satu perusahaan.
+                            {{ $content('intro_title_line2') }}
                         </span>
                     </h2>
                 </div>
@@ -78,17 +74,13 @@
                     {{-- Description --}}
                     <div class="lg:col-span-7">
                         <p class="max-w-2xl text-base leading-8 text-slate-600 sm:text-lg">
-                            PT. Putra Maju Sukses merupakan perusahaan
-                            yang bergerak dalam berbagai bidang perdagangan
-                            dan layanan, mulai dari kebutuhan rumah tangga,
-                            teknologi informasi, peralatan industri,
-                            olahraga, hingga berbagai kebutuhan lainnya.
+                            {{ $content('intro_description') }}
                         </p>
                         <a
                             href="{{ route('about') }}"
                             class="font-display mt-8 inline-flex items-center gap-2 text-sm font-semibold text-primary transition-all duration-200 hover:gap-3"
                         >
-                            Mengenal perusahaan
+                            {{ $content('intro_link') }}
                             <span>→</span>
                         </a>
                     </div>
@@ -99,13 +91,13 @@
                             <p
                                 class="font-display text-7xl font-bold leading-none tracking-tight text-secondary-dark"
                             >
-                                14
+                                {{ $content('intro_stat_number') }}
                             </p>
                             <p class="font-display mt-4 text-base font-semibold leading-6 text-secondary-dark">
-                                Bidang usaha
+                                {{ $content('intro_stat_label') }}
                             </p>
                             <p class="mt-1 max-w-[220px] text-sm leading-6 text-slate-500">
-                                dalam berbagai sektor perdagangan dan layanan.
+                                {{ $content('intro_stat_description') }}
                             </p>
                         </div>
                     </div>
@@ -125,15 +117,15 @@
                     {{-- Left: Heading --}}
                     <div class="lg:col-span-7">
                         <span class="font-display text-xs font-bold uppercase tracking-[0.18em] text-primary">
-                            Bidang Usaha
+                            {{ $content('services_label') }}
                         </span>
                         <h2
                             class="font-display mt-6 max-w-3xl text-4xl font-bold leading-[1.05] tracking-tight text-secondary-dark sm:text-5xl lg:text-6xl"
                         >
-                            Beragam produk.
+                            {{ $content('services_title_line1') }}
                             <br>
                             <span class="text-primary">
-                                Beragam kebutuhan.
+                                {{ $content('services_title_line2') }}
                             </span>
                         </h2>
                     </div>
@@ -141,16 +133,14 @@
                     {{-- Right: Description + Links --}}
                     <div class="lg:col-span-5 lg:pt-10">
                         <p class="max-w-lg text-base leading-7 text-slate-600">
-                            PT. Putra Maju Sukses menyediakan berbagai produk dan
-                            layanan untuk mendukung kebutuhan perdagangan,
-                            teknologi, industri, dan perlengkapan lainnya.
+                            {{ $content('services_description') }}
                         </p>
                         <div class="mt-7 flex flex-col items-start gap-3">
                             <a
                                 href="{{ route('services') }}"
                                 class="font-display group inline-flex items-center gap-2 text-sm font-semibold text-primary"
                             >
-                                Lihat seluruh layanan
+                                {{ $content('services_link_services') }}
 
                                 <span class="transition-transform duration-200 group-hover:translate-x-1">
                                     →
@@ -160,7 +150,7 @@
                                 href="{{ route('contact') }}"
                                 class="font-display group inline-flex items-center gap-2 text-sm font-semibold text-secondary-dark"
                             >
-                                Hubungi kami
+                                {{ $content('services_link_contact') }}
 
                                 <span class="transition-transform duration-200 group-hover:translate-x-1">
                                     →
@@ -272,29 +262,27 @@
                         <span
                             class="font-display text-xs font-bold uppercase tracking-[0.18em] text-primary"
                         >
-                            Terhubung Dengan Kami
+                            {{ $content('cta_label') }}
                         </span>
 
                         <h2
                             class="font-display mt-5 max-w-xl text-4xl font-bold leading-[1.08] tracking-tight text-secondary-dark sm:text-5xl"
                         >
-                            Punya kebutuhan bisnis?
+                            {{ $content('cta_title_line1') }}
                             <span class="text-primary">
-                                Mari berdiskusi.
+                                {{ $content('cta_title_line2') }}
                             </span>
                         </h2>
 
                         <p
                             class="font-body mt-5 max-w-lg text-sm leading-7 text-slate-600 sm:text-base"
                         >
-                            Hubungi PT. Putra Maju Sukses untuk mendapatkan
-                            informasi mengenai produk, layanan, dan kebutuhan
-                            bisnis Anda.
+                            {{ $content('cta_description') }}
                         </p>
 
                         <div class="mt-6">
                             <x-button href="{{ route('contact') }}">
-                                Hubungi Kami
+                                {{ $content('cta_button') }}
                                 <x-icons.arrow-right class="h-4 w-4" />
                             </x-button>
                         </div>

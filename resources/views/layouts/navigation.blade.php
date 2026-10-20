@@ -51,6 +51,10 @@
         <div>
             <p class="mb-2 px-3 text-[11px] font-bold uppercase tracking-[0.14em] text-red-500">Konten</p>
             <div class="space-y-1">
+                <x-side-link :href="route('admin.pages.index')" :active="request()->routeIs('admin.pages.*')">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6"/><path d="M9 17h4"/></svg>
+                    Konten Halaman
+                </x-side-link>
                 <x-side-link :href="route('admin.categories.index')" :active="request()->routeIs('admin.categories.*')">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 12l9 4 9-4"/><path d="M3 17l9 4 9-4"/></svg>
                     Kategori

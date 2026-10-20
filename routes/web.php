@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\BusinessActivityController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GalleryController;
+use App\Http\Controllers\Admin\PageContentController;
 use App\Http\Controllers\Admin\ServiceCategoryController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ServiceController;
@@ -58,6 +59,16 @@ Route::middleware('auth')
                 Route::put('/{activity}/order', 'reorder')->name('reorder');
                 Route::patch('/{activity}/images/{image}', 'update')->name('update');
                 Route::delete('/{activity}/images/{image}', 'destroy')->name('destroy');
+            });
+
+        Route::controller(PageContentController::class)
+            ->prefix('pages')
+            ->name('pages.')
+            ->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::get('/{page}', 'edit')->name('edit');
+                Route::put('/{page}', 'update')->name('update');
+                Route::delete('/{page}', 'reset')->name('reset');
             });
 
         Route::get('/profil', [ProfileController::class, 'edit'])->name('profile.edit');
