@@ -1,5 +1,15 @@
 @php
-    $filtered = $search !== '' || $menu || $action;
+    $filtered = $search !== '' || $menu || $action || $from || $to;
+
+    // Pintasan rentang tanggal; filter lain (menu, aksi, pencarian) ikut dipertahankan.
+    $today = now()->timezone(config('app.timezone'))->toDateString();
+    $presets = [
+        'Hari ini' => [$today, $today],
+        '7 hari terakhir' => [now()->timezone(config('app.timezone'))->subDays(6)->toDateString(), $today],
+        '30 hari terakhir' => [now()->timezone(config('app.timezone'))->subDays(29)->toDateString(), $today],
+    ];
+    $baseQuery = request()->except(['dari', 'sampai', 'page']);
+    $dateInput = 'rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20';
 @endphp
 
 <x-app-layout>
@@ -28,12 +38,37 @@
 
             <x-secondary-button type="submit">Cari</x-secondary-button>
 
-            <div class="flex w-full items-center gap-2 sm:w-auto">
-                @if ($filtered)
-                    <a href="{{ route('admin.activity-log.index') }}" class="px-2 text-sm text-gray-500 hover:text-primary">Reset</a>
-                @endif
-                <span class="px-1 text-sm text-gray-500">{{ $logs->total() }} catatan</span>
+            <div class="flex w-full flex-wrap items-center gap-x-3 gap-y-2 border-t border-gray-200 pt-3">
+                <span class="text-sm font-medium text-gray-600">Rentang tanggal</span>
+
+                <div class="flex flex-wrap items-center gap-2">
+                    <input type="date" name="dari" value="{{ $from }}" max="{{ $today }}" onchange="this.form.submit()" aria-label="Dari tanggal" class="{{ $dateInput }}">
+                    <span class="text-gray-400" aria-hidden="true">–</span>
+                    <input type="date" name="sampai" value="{{ $to }}" max="{{ $today }}" onchange="this.form.submit()" aria-label="Sampai tanggal" class="{{ $dateInput }}">
+                </div>
+
+                <div class="flex flex-wrap items-center gap-1.5">
+                    @foreach ($presets as $label => [$presetFrom, $presetTo])
+                        @php($active = $from === $presetFrom && $to === $presetTo)
+                        <a
+                            href="{{ route('admin.activity-log.index', $baseQuery + ['dari' => $presetFrom, 'sampai' => $presetTo]) }}"
+                            @class([
+                                'rounded-sm border px-2.5 py-1.5 text-xs font-medium transition',
+                                'border-primary bg-primary text-white' => $active,
+                                'border-gray-300 bg-white text-gray-600 hover:border-gray-400 hover:bg-gray-50' => ! $active,
+                            ])
+                        >{{ $label }}</a>
+                    @endforeach
+                </div>
+
+                <div class="flex items-center gap-2 sm:ml-auto">
+                    @if ($filtered)
+                        <a href="{{ route('admin.activity-log.index') }}" class="px-2 text-sm text-gray-500 hover:text-primary">Reset</a>
+                    @endif
+                    <span class="px-1 text-sm text-gray-500">{{ $logs->total() }} catatan</span>
+                </div>
             </div>
+
         </form>
 
         <div class="overflow-x-auto">

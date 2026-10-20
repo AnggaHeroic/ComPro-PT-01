@@ -3,6 +3,8 @@
 namespace App\Support;
 
 use App\Models\PageContent;
+use App\Models\PageContentDefault;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\HtmlString;
 
@@ -17,6 +19,9 @@ class PageContents
 {
     /** @var array<string, string>|null */
     private ?array $stored = null;
+
+    /** Setelan default kustom yang ditetapkan admin (lapisan di antara isi tersimpan dan teks bawaan sistem). @var array<string, string>|null */
+    private ?array $defaults = null;
 
     /** Nilai yang belum disimpan, hanya dipakai saat pratinjau bagian dirender (tidak pernah ke database). @var array<string, array<string, string>> */
     private static array $overrides = [];
@@ -406,43 +411,35 @@ class PageContents
         return $fields;
     }
 
-    /** Nilai yang dipakai: hasil suntingan admin, atau teks bawaan. */
+    /** Nilai yang dipakai: isi tersimpan, lalu setelan default kustom, lalu teks bawaan sistem. */
     public function get(string $key): string
     {
         $this->load();
 
-        // Kolom opsional boleh disimpan kosong (artinya disembunyikan); selebihnya kosong = bawaan.
-        return array_key_exists($key, $this->stored)
-            ? (string) $this->stored[$key]
+        // Kolom opsional boleh disimpan kosong (artinya disembunyikan); selebihnya kosong = default.
+        if (array_key_exists($key, $this->stored)) {
+            return (string) $this->stored[$key];
+        }
+
+        $defaults = $this->loadDefaults();
+
+        return array_key_exists($key, $defaults)
+            ? (string) $defaults[$key]
             : (string) (self::fields($this->page)[$key]['default'] ?? '');
     }
 
-    /**
-     * Daftar butir (kolom bertipe list). Disimpan sebagai JSON; bawaan dipakai bila belum diubah.
-     *
-     * @return list<string>
-     */
     public function list(string $key): array
     {
-        $this->load();
-
-        $items = isset($this->stored[$key]) ? json_decode($this->stored[$key], true) : null;
+        $items = $this->decoded($key);
 
         return is_array($items) && $items !== []
             ? array_values(array_filter($items, 'is_string'))
             : (array) (self::fields($this->page)[$key]['default'] ?? []);
     }
 
-    /**
-     * Daftar kartu judul + uraian (kolom bertipe cards).
-     *
-     * @return list<array{title: string, text: string}>
-     */
     public function cards(string $key): array
     {
-        $this->load();
-
-        $items = isset($this->stored[$key]) ? json_decode($this->stored[$key], true) : null;
+        $items = $this->decoded($key);
 
         if (is_array($items) && $items !== []) {
             $cards = [];
@@ -472,7 +469,6 @@ class PageContents
         return new HtmlString(nl2br($html, false));
     }
 
-    /** URL gambar: unggahan admin bila ada, selain itu gambar bawaan. */
     public function image(string $key): string
     {
         $custom = $this->customImagePath($key);
@@ -484,9 +480,14 @@ class PageContents
         return $this->defaultImage($key);
     }
 
-    /** URL gambar bawaan; path relatif (mis. logo di /public) mengikuti URL aplikasi. */
     public function defaultImage(string $key): string
     {
+        $path = $this->loadDefaults()[$key] ?? null;
+
+        if (filled($path)) {
+            return Storage::disk(config('images.disk'))->url($path);
+        }
+
         $default = (string) (self::fields($this->page)[$key]['default'] ?? '');
 
         return str_starts_with($default, '/') ? asset(ltrim($default, '/')) : $default;
@@ -500,12 +501,89 @@ class PageContents
         return filled($this->stored[$key] ?? null) ? $this->stored[$key] : null;
     }
 
+    /** Isi tersimpan + default kustom dimuat sekaligus (satu query) agar halaman publik tetap ringan. */
     private function load(): void
     {
-        $this->stored ??= array_merge(
-            PageContent::where('page', $this->page)->pluck('value', 'key')->all(),
+        if ($this->stored !== null && $this->defaults !== null) {
+            return;
+        }
+
+        $rows = DB::table('page_contents')
+            ->select(DB::raw("'v' as src"), 'key', 'value')
+            ->where('page', $this->page)
+            ->unionAll(
+                DB::table('page_content_defaults')
+                    ->select(DB::raw("'d' as src"), 'key', 'value')
+                    ->where('page', $this->page)
+            )
+            ->get();
+
+        $this->stored = array_merge(
+            $rows->where('src', 'v')->pluck('value', 'key')->all(),
             self::$overrides[$this->page] ?? [],
         );
+        $this->defaults = $rows->where('src', 'd')->pluck('value', 'key')->all();
+    }
+
+    /** @return array<string, string> */
+    private function loadDefaults(): array
+    {
+        $this->load();
+
+        return $this->defaults;
+    }
+
+    /** Isi daftar (list/cards): tersimpan, lalu default kustom; null bila keduanya tidak ada. */
+    private function decoded(string $key): mixed
+    {
+        $this->load();
+
+        $raw = $this->stored[$key] ?? $this->loadDefaults()[$key] ?? null;
+
+        return $raw === null ? null : json_decode($raw, true);
+    }
+
+    /** Baris isi tersimpan mentah (kunci => nilai), tanpa nilai pratinjau. @return array<string, string> */
+    public function storedValues(): array
+    {
+        return PageContent::where('page', $this->page)->pluck('value', 'key')->all();
+    }
+
+    /** Baris setelan default kustom mentah (kunci => nilai). @return array<string, string> */
+    public function defaultValues(): array
+    {
+        return $this->loadDefaults();
+    }
+
+    public function hasCustomDefaults(): bool
+    {
+        return $this->loadDefaults() !== [];
+    }
+
+    public function defaultsUpdatedAt(): ?\Illuminate\Support\Carbon
+    {
+        $last = PageContentDefault::where('page', $this->page)->max('updated_at');
+
+        return $last ? \Illuminate\Support\Carbon::parse($last) : null;
+    }
+
+    /**
+     * Nilai default yang berlaku untuk sebuah kolom: default kustom bila ada, selain itu bawaan sistem.
+     * Teks => string; list/cards => array; gambar => path (default kustom) atau URL/path bawaan.
+     */
+    public function defaultValue(string $key): mixed
+    {
+        $field = self::fields($this->page)[$key] ?? [];
+        $type = $field['type'] ?? 'text';
+        $custom = $this->loadDefaults()[$key] ?? null;
+
+        if ($type === 'list' || $type === 'cards') {
+            $decoded = $custom === null ? null : json_decode($custom, true);
+
+            return is_array($decoded) && $decoded !== [] ? $decoded : (array) ($field['default'] ?? []);
+        }
+
+        return $custom !== null ? (string) $custom : (string) ($field['default'] ?? '');
     }
 
     public function __invoke(string $key): string

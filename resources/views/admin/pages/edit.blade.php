@@ -210,14 +210,55 @@
         <x-admin.form-actions :cancel="route('admin.pages.index')" />
     </form>
 
-    <form
-        method="POST"
-        action="{{ route('admin.pages.reset', $page) }}"
-        class="mt-6"
-        data-confirm-title="Kembali ke setelan default?" data-confirm-message="Semua teks dan foto halaman ini akan dikembalikan ke setelan default. Perubahan yang pernah disimpan akan hilang." data-confirm-label="Ya, kembalikan"
-    >
-        @csrf
-        @method('DELETE')
-        <button type="submit" class="text-sm font-medium text-red-700 underline-offset-2 hover:underline">Kembali ke setelan default</button>
-    </form>
+    {{-- Setelan default halaman --}}
+    <section class="mt-8 rounded-sm border border-gray-300 bg-white">
+        <header class="border-b border-gray-300 bg-gray-50 px-4 py-3 sm:px-5">
+            <h2 class="text-sm font-semibold text-gray-900">Setelan default</h2>
+            <p class="mt-0.5 text-xs leading-5 text-gray-500">
+                @if ($content->hasCustomDefaults())
+                    Setelan default halaman ini ditetapkan oleh admin pada {{ $content->defaultsUpdatedAt()->locale('id')->translatedFormat('d M Y, H:i') }}.
+                @else
+                    Halaman ini memakai setelan default bawaan sistem.
+                @endif
+                Tombol "Kembali ke setelan default" mengembalikan seluruh konten halaman ke setelan tersebut.
+            </p>
+        </header>
+
+        <div class="flex flex-wrap items-start gap-3 p-4 sm:p-5">
+            <form
+                method="POST"
+                action="{{ route('admin.pages.default.set', $page) }}"
+                data-confirm-title="Jadikan konten ini setelan default?"
+                data-confirm-message="Konten halaman yang sudah tersimpan akan menjadi setelan default baru. Perubahan di form yang belum disimpan tidak ikut. Tampilan website tidak berubah."
+                data-confirm-label="Ya, jadikan default"
+            >
+                @csrf
+                <x-secondary-button type="submit">Jadikan konten tersimpan sebagai default</x-secondary-button>
+            </form>
+
+            <form
+                method="POST"
+                action="{{ route('admin.pages.reset', $page) }}"
+                data-confirm-title="Kembali ke setelan default?" data-confirm-message="Semua teks dan foto halaman ini akan dikembalikan ke setelan default. Perubahan yang pernah disimpan akan hilang." data-confirm-label="Ya, kembalikan"
+            >
+                @csrf
+                @method('DELETE')
+                <x-secondary-button type="submit" class="border-red-300! text-red-700! hover:border-red-400! hover:bg-red-50!">Kembali ke setelan default</x-secondary-button>
+            </form>
+
+            @if ($content->hasCustomDefaults())
+                <form
+                    method="POST"
+                    action="{{ route('admin.pages.default.clear', $page) }}"
+                    data-confirm-title="Pakai default bawaan sistem?"
+                    data-confirm-message="Setelan default kustom dihapus dan acuannya kembali ke teks bawaan sistem. Tampilan website saat ini tidak berubah."
+                    data-confirm-label="Ya, hapus default kustom"
+                >
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="px-1 py-2.5 text-sm font-medium text-gray-600 underline-offset-2 hover:text-primary hover:underline">Pakai default bawaan sistem</button>
+                </form>
+            @endif
+        </div>
+    </section>
 </x-app-layout>

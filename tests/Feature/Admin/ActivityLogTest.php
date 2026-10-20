@@ -249,4 +249,80 @@ class ActivityLogTest extends TestCase
         $this->get('/admin/activity-log?action=password')->assertSee('Uji password')->assertDontSee('Uji login');
         $this->assertStringContainsString('<option value="password"', $html);
     }
+
+    private function logAt(string $datetime, string $detail): void
+    {
+        $log = ActivityLog::create(['user_id' => $this->admin->id, 'user_name' => 'Admin Uji', 'action' => 'updated', 'menu' => 'Profil', 'detail' => $detail]);
+        $log->forceFill(['created_at' => $datetime])->save();
+    }
+
+    public function test_date_range_filter_is_inclusive_swaps_reversed_dates_and_ignores_invalid_ones(): void
+    {
+        $this->logAt('2026-10-01 00:00:00', 'Awal Oktober');
+        $this->logAt('2026-10-10 23:59:59', 'Akhir sepuluh');
+        $this->logAt('2026-10-11 00:00:01', 'Awal sebelas');
+        $this->logAt('2026-10-20 12:00:00', 'Tengah dua puluh');
+
+        // Satu hari tertentu (dari = sampai), termasuk jam terakhir hari itu.
+        $this->get('/admin/activity-log?dari=2026-10-10&sampai=2026-10-10')
+            ->assertSee('Akhir sepuluh')->assertDontSee('Awal sebelas')->assertDontSee('Awal Oktober')->assertSee('1 catatan');
+
+        // Rentang: kedua ujung ikut.
+        $this->get('/admin/activity-log?dari=2026-10-01&sampai=2026-10-11')
+            ->assertSee('Awal Oktober')->assertSee('Akhir sepuluh')->assertSee('Awal sebelas')->assertDontSee('Tengah dua puluh')->assertSee('3 catatan');
+
+        // Hanya batas awal atau hanya batas akhir.
+        $this->get('/admin/activity-log?dari=2026-10-11')->assertSee('Awal sebelas')->assertSee('Tengah dua puluh')->assertDontSee('Akhir sepuluh');
+        $this->get('/admin/activity-log?sampai=2026-10-01')->assertSee('Awal Oktober')->assertDontSee('Akhir sepuluh');
+
+        // Terbalik: otomatis ditukar.
+        $this->get('/admin/activity-log?dari=2026-10-11&sampai=2026-10-01')->assertSee('3 catatan')->assertSee('value="2026-10-01"', false);
+
+        // Tidak valid atau mustahil: diabaikan (semua tampil).
+        foreach (['dari=abc', 'dari=2026-02-31', 'sampai=2026-13-01', 'dari[]=x'] as $query) {
+            $this->get('/admin/activity-log?'.$query)->assertOk()->assertSee('4 catatan');
+        }
+    }
+
+    public function test_date_filter_combines_with_other_filters_and_shows_presets(): void
+    {
+        $today = now()->timezone(config('app.timezone'));
+        ActivityLogger::record('created', 'Kategori', 'Catatan hari ini');
+        $this->logAt($today->copy()->subDays(3)->format('Y-m-d').' 10:00:00', 'Catatan tiga hari lalu');
+        $this->logAt($today->copy()->subDays(20)->format('Y-m-d').' 10:00:00', 'Catatan dua puluh hari lalu');
+
+        $response = $this->get('/admin/activity-log')
+            ->assertSee('Rentang tanggal')
+            ->assertSee('name="dari"', false)
+            ->assertSee('name="sampai"', false)
+            ->assertSee('Hari ini')->assertSee('7 hari terakhir')->assertSee('30 hari terakhir');
+
+        // Pintasan membawa rentang yang benar dan menandai dirinya aktif.
+        $this->get('/admin/activity-log?dari='.$today->copy()->subDays(6)->toDateString().'&sampai='.$today->toDateString())
+            ->assertSee('Catatan hari ini')->assertSee('Catatan tiga hari lalu')->assertDontSee('Catatan dua puluh hari lalu')
+            ->assertSee('border-primary bg-primary text-white', false);
+
+        $this->get('/admin/activity-log?dari='.$today->toDateString().'&sampai='.$today->toDateString())
+            ->assertSee('Catatan hari ini')->assertDontSee('Catatan tiga hari lalu');
+
+        // Digabung dengan menu dan pencarian.
+        $this->get('/admin/activity-log?menu=Kategori&dari='.$today->copy()->subDays(30)->toDateString())->assertSee('Catatan hari ini')->assertDontSee('Catatan tiga hari lalu');
+        $this->get('/admin/activity-log?q=tiga&dari='.$today->copy()->subDays(30)->toDateString())->assertSee('Catatan tiga hari lalu')->assertDontSee('Catatan hari ini');
+
+        // Rentang tanpa hasil, dan tombol Reset muncul.
+        $this->get('/admin/activity-log?dari=2000-01-01&sampai=2000-01-02')->assertSee('Tidak ada catatan yang cocok')->assertSee('Reset');
+    }
+
+    public function test_date_filter_is_kept_across_pages(): void
+    {
+        for ($i = 1; $i <= 30; $i++) {
+            $this->logAt('2026-10-05 10:00:00', "Catatan rentang {$i}");
+        }
+        $this->logAt('2026-09-01 10:00:00', 'Di luar rentang');
+
+        $this->get('/admin/activity-log?dari=2026-10-01&sampai=2026-10-31')
+            ->assertSee('30 catatan')
+            ->assertSee('dari=2026-10-01&amp;sampai=2026-10-31&amp;page=2', false)
+            ->assertDontSee('Di luar rentang');
+    }
 }

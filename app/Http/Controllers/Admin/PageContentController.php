@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\PageContentRequest;
 use App\Models\ActivityLog;
 use App\Models\PageContent;
+use App\Models\PageContentDefault;
 use App\Models\ServiceCategory;
 use App\Services\ImageUploader;
 use App\Support\ActivityLogger;
@@ -15,6 +16,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 
 class PageContentController extends Controller
@@ -75,7 +77,7 @@ class PageContentController extends Controller
                     ));
 
                     // Sama dengan bawaan: tidak perlu disimpan.
-                    $value = $items === $field['default'] ? '' : json_encode($items, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                    $value = $items === $content->defaultValue($key) ? '' : json_encode($items, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
                     if ($value === '') {
                         PageContent::where(['page' => $page, 'key' => $key])->delete();
@@ -90,7 +92,7 @@ class PageContentController extends Controller
                 $value = trim(str_replace(["\r\n", "\r"], "\n", (string) ($submitted[$key] ?? '')));
 
                 // Sama dengan teks bawaan: tidak perlu disimpan.
-                if ($value === $field['default']) {
+                if ($value === $content->defaultValue($key)) {
                     PageContent::where(['page' => $page, 'key' => $key])->delete();
 
                     continue;
@@ -173,6 +175,110 @@ class PageContentController extends Controller
 
         if ($sections !== []) {
             ActivityLogger::record(ActivityLog::ACTION_UPDATED, 'Konten Halaman', $definition['label'].' — mengubah bagian: '.implode(', ', array_keys($sections)));
+        }
+    }
+
+    /**
+     * Jadikan isi halaman yang sudah tersimpan sebagai setelan default baru. Tampilan website
+     * tidak berubah; hanya acuan untuk "Kembali ke setelan default" yang berganti.
+     */
+    public function setDefault(string $page, ImageUploader $images): RedirectResponse
+    {
+        abort_unless(PageContents::has($page), 404);
+
+        $content = PageContents::for($page);
+        $stored = $content->storedValues();
+        $oldDefaults = $content->defaultValues();
+        $new = [];
+
+        foreach (PageContents::fields($page) as $key => $field) {
+            $raw = $stored[$key] ?? $oldDefaults[$key] ?? null;
+
+            if ($raw === null) {
+                continue;
+            }
+
+            $type = $field['type'] ?? 'text';
+
+            // Yang sama dengan teks bawaan sistem tidak perlu disimpan sebagai default kustom.
+            if (in_array($type, ['list', 'cards'], true) && json_decode($raw, true) === ($field['default'] ?? null)) {
+                continue;
+            }
+
+            if (! in_array($type, ['list', 'cards', 'image'], true) && $raw === (string) ($field['default'] ?? '')) {
+                continue;
+            }
+
+            $new[$key] = $raw;
+        }
+
+        DB::transaction(function () use ($page, $new) {
+            PageContentDefault::where('page', $page)->delete();
+
+            foreach ($new as $key => $value) {
+                PageContentDefault::create(['page' => $page, 'key' => $key, 'value' => $value]);
+            }
+
+            // Isi tersimpan kini identik dengan default, jadi barisnya tidak diperlukan lagi.
+            PageContent::where('page', $page)->delete();
+        });
+
+        $this->releaseImages($page, $images, $stored + $oldDefaults);
+
+        ActivityLogger::record(ActivityLog::ACTION_DEFAULT, 'Konten Halaman', PageContents::definitions()[$page]['label'].' — konten saat ini dijadikan setelan default');
+
+        return redirect()
+            ->route('admin.pages.edit', $page)
+            ->with('success', 'Konten tersimpan saat ini dijadikan setelan default.');
+    }
+
+    /**
+     * Hapus setelan default kustom (kembali ke teks bawaan sistem) tanpa mengubah tampilan website:
+     * isi yang selama ini hanya mengikuti default kustom dipindahkan menjadi isi tersimpan.
+     */
+    public function clearDefault(string $page, ImageUploader $images): RedirectResponse
+    {
+        abort_unless(PageContents::has($page), 404);
+
+        $content = PageContents::for($page);
+        $defaults = $content->defaultValues();
+
+        if ($defaults === []) {
+            return redirect()->route('admin.pages.edit', $page)->with('success', 'Halaman ini sudah memakai setelan default bawaan sistem.');
+        }
+
+        $stored = $content->storedValues();
+
+        DB::transaction(function () use ($page, $defaults, $stored) {
+            foreach ($defaults as $key => $value) {
+                if (! array_key_exists($key, $stored)) {
+                    PageContent::create(['page' => $page, 'key' => $key, 'value' => $value]);
+                }
+            }
+
+            PageContentDefault::where('page', $page)->delete();
+        });
+
+        $this->releaseImages($page, $images, $defaults);
+
+        ActivityLogger::record(ActivityLog::ACTION_DEFAULT, 'Konten Halaman', PageContents::definitions()[$page]['label'].' — setelan default kustom dihapus (kembali ke bawaan sistem)');
+
+        return redirect()
+            ->route('admin.pages.edit', $page)
+            ->with('success', 'Setelan default kustom dihapus. Tampilan website tidak berubah.');
+    }
+
+    /**
+     * Hapus file gambar yang tidak lagi dipakai (release() memeriksa semua referensi).
+     *
+     * @param  array<string, string>  $values  kunci => nilai mentah
+     */
+    private function releaseImages(string $page, ImageUploader $images, array $values): void
+    {
+        foreach (PageContents::fields($page) as $key => $field) {
+            if (($field['type'] ?? 'text') === 'image' && isset($values[$key])) {
+                $images->release($values[$key]);
+            }
         }
     }
 
