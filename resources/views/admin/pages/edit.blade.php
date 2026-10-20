@@ -229,7 +229,8 @@
                 method="POST"
                 action="{{ route('admin.pages.default.set', $page) }}"
                 data-confirm-title="Simpan sebagai default?"
-                data-confirm-message="Fungsi tombol ini: konten halaman {{ $definition['label'] }} yang sudah tersimpan saat ini dijadikan setelan default baru, yaitu acuan yang dipakai tombol &quot;Kembali ke setelan default&quot;. Isi website tidak berubah sekarang, dan perubahan di form yang belum disimpan tidak ikut."
+                data-confirm-message="Konten halaman {{ $definition['label'] }} yang sudah tersimpan akan dijadikan setelan default baru."
+                data-confirm-caution="Setelan default yang lama akan diganti. Perubahan di form yang belum disimpan tidak ikut. Tampilan website tidak berubah."
                 data-confirm-label="Lanjutkan"
                 data-confirm-second-title="Yakin menyimpan sebagai default?"
                 data-confirm-second-message="Setelan default baru mencakup seluruh konten halaman {{ $definition['label'] }} di website publik (teks, judul, daftar, dan foto) dan menggantikan setelan default sebelumnya."
@@ -237,14 +238,15 @@
                 data-confirm-second-tone="primary"
             >
                 @csrf
-                <x-secondary-button type="submit">Simpan sebagai default</x-secondary-button>
+                <x-secondary-button type="submit" class="w-full sm:w-64">Simpan sebagai default</x-secondary-button>
             </form>
 
             <form
                 method="POST"
                 action="{{ route('admin.pages.reset', $page) }}"
                 data-confirm-title="Kembali ke setelan default?"
-                data-confirm-message="Fungsi tombol ini: mengembalikan seluruh konten halaman {{ $definition['label'] }} ke setelan default ({{ $content->hasCustomDefaults() ? 'yang Anda simpan lewat "Simpan sebagai default"' : 'bawaan sistem' }}). Semua perubahan yang sudah tersimpan di halaman ini akan hilang."
+                data-confirm-message="Seluruh konten halaman {{ $definition['label'] }} akan dikembalikan ke setelan default ({{ $content->hasCustomDefaults() ? 'yang Anda simpan lewat "Simpan sebagai default"' : 'bawaan sistem' }})."
+                data-confirm-caution="Semua perubahan yang sudah tersimpan di halaman ini akan hilang."
                 data-confirm-label="Lanjutkan"
                 data-confirm-second-title="Yakin mengembalikan seluruh halaman?"
                 data-confirm-second-message="Seluruh teks, judul, daftar, dan foto halaman {{ $definition['label'] }} di website publik akan langsung berubah ke setelan default. Tindakan ini tidak dapat dibatalkan."
@@ -252,7 +254,7 @@
             >
                 @csrf
                 @method('DELETE')
-                <x-secondary-button type="submit" class="border-red-300! text-red-700! hover:border-red-400! hover:bg-red-50!">Kembali ke setelan default</x-secondary-button>
+                <x-secondary-button type="submit" class="w-full border-red-300! text-red-700! hover:border-red-400! hover:bg-red-50! sm:w-64">Kembali ke setelan default</x-secondary-button>
             </form>
 
             @if ($content->hasCustomDefaults())

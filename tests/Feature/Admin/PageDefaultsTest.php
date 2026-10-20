@@ -225,9 +225,10 @@ class PageDefaultsTest extends TestCase
             ->assertSee('Simpan sebagai default')
             ->assertDontSee('Jadikan konten tersimpan sebagai default')
             ->assertSee('data-confirm-title="Simpan sebagai default?"', false)
-            ->assertSee('Fungsi tombol ini: konten halaman Tentang Kami yang sudah tersimpan saat ini dijadikan setelan default baru', false)
-            ->assertSee('acuan yang dipakai tombol &quot;Kembali ke setelan default&quot;', false)
-            ->assertSee('Fungsi tombol ini: mengembalikan seluruh konten halaman Tentang Kami ke setelan default (bawaan sistem)', false)
+            ->assertSee('Konten halaman Tentang Kami yang sudah tersimpan akan dijadikan setelan default baru.', false)
+            ->assertSee('data-confirm-caution="Setelan default yang lama akan diganti.', false)
+            ->assertSee('Seluruh konten halaman Tentang Kami akan dikembalikan ke setelan default (bawaan sistem).', false)
+            ->assertSee('data-confirm-caution="Semua perubahan yang sudah tersimpan di halaman ini akan hilang."', false)
             ->assertSee('Setelan default baru mencakup seluruh konten halaman Tentang Kami', false);
 
         // Setelah ada default kustom, pesan reset menyebut asalnya.
@@ -235,6 +236,23 @@ class PageDefaultsTest extends TestCase
         $this->post('/admin/pages/about/default');
 
         $this->get('/admin/pages/about')
-            ->assertSee('ke setelan default (yang Anda simpan lewat &quot;Simpan sebagai default&quot;)', false);
+            ->assertSee('ke setelan default (yang Anda simpan lewat &quot;Simpan sebagai default&quot;).', false)
+            // Kedua tombol berukuran sama.
+            ->assertSee('w-full sm:w-64', false);
+    }
+
+    public function test_first_confirmation_shows_a_caution_box_wired_in_script_and_dialog(): void
+    {
+        $js = file_get_contents(resource_path('js/app.js'));
+        $this->assertStringContainsString('caution: form.dataset.confirmCaution', $js);
+        $this->assertStringContainsString("this.caution = caution ?? '';", $js);
+
+        $dialog = file_get_contents(resource_path('views/components/admin/confirm-dialog.blade.php'));
+        $this->assertStringContainsString('$store.confirm.caution', $dialog);
+        $this->assertStringContainsString('Perhatian:', $dialog);
+
+        // Dua tombol utama sama lebarnya.
+        $html = $this->get('/admin/pages/about')->getContent();
+        $this->assertSame(2, substr_count($html, 'sm:w-64'));
     }
 }

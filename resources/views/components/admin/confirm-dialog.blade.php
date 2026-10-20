@@ -50,6 +50,11 @@
                 <p x-show="$store.confirm.step" x-cloak class="mb-0.5 text-[11px] font-semibold uppercase tracking-wide text-gray-500" x-text="$store.confirm.step"></p>
                 <h2 id="confirm-title" class="text-base font-semibold text-gray-900" x-text="$store.confirm.title"></h2>
                 <p id="confirm-message" class="mt-1.5 text-sm leading-6 text-gray-600" x-text="$store.confirm.message"></p>
+
+                <div x-show="$store.confirm.caution" x-cloak class="mt-3 flex gap-2.5 rounded-sm border border-amber-300 bg-amber-50 px-3 py-2.5 text-sm leading-5 text-amber-900" role="note">
+                    <svg class="mt-0.5 h-4 w-4 shrink-0 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.3 3.9 2.4 17.5A2 2 0 0 0 4.1 20.5h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+                    <p><strong class="font-semibold">Perhatian:</strong> <span x-text="$store.confirm.caution"></span></p>
+                </div>
             </div>
         </div>
 

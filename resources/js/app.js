@@ -770,9 +770,10 @@ Alpine.store('confirm', {
     secondaryLabel: '', // bila diisi, muncul tombol tambahan yang menghasilkan 'secondary'
     hideCancel: false, // sembunyikan tombol Batal; dialog tetap bisa ditutup (Esc, klik di luar, tombol silang)
     step: '', // penanda langkah pada konfirmasi bertahap, mis. 'Langkah 1 dari 2'
+    caution: '', // peringatan singkat yang ditampilkan dalam kotak "Perhatian"
     resolver: null,
 
-    ask({ title, message, label, tone, secondaryLabel, hideCancel, step } = {}) {
+    ask({ title, message, label, tone, secondaryLabel, hideCancel, step, caution } = {}) {
         this.resolver?.(false);
         this.title = title ?? 'Simpan perubahan?';
         this.message = message ?? 'Perubahan akan langsung diterapkan ke website.';
@@ -781,6 +782,7 @@ Alpine.store('confirm', {
         this.secondaryLabel = secondaryLabel ?? '';
         this.hideCancel = hideCancel ?? false;
         this.step = step ?? '';
+        this.caution = caution ?? '';
         this.open = true;
 
         return new Promise((resolve) => {
@@ -834,6 +836,7 @@ document.addEventListener(
             label: form.dataset.confirmLabel ?? (isDelete ? 'Ya, hapus' : 'Ya, simpan'),
             tone: isDelete ? 'danger' : 'primary',
             step: form.dataset.confirmSecondTitle ? 'Konfirmasi 1 dari 2' : '',
+            caution: form.dataset.confirmCaution ?? '',
         });
 
         // Aksi besar (data-confirm-second-title) memerlukan konfirmasi kedua sebelum dikirim.
