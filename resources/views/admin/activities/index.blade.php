@@ -150,7 +150,7 @@
                                 <td class="px-4 py-3">
                                     <div class="flex items-center justify-center gap-2">
                                         <a href="{{ route('admin.activities.edit', $activity) }}" class="whitespace-nowrap rounded bg-secondary-dark px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-primary">Edit</a>
-                                        <form method="POST" action="{{ route('admin.activities.destroy', $activity) }}" onsubmit="return confirm('Hapus aktivitas &quot;{{ e($activity->name) }}&quot; beserta galerinya? Tindakan ini tidak dapat dibatalkan.')">
+                                        <form method="POST" action="{{ route('admin.activities.destroy', $activity) }}" data-confirm-title="Hapus aktivitas?" data-confirm-message="Aktivitas &quot;{{ $activity->name }}&quot; beserta galerinya akan dihapus permanen. Tindakan ini tidak dapat dibatalkan." data-confirm-label="Ya, hapus">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="rounded border border-primary/30 bg-primary-light px-3 py-1.5 text-xs font-semibold text-primary-dark transition hover:bg-primary hover:text-white">Hapus</button>

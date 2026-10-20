@@ -32,6 +32,9 @@
             method="POST"
             action="{{ route('admin.gallery.store', $activity) }}"
             enctype="multipart/form-data"
+            data-confirm-title="Unggah foto?"
+            data-confirm-message="Foto yang dipilih akan ditambahkan ke galeri dan tampil di website."
+            data-confirm-label="Ya, unggah"
             x-data="{ count: 0 }"
             class="flex flex-wrap items-start gap-3"
         >
@@ -93,7 +96,7 @@
                 },
             }"
         >
-            <form method="POST" action="{{ route('admin.gallery.reorder', $activity) }}" class="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <form method="POST" action="{{ route('admin.gallery.reorder', $activity) }}" data-confirm-title="Simpan urutan foto?" data-confirm-message="Urutan baru langsung dipakai di website." data-confirm-label="Ya, simpan" class="mb-4 flex flex-wrap items-center justify-between gap-3">
                 @csrf
                 @method('PUT')
 
@@ -160,6 +163,9 @@
                             <form
                                 id="update-{{ $image->id }}"
                                 method="POST"
+                                data-confirm-title="Terapkan perubahan foto?"
+                                data-confirm-message="Perubahan pada foto ini langsung diterapkan ke website."
+                                data-confirm-label="Ya, simpan"
                                 action="{{ route('admin.gallery.update', [$activity, $image]) }}"
                                 enctype="multipart/form-data"
                             >
@@ -183,7 +189,7 @@
                                         <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L7 9m5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
                                         Ganti
                                         <span class="sr-only">foto {{ $loop->iteration }}</span>
-                                        <input type="file" name="image" accept="image/jpeg,image/png,image/webp" class="sr-only" @change="$el.form.requestSubmit()">
+                                        <input type="file" name="image" accept="image/jpeg,image/png,image/webp" class="sr-only" data-reset-on-cancel @change="$el.form.requestSubmit()">
                                     </label>
 
                                     {{-- Hapus: mengirim form terpisah di bawah (atribut form) --}}
@@ -199,7 +205,7 @@
                                 </div>
                             </form>
 
-                            <form id="delete-{{ $image->id }}" method="POST" action="{{ route('admin.gallery.destroy', [$activity, $image]) }}" onsubmit="return confirm('Hapus foto ini dari galeri? Tindakan ini tidak dapat dibatalkan.')" class="hidden">
+                            <form id="delete-{{ $image->id }}" method="POST" action="{{ route('admin.gallery.destroy', [$activity, $image]) }}" data-confirm-title="Hapus foto?" data-confirm-message="Foto ini akan dihapus permanen dari galeri. Tindakan ini tidak dapat dibatalkan." data-confirm-label="Ya, hapus" class="hidden">
                                 @csrf
                                 @method('DELETE')
                             </form>

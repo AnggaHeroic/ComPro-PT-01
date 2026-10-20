@@ -117,7 +117,7 @@
                                 <td class="px-4 py-3">
                                     <div class="flex items-center justify-center gap-2">
                                         <a href="{{ route('admin.categories.edit', $category) }}" class="whitespace-nowrap rounded bg-secondary-dark px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-primary">Edit</a>
-                                        <form method="POST" action="{{ route('admin.categories.destroy', $category) }}" onsubmit="return confirm('Hapus kategori &quot;{{ e($category->name) }}&quot;? Tindakan ini tidak dapat dibatalkan.')">
+                                        <form method="POST" action="{{ route('admin.categories.destroy', $category) }}" data-confirm-title="Hapus kategori?" data-confirm-message="Kategori &quot;{{ $category->name }}&quot; akan dihapus permanen. Tindakan ini tidak dapat dibatalkan." data-confirm-label="Ya, hapus">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="rounded border border-primary/30 bg-primary-light px-3 py-1.5 text-xs font-semibold text-primary-dark transition hover:bg-primary hover:text-white">Hapus</button>

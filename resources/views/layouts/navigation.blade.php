@@ -101,7 +101,7 @@
             </div>
         </div>
 
-        <form method="POST" action="{{ route('logout') }}" class="mt-1">
+        <form method="POST" action="{{ route('logout') }}" class="mt-1" data-no-confirm>
             @csrf
             <button type="submit" class="flex w-full items-center gap-3 rounded px-3 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/10 hover:text-white focus:outline-none">
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>

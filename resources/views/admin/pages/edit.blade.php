@@ -87,7 +87,7 @@
         method="POST"
         action="{{ route('admin.pages.reset', $page) }}"
         class="mt-6 max-w-3xl"
-        onsubmit="return confirm('Kembalikan semua teks halaman ini ke bawaan? Perubahan yang pernah disimpan akan hilang.')"
+        data-confirm-title="Kembalikan ke bawaan?" data-confirm-message="Semua teks dan foto halaman ini akan dikembalikan ke bawaan. Perubahan yang pernah disimpan akan hilang." data-confirm-label="Ya, kembalikan"
     >
         @csrf
         @method('DELETE')

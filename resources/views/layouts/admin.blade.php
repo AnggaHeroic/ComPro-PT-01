@@ -12,7 +12,7 @@
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="bg-gray-100 text-gray-900">
+    <body class="bg-gray-100 text-gray-900" data-admin-confirm>
         <div x-data="{ sidebar: false }" @keydown.escape.window="sidebar = false">
             @include('layouts.navigation')
 
@@ -49,5 +49,6 @@
                 </main>
             </div>
         </div>
+        <x-admin.confirm-dialog />
     </body>
 </html>

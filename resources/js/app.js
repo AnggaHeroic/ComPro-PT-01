@@ -447,7 +447,7 @@ Alpine.data('reorderList', ({ url }) => ({
         const after = this.rows().map((item) => item.dataset.id).join();
 
         if (before !== after) {
-            this.save(row.dataset.group);
+            this.confirmThenSave(row.dataset.group);
         }
     },
 
@@ -483,7 +483,18 @@ Alpine.data('reorderList', ({ url }) => ({
         delta < 0 ? target.before(row) : target.after(row);
         row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 
-        this.save(group);
+        this.confirmThenSave(group);
+    },
+
+    /** Minta konfirmasi sebelum urutan disimpan; bila dibatalkan, urutan di layar dikembalikan. */
+    async confirmThenSave(group) {
+        const ok = await Alpine.store('confirm').ask({
+            title: 'Simpan urutan baru?',
+            message: 'Urutan baru langsung diterapkan ke website.',
+            label: 'Ya, simpan',
+        });
+
+        ok ? this.save(group) : this.restore();
     },
 
     restore() {
@@ -547,5 +558,100 @@ Alpine.data('reorderList', ({ url }) => ({
         }
     },
 }));
+
+/**
+ * Dialog konfirmasi admin. Dipakai otomatis untuk semua form non-GET di admin
+ * (lihat listener di bawah) dan bisa dipanggil langsung:
+ *   const ok = await Alpine.store('confirm').ask({ title, message, label, tone });
+ */
+Alpine.store('confirm', {
+    open: false,
+    title: '',
+    message: '',
+    label: 'Ya, lanjutkan',
+    tone: 'primary', // primary | danger
+    resolver: null,
+
+    ask({ title, message, label, tone } = {}) {
+        this.resolver?.(false);
+        this.title = title ?? 'Simpan perubahan?';
+        this.message = message ?? 'Perubahan akan langsung diterapkan ke website.';
+        this.label = label ?? 'Ya, lanjutkan';
+        this.tone = tone ?? 'primary';
+        this.open = true;
+
+        return new Promise((resolve) => {
+            this.resolver = resolve;
+        });
+    },
+
+    answer(value) {
+        this.open = false;
+        this.resolver?.(value);
+        this.resolver = null;
+    },
+});
+
+/**
+ * Setiap form non-GET di halaman admin (<body data-admin-confirm>) meminta
+ * konfirmasi dulu. Atur teks lewat data-confirm-title / -message / -label,
+ * atau lewati dengan data-no-confirm (mis. tombol keluar).
+ */
+document.addEventListener(
+    'submit',
+    async (event) => {
+        const form = event.target;
+
+        if (
+            !document.body.hasAttribute('data-admin-confirm') ||
+            !(form instanceof HTMLFormElement) ||
+            'noConfirm' in form.dataset ||
+            form.dataset.confirmed === '1'
+        ) {
+            return;
+        }
+
+        const method = (form.querySelector('input[name="_method"]')?.value || form.method).toUpperCase();
+
+        if (method === 'GET') return;
+
+        event.preventDefault();
+        event.stopImmediatePropagation();
+
+        const submitter = event.submitter;
+        const isDelete = method === 'DELETE';
+
+        const ok = await Alpine.store('confirm').ask({
+            title: form.dataset.confirmTitle ?? (isDelete ? 'Hapus data?' : 'Simpan perubahan?'),
+            message:
+                form.dataset.confirmMessage ??
+                (isDelete
+                    ? 'Data akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.'
+                    : 'Perubahan akan langsung diterapkan ke website.'),
+            label: form.dataset.confirmLabel ?? (isDelete ? 'Ya, hapus' : 'Ya, simpan'),
+            tone: isDelete ? 'danger' : 'primary',
+        });
+
+        if (!ok) {
+            // Unggahan otomatis (mis. ganti foto) dibatalkan: kosongkan pilihan file.
+            form.querySelectorAll('input[type="file"][data-reset-on-cancel]').forEach((input) => {
+                input.value = '';
+            });
+
+            return;
+        }
+
+        form.dataset.confirmed = '1';
+
+        try {
+            form.requestSubmit(submitter ?? undefined);
+        } catch {
+            form.submit();
+        } finally {
+            delete form.dataset.confirmed;
+        }
+    },
+    true,
+);
 
 Alpine.start();
