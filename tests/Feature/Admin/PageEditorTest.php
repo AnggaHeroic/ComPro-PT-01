@@ -44,7 +44,7 @@ class PageEditorTest extends TestCase
             ->assertSee('name="bagian"', false)
             ->assertSee("x-text=\"n + '/", false)
             ->assertSee('Pratinjau di website')
-            ->assertSee('Isi bagian ini')
+            ->assertSee('Konten bagian ini')
             ->assertSee('Belum disimpan')
             ->assertSee('sectionPreview(', false)
             ->assertDontSee('Pratinjau halaman');

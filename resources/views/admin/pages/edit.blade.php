@@ -90,7 +90,7 @@
                                 @endunless
 
                                 <div class="mb-5 flex items-center gap-3">
-                                    <h3 class="text-sm font-semibold text-gray-900">Isi bagian ini</h3>
+                                    <h3 class="text-sm font-semibold text-gray-900">Konten bagian ini</h3>
                                     <span class="h-px flex-1 bg-gray-200" aria-hidden="true"></span>
                                 </div>
 
