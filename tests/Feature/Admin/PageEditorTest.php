@@ -79,17 +79,23 @@ class PageEditorTest extends TestCase
             ->assertSee('wajib diisi');
     }
 
-    public function test_pages_list_shows_cards_with_sections_count_and_last_edit(): void
+    public function test_pages_list_shows_simple_cards_with_a_manage_button_only(): void
     {
         $this->get('/admin/pages')
             ->assertOk()
-            ->assertSee('Masih memakai teks default')
-            ->assertSee('Edit konten')
-            ->assertSeeInOrder(['Beranda', 'Tentang Kami', 'Layanan &amp; Jasa', 'Kontak Kami'], false);
+            ->assertSee('Kelola')
+            ->assertSee('5 bagian')
+            ->assertSeeInOrder(['Beranda', 'Tentang Kami', 'Layanan &amp; Jasa', 'Kontak Kami'], false)
+            ->assertSee('dikelola terpisah melalui menu')
+            // Tidak ada tombol lihat, penomoran, atau informasi terakhir diubah.
+            ->assertDontSee('Edit konten')
+            ->assertDontSee('Terakhir diubah')
+            ->assertDontSee('Masih memakai teks default')
+            ->assertDontSee('target="_blank"', false);
 
         PageContent::create(['page' => 'about', 'key' => 'cta_button', 'value' => 'X']);
 
-        $this->get('/admin/pages')->assertSee('Terakhir diubah');
+        $this->get('/admin/pages')->assertDontSee('Terakhir diubah');
     }
 
     public function test_section_preview_renders_the_public_page_with_unsaved_values_and_isolates_one_section(): void

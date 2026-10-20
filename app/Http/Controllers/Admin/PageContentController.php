@@ -21,11 +21,7 @@ class PageContentController extends Controller
 
     public function index(): View
     {
-        return view('admin.pages.index', [
-            'pages' => PageContents::definitions(),
-            'lastEdited' => PageContent::query()->selectRaw('page, max(updated_at) as last')->groupBy('page')->pluck('last', 'page'),
-            'customised' => PageContent::query()->selectRaw('page, count(*) as total')->groupBy('page')->pluck('total', 'page'),
-        ]);
+        return view('admin.pages.index', ['pages' => PageContents::definitions()]);
     }
 
     public function edit(string $page): View
