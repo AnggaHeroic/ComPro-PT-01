@@ -15,7 +15,7 @@
                     Belum disimpan
                 </span>
             </div>
-            <p class="mt-0.5 text-xs leading-5 text-gray-500">Begini tampilan bagian ini di halaman publik. Pratinjau ikut berubah saat Anda mengetik, sebelum perubahan disimpan.</p>
+            <p class="mt-0.5 text-xs leading-5 text-gray-500">Tampilan bagian yang dikelola di halaman publik. Pratinjau ikut berubah saat Anda menyimpan perubahan.</p>
         </div>
 
         <div class="flex shrink-0 items-center gap-1">
