@@ -186,17 +186,17 @@
                             {{-- Pindah antar bagian --}}
                             <div class="mt-4 flex items-center justify-between gap-3 text-sm">
                                 @if (! $loop->first)
-                                    <button type="button" @click="select('{{ $sectionKeys[$loop->index - 1] }}')" class="inline-flex items-center gap-2 rounded-sm border border-gray-300 bg-white px-3 py-2 text-left font-medium text-gray-700 transition hover:border-gray-400 hover:bg-gray-50">
-                                        <span aria-hidden="true">&larr;</span>
-                                        <span><span class="block text-[11px] font-normal text-gray-400">Sebelumnya</span>{{ $definition['sections'][$sectionKeys[$loop->index - 1]]['label'] }}</span>
+                                    <button type="button" @click="select('{{ $sectionKeys[$loop->index - 1] }}')" class="inline-flex items-center gap-1.5 rounded-sm border border-gray-300 bg-white py-2 pl-2.5 pr-4 font-medium text-gray-700 transition hover:border-gray-400 hover:bg-gray-50" title="{{ $definition['sections'][$sectionKeys[$loop->index - 1]]['label'] }}">
+                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m15 5-7 7 7 7"/></svg>
+                                        Sebelumnya
                                     </button>
                                 @else
                                     <span></span>
                                 @endif
                                 @if (! $loop->last)
-                                    <button type="button" @click="select('{{ $sectionKeys[$loop->index + 1] }}')" class="inline-flex items-center gap-2 rounded-sm border border-gray-300 bg-white px-3 py-2 text-right font-medium text-gray-700 transition hover:border-gray-400 hover:bg-gray-50">
-                                        <span><span class="block text-[11px] font-normal text-gray-400">Berikutnya</span>{{ $definition['sections'][$sectionKeys[$loop->index + 1]]['label'] }}</span>
-                                        <span aria-hidden="true">&rarr;</span>
+                                    <button type="button" @click="select('{{ $sectionKeys[$loop->index + 1] }}')" class="inline-flex items-center gap-1.5 rounded-sm border border-gray-300 bg-white py-2 pl-4 pr-2.5 font-medium text-gray-700 transition hover:border-gray-400 hover:bg-gray-50" title="{{ $definition['sections'][$sectionKeys[$loop->index + 1]]['label'] }}">
+                                        Berikut
+                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m9 5 7 7-7 7"/></svg>
                                     </button>
                                 @endif
                             </div>
