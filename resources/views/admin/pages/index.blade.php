@@ -16,6 +16,6 @@
             </a>
         @endforeach
 
-        <p class="pt-2 text-xs text-gray-500">Halaman Tentang Kami dan Kontak Kami akan ditambahkan pada tahap berikutnya.</p>
+        <p class="pt-2 text-xs text-gray-500">Halaman Kontak Kami akan ditambahkan pada tahap berikutnya.</p>
     </div>
 </x-app-layout>

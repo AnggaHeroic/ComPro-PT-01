@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use App\Http\Requests\Admin\Concerns\IndonesianMessages;
+use App\Services\ImageUploader;
 use App\Support\PageContents;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -25,10 +26,20 @@ class PageContentRequest extends FormRequest
      */
     public function rules(): array
     {
-        $rules = ['content' => ['required', 'array']];
+        $rules = ['content' => ['nullable', 'array']];
 
         foreach (PageContents::fields((string) $this->route('page')) as $key => $field) {
-            $rules["content.{$key}"] = ['required', 'string', 'max:'.($field['max'] ?? 200)];
+            if (($field['type'] ?? 'text') === 'image') {
+                $rules["image_{$key}"] = ['nullable', ...ImageUploader::rules()];
+
+                continue;
+            }
+
+            $rules["content.{$key}"] = [
+                ($field['optional'] ?? false) ? 'nullable' : 'required',
+                'string',
+                'max:'.($field['max'] ?? 200),
+            ];
         }
 
         return $rules;
@@ -43,6 +54,7 @@ class PageContentRequest extends FormRequest
 
         foreach (PageContents::fields((string) $this->route('page')) as $key => $field) {
             $attributes["content.{$key}"] = $field['label'];
+            $attributes["image_{$key}"] = $field['label'];
         }
 
         return $attributes;

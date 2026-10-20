@@ -11,7 +11,7 @@
         @endif
     </x-slot>
 
-    <form method="POST" action="{{ route('admin.pages.update', $page) }}">
+    <form method="POST" action="{{ route('admin.pages.update', $page) }}" enctype="multipart/form-data">
         @csrf
         @method('PUT')
 
@@ -21,15 +21,29 @@
                     <div class="space-y-5">
                         @foreach ($section['fields'] as $key => $field)
                             <div>
-                                <x-input-label :for="'content_'.$key" :value="$field['label']" />
+                                @if (($field['type'] ?? 'text') !== 'image')
+                                    <x-input-label :for="'content_'.$key" :value="$field['label']" />
+                                @endif
 
-                                @if (($field['type'] ?? 'text') === 'textarea')
-                                    <x-textarea :id="'content_'.$key" :name="'content['.$key.']'" rows="4" :maxlength="$field['max'] ?? 200" required>{{ old('content.'.$key, $content($key)) }}</x-textarea>
+                                @if (($field['type'] ?? 'text') === 'image')
+                                    @php($custom = $content->customImagePath($key))
+                                    <x-admin.image-field
+                                        :name="'image_'.$key"
+                                        :remove-name="'remove_image_'.$key"
+                                        :label="$field['label']"
+                                        :current="$content->image($key)"
+                                        :removable="$custom !== null"
+                                        :fallback="$custom !== null ? $field['default'] : null"
+                                        remove-label="Kembalikan gambar bawaan"
+                                        :hint="$field['hint'] ?? null"
+                                    />
+                                @elseif (($field['type'] ?? 'text') === 'textarea')
+                                    <x-textarea :id="'content_'.$key" :name="'content['.$key.']'" rows="4" :maxlength="$field['max'] ?? 200" :required="! ($field['optional'] ?? false)">{{ old('content.'.$key, $content($key)) }}</x-textarea>
                                 @else
                                     <x-text-input :id="'content_'.$key" :name="'content['.$key.']'" type="text" :value="old('content.'.$key, $content($key))" :maxlength="$field['max'] ?? 200" required />
                                 @endif
 
-                                @if (! empty($field['hint']))
+                                @if (! empty($field['hint']) && ($field['type'] ?? 'text') !== 'image')
                                     <p class="mt-1.5 text-xs text-gray-500">{{ $field['hint'] }}</p>
                                 @endif
                                 <x-input-error :messages="$errors->get('content.'.$key)" class="mt-2" />

@@ -6,7 +6,12 @@
     'removeLabel' => 'Hapus gambar',
     'hint' => null,
     'contain' => false,
+    // Tombol hapus hanya bila ada gambar unggahan; $fallback = gambar yang tampil setelah dihapus (mis. bawaan).
+    'removable' => null,
+    'fallback' => null,
 ])
+
+@php($removable ??= (bool) $current)
 
 <div x-data="{ preview: null, removed: {{ old($removeName) ? 'true' : 'false' }} }">
     <x-input-label :for="$name" :value="$label" />
@@ -23,7 +28,12 @@
             <template x-if="! preview && ! removed && @js((bool) $current)">
                 <img src="{{ $current }}" alt="Saat ini" @class(['h-full w-full', 'object-cover' => ! $contain, 'object-contain p-2' => $contain])>
             </template>
-            <span x-show="! preview && (removed || ! @js((bool) $current))" class="px-2 text-center text-xs text-gray-400">Belum ada</span>
+            @if ($fallback)
+                <template x-if="! preview && removed">
+                    <img src="{{ $fallback }}" alt="Bawaan" @class(['h-full w-full', 'object-cover' => ! $contain, 'object-contain p-2' => $contain])>
+                </template>
+            @endif
+            <span x-show="! preview && (removed ? @js(! $fallback) : ! @js((bool) $current))" class="px-2 text-center text-xs text-gray-400">Belum ada</span>
         </div>
 
         <div class="min-w-0 flex-1 space-y-2">
@@ -40,7 +50,7 @@
                 {{ $hint ?? 'JPG, PNG, atau WebP, maksimal '.number_format(config('images.max_upload_kb') / 1024, 0).' MB. Otomatis dikonversi ke WebP dan dikompres.' }}
             </p>
 
-            @if ($current)
+            @if ($current && $removable)
                 <input type="hidden" name="{{ $removeName }}" :value="removed ? 1 : 0">
 
                 <button
@@ -53,7 +63,7 @@
                     {{ $removeLabel }}
                 </button>
                 <p x-show="removed" x-cloak class="flex flex-wrap items-center gap-2 text-xs text-gray-600">
-                    Akan dihapus saat disimpan.
+                    {{ $fallback ? 'Akan kembali ke gambar bawaan saat disimpan.' : 'Akan dihapus saat disimpan.' }}
                     <button type="button" @click="removed = false" class="font-medium text-primary underline-offset-2 hover:underline">Batalkan</button>
                 </p>
             @endif

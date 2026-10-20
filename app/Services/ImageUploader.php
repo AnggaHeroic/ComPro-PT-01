@@ -28,6 +28,7 @@ class ImageUploader
         ['service_categories', 'icon_image_path'],
         ['business_activities', 'image_path'],
         ['activity_images', 'image_path'],
+        ['page_contents', 'value'],
     ];
 
     /**
