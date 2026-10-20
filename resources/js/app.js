@@ -507,8 +507,9 @@ Alpine.data('reorderList', ({ url }) => ({
     },
 
     /**
-     * Dipanggil tombol Selesai / saklar atur urutan. Tanpa perubahan langsung keluar;
-     * bila ada, minta konfirmasi: simpan, buang, atau tetap di mode ini.
+     * Selesai: simpan urutan baru (setelah konfirmasi), lalu keluar dari mode atur urutan.
+     * Tanpa perubahan langsung keluar. Dialog hanya berisi "Ya, simpan"; tutup dengan Esc,
+     * klik di luar, atau tombol silang untuk tetap di mode ini.
      */
     async finish(url) {
         if (Object.keys(this.dirty).length === 0) {
@@ -517,22 +518,44 @@ Alpine.data('reorderList', ({ url }) => ({
             return;
         }
 
-        const choice = await Alpine.store('confirm').ask({
+        const ok = await Alpine.store('confirm').ask({
             title: 'Simpan urutan baru?',
             message: 'Urutan baru akan diterapkan ke website.',
             label: 'Ya, simpan',
-            secondaryLabel: 'Buang perubahan',
+            hideCancel: true,
         });
 
-        if (choice === false) return;
+        if (ok) await this.saveAndLeave(url);
+    },
 
-        if (choice === 'secondary') {
-            this.dirty = {};
+    /**
+     * Batal (atau saklar atur urutan dimatikan): keluar dari mode atur urutan. Bila ada
+     * perubahan yang belum disimpan, dialog hanya menawarkan "Ya, simpan" atau "Buang perubahan".
+     */
+    async cancel(url) {
+        if (Object.keys(this.dirty).length === 0) {
             window.location.href = url;
 
             return;
         }
 
+        const choice = await Alpine.store('confirm').ask({
+            title: 'Keluar dari atur urutan?',
+            message: 'Urutan baru belum disimpan. Simpan atau buang perubahan ini?',
+            label: 'Ya, simpan',
+            secondaryLabel: 'Buang perubahan',
+            hideCancel: true,
+        });
+
+        if (choice === 'secondary') {
+            this.dirty = {};
+            window.location.href = url;
+        } else if (choice === true) {
+            await this.saveAndLeave(url);
+        }
+    },
+
+    async saveAndLeave(url) {
         for (const group of Object.keys(this.dirty)) {
             if (!(await this.save(group))) return;
         }
@@ -617,16 +640,18 @@ Alpine.store('confirm', {
     message: '',
     label: 'Ya, lanjutkan',
     tone: 'primary', // primary | danger
-    secondaryLabel: '', // bila diisi, muncul tombol ketiga yang menghasilkan 'secondary'
+    secondaryLabel: '', // bila diisi, muncul tombol tambahan yang menghasilkan 'secondary'
+    hideCancel: false, // sembunyikan tombol Batal; dialog tetap bisa ditutup (Esc, klik di luar, tombol silang)
     resolver: null,
 
-    ask({ title, message, label, tone, secondaryLabel } = {}) {
+    ask({ title, message, label, tone, secondaryLabel, hideCancel } = {}) {
         this.resolver?.(false);
         this.title = title ?? 'Simpan perubahan?';
         this.message = message ?? 'Perubahan akan langsung diterapkan ke website.';
         this.label = label ?? 'Ya, lanjutkan';
         this.tone = tone ?? 'primary';
         this.secondaryLabel = secondaryLabel ?? '';
+        this.hideCancel = hideCancel ?? false;
         this.open = true;
 
         return new Promise((resolve) => {

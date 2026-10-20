@@ -88,6 +88,8 @@ class ConfirmDialogTest extends TestCase
         $this->assertStringNotContainsString('this.save(row.dataset.group)', $js);
         $this->assertStringNotContainsString('confirmThenSave', $js);
         $this->assertStringContainsString("secondaryLabel: 'Buang perubahan'", $js);
+        $this->assertStringContainsString('async cancel(url)', $js);
+        $this->assertStringContainsString('hideCancel: true', $js);
     }
 
     public function test_reorder_screens_confirm_on_finish_not_while_dragging(): void
@@ -98,6 +100,8 @@ class ConfirmDialogTest extends TestCase
             $this->get($url)
                 ->assertOk()
                 ->assertSee('@click.prevent="finish($el.href)"', false)
+                ->assertSee('@click.prevent="cancel($el.href)"', false)
+                ->assertSeeInOrder(['Batal', 'Selesai'])
                 ->assertSee('Urutan belum disimpan')
                 ->assertSee('Perubahan baru disimpan saat Anda menekan Selesai.')
                 ->assertDontSee('Perubahan langsung tersimpan');

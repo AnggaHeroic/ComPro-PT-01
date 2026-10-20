@@ -3,7 +3,7 @@
     x-data
     x-show="$store.confirm.open"
     x-cloak
-    x-effect="$store.confirm.open && $nextTick(() => $refs.cancel.focus())"
+    x-effect="$store.confirm.open && $nextTick(() => ($store.confirm.hideCancel ? $refs.confirm : $refs.cancel).focus())"
     @keydown.escape.window="$store.confirm.open && $store.confirm.answer(false)"
     class="fixed inset-0 z-[100] flex items-center justify-center p-4"
     role="alertdialog"
@@ -26,6 +26,16 @@
         x-transition:enter-end="translate-y-0 opacity-100"
         class="relative w-full max-w-md rounded border border-gray-200 bg-white shadow-xl"
     >
+        <button
+            type="button"
+            x-show="$store.confirm.hideCancel"
+            @click="$store.confirm.answer(false)"
+            aria-label="Tutup"
+            class="absolute right-3 top-3 rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        >
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+
         <div class="flex gap-4 p-6">
             <span
                 class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
@@ -46,6 +56,7 @@
             <button
                 type="button"
                 x-ref="cancel"
+                x-show="! $store.confirm.hideCancel"
                 @click="$store.confirm.answer(false)"
                 class="rounded border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             >Batal</button>
@@ -58,6 +69,7 @@
             ></button>
             <button
                 type="button"
+                x-ref="confirm"
                 @click="$store.confirm.answer(true)"
                 class="rounded bg-primary px-4 py-2 text-sm font-semibold text-white ring-1 ring-inset ring-black/10 hover:bg-primary-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                 x-text="$store.confirm.label"
