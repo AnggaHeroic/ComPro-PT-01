@@ -91,7 +91,7 @@ class PageEditorTest extends TestCase
             ->assertDontSee('Edit konten')
             ->assertDontSee('Terakhir diubah')
             ->assertDontSee('Masih memakai teks default')
-            ->assertDontSee('target="_blank"', false);
+            ->assertDontSee('>Lihat</a>', false);
 
         PageContent::create(['page' => 'about', 'key' => 'cta_button', 'value' => 'X']);
 
