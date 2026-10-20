@@ -61,7 +61,7 @@
     <p x-show="! balanced" x-cloak class="mt-1.5 text-xs text-primary">Tanda * harus berpasangan.</p>
 
     <div class="mt-2 rounded border border-dashed border-gray-300 bg-white px-3.5 py-3">
-        <p class="mb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">Pratinjau</p>
+        <p class="mb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">Hasil judul</p>
         <p class="font-display text-xl font-bold leading-tight text-secondary-dark" x-html="preview"></p>
     </div>
 

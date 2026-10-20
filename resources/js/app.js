@@ -668,6 +668,7 @@ Alpine.data('sectionPreview', ({ url }) => ({
     loading: false,
     error: false,
     loadedOnce: false,
+    dirty: false, // ada isian yang diubah dan belum disimpan
     scale: 0.5,
     height: 400,
     timer: null,
@@ -678,7 +679,12 @@ Alpine.data('sectionPreview', ({ url }) => ({
             // Hanya bagian yang sedang tampil yang diperbarui.
             if (this.$el.offsetParent !== null) this.schedule(900);
         };
+        const edited = () => {
+            this.dirty = true;
+        };
 
+        form.addEventListener('input', edited);
+        form.addEventListener('change', edited);
         form.addEventListener('input', refresh);
         form.addEventListener('change', refresh);
 
