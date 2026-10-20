@@ -80,7 +80,8 @@ class PageContentController extends Controller
                     continue;
                 }
 
-                $value = trim((string) ($submitted[$key] ?? ''));
+                // Baris baru dari browser (\r\n) disamakan agar bisa dibandingkan dengan teks bawaan.
+                $value = trim(str_replace(["\r\n", "\r"], "\n", (string) ($submitted[$key] ?? '')));
 
                 // Sama dengan teks bawaan: tidak perlu disimpan.
                 if ($value === $field['default']) {

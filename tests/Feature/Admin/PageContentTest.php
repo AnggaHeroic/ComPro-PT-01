@@ -33,7 +33,7 @@ class PageContentTest extends TestCase
         $this->get('/admin/pages')->assertOk()->assertSee('Beranda');
         $this->get('/admin/pages/home')
             ->assertOk()
-            ->assertSee('name="content[hero_title_highlight]"', false)
+            ->assertSee('name="content[hero_title]"', false)
             ->assertSee('Solusi');
         $this->get('/admin/pages/tidak-ada')->assertNotFound();
     }
@@ -54,7 +54,7 @@ class PageContentTest extends TestCase
 
         $this->actingAs(User::factory()->create());
         $this->put('/admin/pages/home', ['content' => array_merge($this->defaults(), [
-            'hero_title_highlight' => 'Kemitraan',
+            'hero_title' => 'Produk dan *Kemitraan* untuk Berbagai Kebutuhan Bisnis.',
             'hero_button_primary' => 'Kenali Kami',
             'intro_stat_number' => '20',
         ])])->assertRedirect('/admin/pages/home')->assertSessionHas('success');
@@ -76,7 +76,7 @@ class PageContentTest extends TestCase
     {
         $this->actingAs(User::factory()->create());
         $this->put('/admin/pages/home', ['content' => array_merge($this->defaults(), [
-            'hero_title_highlight' => '<script>alert(1)</script>',
+            'hero_title' => '<script>alert(1)</script> *x*',
         ])])->assertSessionHasNoErrors();
 
         auth()->logout();
@@ -89,14 +89,14 @@ class PageContentTest extends TestCase
 
         $this->from('/admin/pages/home')
             ->put('/admin/pages/home', ['content' => array_merge($this->defaults(), [
-                'hero_title_highlight' => '',
+                'hero_title' => '',
                 'hero_eyebrow' => str_repeat('a', 81),
             ])])
             ->assertRedirect('/admin/pages/home')
-            ->assertSessionHasErrors(['content.hero_title_highlight', 'content.hero_eyebrow']);
+            ->assertSessionHasErrors(['content.hero_title', 'content.hero_eyebrow']);
 
         $this->assertSame(0, PageContent::count());
-        $this->followingRedirects()->from('/admin/pages/home')->put('/admin/pages/home', ['content' => array_merge($this->defaults(), ['hero_title_highlight' => ''])])->assertSee('wajib diisi');
+        $this->followingRedirects()->from('/admin/pages/home')->put('/admin/pages/home', ['content' => array_merge($this->defaults(), ['hero_title' => ''])])->assertSee('wajib diisi');
     }
 
     public function test_values_equal_to_the_default_are_not_stored_and_unknown_keys_are_ignored(): void
@@ -112,7 +112,7 @@ class PageContentTest extends TestCase
     public function test_reset_restores_all_default_texts(): void
     {
         $this->actingAs(User::factory()->create());
-        $this->put('/admin/pages/home', ['content' => array_merge($this->defaults(), ['hero_title_highlight' => 'Kemitraan'])]);
+        $this->put('/admin/pages/home', ['content' => array_merge($this->defaults(), ['hero_title' => 'Produk dan *Kemitraan* untuk Berbagai Kebutuhan Bisnis.'])]);
         $this->assertSame(1, PageContent::count());
 
         $this->delete('/admin/pages/home')->assertRedirect('/admin/pages/home');

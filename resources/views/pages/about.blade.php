@@ -29,13 +29,7 @@
                         <h1
                             class="font-display max-w-3xl text-[3rem] font-bold leading-[0.96] tracking-[-0.05em] text-secondary-dark sm:text-[3.5rem] lg:text-[4rem] xl:text-[4.35rem]"
                         >
-                            {{ $content('hero_title_line1') }}
-                            <br>
-                            <span class="text-primary">
-                                {{ $content('hero_title_line2') }}
-                            </span>
-                            <br>
-                            {{ $content('hero_title_line3') }}
+                            {!! $content->rich('hero_title', 'text-primary') !!}
                         </h1>
                         <p
                             class="font-body mt-7 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base sm:leading-8"
@@ -122,17 +116,7 @@
                             <h2
                                 class="font-display mt-7 max-w-2xl text-3xl font-semibold leading-[1.08] tracking-[-0.025em] text-secondary-dark sm:text-4xl lg:text-[2.75rem]"
                             >
-                                <span class="block">
-                                    {{ $content('profile_title_line1') }}
-                                </span>
-
-                                <span class="block text-primary">
-                                    {{ $content('profile_title_line2') }}
-                                </span>
-
-                                <span class="block">
-                                    {{ $content('profile_title_line3') }}
-                                </span>
+                                {!! $content->rich('profile_title', 'text-primary') !!}
                             </h2>
                         </div>
 
@@ -237,10 +221,7 @@
                     <p
                         class="font-display mt-3 text-base font-medium leading-relaxed tracking-[-0.01em] text-white/70 sm:text-lg"
                     >
-                        {{ $content('direction_tagline_before') }}
-                        <span class="text-primary-alt">
-                            {{ $content('direction_tagline_highlight') }}
-                        </span>
+                        {!! $content->rich('direction_tagline', 'text-primary-alt') !!}
                     </p>
                 </div>
             </div>
@@ -344,10 +325,7 @@
                     <h2
                         class="font-display mt-5 max-w-2xl text-4xl font-bold leading-[1.05] tracking-[-0.04em] text-secondary-dark sm:text-[2.75rem] lg:text-5xl"
                     >
-                        {{ $content('objectives_title_before') }}
-                        <span class="text-primary">
-                            {{ $content('objectives_title_highlight') }}
-                        </span>
+                        {!! $content->rich('objectives_title', 'text-primary') !!}
                     </h2>
                 </div>
 

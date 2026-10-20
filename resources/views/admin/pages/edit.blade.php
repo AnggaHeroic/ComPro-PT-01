@@ -46,6 +46,13 @@
                                         :max-items="$field['max_items'] ?? 10"
                                         :min-items="$field['min_items'] ?? 1"
                                     />
+                                @elseif (($field['type'] ?? 'text') === 'title')
+                                    <x-admin.title-field
+                                        :id="'content_'.$key"
+                                        :name="'content['.$key.']'"
+                                        :value="old('content.'.$key, $content($key))"
+                                        :max="$field['max'] ?? 200"
+                                    />
                                 @elseif (($field['type'] ?? 'text') === 'cards')
                                     <x-admin.card-list-field
                                         :name="'content['.$key.']'"

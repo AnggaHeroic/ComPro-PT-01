@@ -56,7 +56,9 @@ class AboutPageContentTest extends TestCase
     public function test_text_changes_appear_on_the_about_page(): void
     {
         $this->put('/admin/pages/about', $this->texts([
-            'hero_title_line2' => 'CV. Maju Jaya',
+            'hero_title' => "Mengenal
+*CV. Maju Jaya*
+lebih dekat.",
             'facts_1_value' => '2015',
             'mission_items' => ['Misi pertama.', 'Misi kedua yang baru.'],
         ]))->assertSessionHasNoErrors();
@@ -130,7 +132,9 @@ class AboutPageContentTest extends TestCase
 
     public function test_reset_removes_texts_and_uploaded_images(): void
     {
-        $this->put('/admin/pages/about', $this->texts(['hero_title_line2' => 'CV. Maju Jaya']) + [
+        $this->put('/admin/pages/about', $this->texts(['hero_title' => "Mengenal
+*CV. Maju Jaya*
+lebih dekat."]) + [
             'image_profile_image' => UploadedFile::fake()->image('p.jpg'),
         ]);
         $path = PageContent::where('key', 'profile_image')->value('value');
@@ -149,7 +153,9 @@ class AboutPageContentTest extends TestCase
         $before = $normalize($this->get('/tentang-kami')->getContent());
 
         $this->actingAs(User::first());
-        $this->put('/admin/pages/about', $this->texts(['hero_title_line2' => 'CV. Maju Jaya', 'cta_button' => 'Lihat Semua']));
+        $this->put('/admin/pages/about', $this->texts(['hero_title' => "Mengenal
+*CV. Maju Jaya*
+lebih dekat.", 'cta_button' => 'Lihat Semua']));
 
         auth()->logout();
         $after = $normalize($this->get('/tentang-kami')->getContent());
@@ -280,5 +286,45 @@ class AboutPageContentTest extends TestCase
         $this->put('/admin/pages/about', $this->texts(['objective_items' => [['title' => '<b>x</b>', 'text' => '<i>y</i>']]]));
         auth()->logout();
         $this->get('/tentang-kami')->assertDontSee('<b>x</b>', false)->assertSee('&lt;b&gt;x&lt;/b&gt;', false);
+    }
+
+    public function test_titles_use_markers_for_red_words_and_keep_line_breaks(): void
+    {
+        $this->put('/admin/pages/about', $this->texts([
+            'hero_title' => "Baris satu\n*dua kata* merah\n*tiga*",
+            'direction_tagline' => 'Arah *tujuan* kami',
+        ]))->assertSessionHasNoErrors();
+
+        auth()->logout();
+        $html = $this->get('/tentang-kami')->getContent();
+        $this->assertStringContainsString("Baris satu<br>\n<span class=\"text-primary\">dua kata</span> merah<br>\n<span class=\"text-primary\">tiga</span>", $html);
+        // Kalimat pengantar di latar gelap memakai warna aksen yang berbeda.
+        $this->assertStringContainsString('<span class="text-primary-alt">tujuan</span>', $html);
+    }
+
+    public function test_title_markers_must_be_paired_and_html_is_escaped(): void
+    {
+        $this->put('/admin/pages/about', $this->texts(['hero_title' => 'Judul *tidak berpasangan']))
+            ->assertSessionHasErrors('content.hero_title');
+        $this->assertNull(PageContent::where('key', 'hero_title')->first());
+
+        $this->put('/admin/pages/about', $this->texts(['hero_title' => '<b>tebal</b> *<i>miring</i>*']))
+            ->assertSessionHasNoErrors();
+
+        auth()->logout();
+        $html = $this->get('/tentang-kami')->getContent();
+        $this->assertStringContainsString('&lt;b&gt;tebal&lt;/b&gt;', $html);
+        $this->assertStringContainsString('<span class="text-primary">&lt;i&gt;miring&lt;/i&gt;</span>', $html);
+        $this->assertStringNotContainsString('<b>tebal</b>', $html);
+    }
+
+    public function test_title_editor_is_shown_in_the_form_and_default_titles_are_not_stored(): void
+    {
+        $this->get('/admin/pages/about')
+            ->assertSee('Warnai merah')
+            ->assertSee('name="content[hero_title]"', false);
+
+        $this->put('/admin/pages/about', $this->texts())->assertSessionHasNoErrors();
+        $this->assertNull(PageContent::where('key', 'hero_title')->first());
     }
 }

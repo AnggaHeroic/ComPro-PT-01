@@ -98,6 +98,12 @@ class PageContentRequest extends FormRequest
                 ($field['optional'] ?? false) ? 'nullable' : 'required',
                 'string',
                 'max:'.($field['max'] ?? 200),
+                ...(($field['type'] ?? 'text') === 'title' ? [function (string $attribute, mixed $value, \Closure $fail) {
+                    // Tanda * untuk mewarnai harus berpasangan.
+                    if (substr_count((string) $value, '*') % 2 !== 0) {
+                        $fail('Tanda * pada :attribute harus berpasangan (awal dan akhir kata yang diwarnai).');
+                    }
+                }] : []),
             ];
         }
 

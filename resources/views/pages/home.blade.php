@@ -16,9 +16,7 @@
                 <h1
                     class="font-display mt-7 max-w-5xl text-5xl font-bold leading-[1] tracking-tight text-secondary-dark sm:text-6xl lg:text-8xl"
                 >
-                    {{ $content('hero_title_before') }}
-                    <span class="text-primary">{{ $content('hero_title_highlight') }}</span>
-                    {{ $content('hero_title_after') }}
+                    {!! $content->rich('hero_title', 'text-primary') !!}
                 </h1>
 
                 <div class="mt-10 grid gap-8 lg:grid-cols-2 lg:items-end">
@@ -59,12 +57,7 @@
                     <h2
                         class="font-display text-4xl font-bold leading-[1.05] tracking-tight text-secondary-dark sm:text-5xl lg:text-6xl"
                     >
-                        <span class="block">
-                            {{ $content('intro_title_line1') }}
-                        </span>
-                        <span class="block text-primary">
-                            {{ $content('intro_title_line2') }}
-                        </span>
+                        {!! $content->rich('intro_title', 'text-primary') !!}
                     </h2>
                 </div>
 
@@ -122,11 +115,7 @@
                         <h2
                             class="font-display mt-6 max-w-3xl text-4xl font-bold leading-[1.05] tracking-tight text-secondary-dark sm:text-5xl lg:text-6xl"
                         >
-                            {{ $content('services_title_line1') }}
-                            <br>
-                            <span class="text-primary">
-                                {{ $content('services_title_line2') }}
-                            </span>
+                            {!! $content->rich('services_title', 'text-primary') !!}
                         </h2>
                     </div>
 
@@ -268,10 +257,7 @@
                         <h2
                             class="font-display mt-5 max-w-xl text-4xl font-bold leading-[1.08] tracking-tight text-secondary-dark sm:text-5xl"
                         >
-                            {{ $content('cta_title_line1') }}
-                            <span class="text-primary">
-                                {{ $content('cta_title_line2') }}
-                            </span>
+                            {!! $content->rich('cta_title', 'text-primary') !!}
                         </h2>
 
                         <p
