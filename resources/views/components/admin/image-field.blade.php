@@ -3,7 +3,7 @@
     'current' => null,
     'name' => 'image',
     'removeName' => 'remove_image',
-    'removeLabel' => 'Hapus gambar saat ini',
+    'removeLabel' => 'Hapus gambar',
     'hint' => null,
     'contain' => false,
 ])
@@ -28,11 +28,12 @@
 
         <div class="min-w-0 flex-1 space-y-2">
             <input
+                x-ref="file"
                 id="{{ $name }}"
                 type="file"
                 name="{{ $name }}"
                 accept="image/jpeg,image/png,image/webp"
-                @change="preview = $event.target.files[0] ? URL.createObjectURL($event.target.files[0]) : null"
+                @change="preview = $event.target.files[0] ? URL.createObjectURL($event.target.files[0]) : null; if (preview) removed = false"
                 class="block w-full text-sm text-gray-600 file:mr-3 file:rounded file:border file:border-gray-300 file:bg-white file:px-3 file:py-2 file:text-sm file:font-medium file:text-gray-700 hover:file:bg-gray-50"
             >
             <p class="text-xs text-gray-500">
@@ -40,10 +41,21 @@
             </p>
 
             @if ($current)
-                <label class="inline-flex items-center gap-2 text-sm text-gray-600">
-                    <input type="checkbox" name="{{ $removeName }}" value="1" x-model="removed" class="h-4 w-4 rounded border-gray-300 accent-primary">
+                <input type="hidden" name="{{ $removeName }}" :value="removed ? 1 : 0">
+
+                <button
+                    type="button"
+                    x-show="! removed"
+                    @click="removed = true; preview = null; $refs.file.value = ''"
+                    class="inline-flex items-center gap-1.5 rounded border border-red-200 bg-white px-2.5 py-1.5 text-xs font-medium text-red-700 transition-colors hover:bg-red-50"
+                >
+                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 7h12M9 7V5h6v2m-8 0 1 12h8l1-12"/></svg>
                     {{ $removeLabel }}
-                </label>
+                </button>
+                <p x-show="removed" x-cloak class="flex flex-wrap items-center gap-2 text-xs text-gray-600">
+                    Akan dihapus saat disimpan.
+                    <button type="button" @click="removed = false" class="font-medium text-primary underline-offset-2 hover:underline">Batalkan</button>
+                </p>
             @endif
         </div>
     </div>
