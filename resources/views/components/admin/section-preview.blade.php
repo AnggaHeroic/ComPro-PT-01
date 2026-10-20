@@ -4,13 +4,13 @@
 <div
     x-data="sectionPreview({ url: @js($url) })"
     x-effect="active === @js($section) && ! loadedOnce && schedule(0)"
-    class="mb-8 overflow-hidden rounded-lg border border-gray-200 bg-gray-50"
+    class="mb-8 overflow-hidden rounded-sm border border-gray-300 bg-white"
 >
-    <div class="flex items-start justify-between gap-4 px-4 py-3">
+    <div class="flex items-start justify-between gap-4 border-b border-gray-300 bg-gray-50 px-4 py-3">
         <div class="min-w-0">
             <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1">
                 <h3 class="text-sm font-semibold text-gray-900">Pratinjau di website</h3>
-                <span x-show="dirty" x-cloak class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-800">
+                <span x-show="dirty" x-cloak class="inline-flex items-center gap-1 rounded-sm bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-800">
                     <span class="h-1.5 w-1.5 rounded-full bg-amber-500" aria-hidden="true"></span>
                     Belum disimpan
                 </span>
@@ -30,7 +30,7 @@
     <div
         x-show="open"
         x-ref="box"
-        class="relative overflow-hidden border-y border-gray-200 bg-white"
+        class="relative overflow-hidden bg-slate-100"
         :style="{ height: Math.max(height * scale, 120) + 'px' }"
     >
         <iframe
@@ -49,5 +49,5 @@
         </div>
     </div>
 
-    <p x-show="open" class="px-4 py-2.5 text-[11px] leading-4 text-gray-500">Foto yang baru Anda pilih tampil di website setelah Anda menekan Simpan.</p>
+    <p x-show="open" class="border-t border-gray-300 bg-gray-50 px-4 py-2.5 text-[11px] leading-4 text-gray-500">Foto yang baru Anda pilih tampil di website setelah Anda menekan Simpan.</p>
 </div>

@@ -35,6 +35,7 @@
         method="POST"
         action="{{ route('admin.pages.update', $page) }}"
         enctype="multipart/form-data"
+        class="[&_.shadow-sm]:shadow-none [&_section]:rounded-sm [&_header]:rounded-t-sm [&_input]:rounded-sm [&_textarea]:rounded-sm [&_button]:rounded-sm"
         x-data="pageEditor({
             active: @js($initialSection),
             sections: @js($sectionKeys),
@@ -49,7 +50,7 @@
             <div class="min-w-0" x-ref="top">
 
                 {{-- Pilih bagian --}}
-                <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
+                <div class="rounded-sm border border-gray-300 bg-white p-4 sm:p-5">
                     <h2 class="text-sm font-semibold text-gray-900">Bagian halaman</h2>
                     <p class="mt-0.5 text-xs leading-5 text-gray-500">Pilih bagian yang ingin diubah. Perubahan di semua bagian disimpan sekaligus saat Anda menekan Simpan.</p>
 
@@ -61,12 +62,12 @@
                                 id="tab-{{ $sectionKey }}"
                                 @click="select('{{ $sectionKey }}')"
                                 :aria-selected="active === '{{ $sectionKey }}'"
-                                :class="active === '{{ $sectionKey }}' ? 'border-primary/40 bg-red-50 text-primary' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900'"
-                                class="inline-flex items-center gap-2 rounded-full border py-1.5 pl-1.5 pr-3.5 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
+                                :class="active === '{{ $sectionKey }}' ? 'border-primary bg-primary text-white' : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400 hover:bg-gray-50'"
+                                class="inline-flex items-center gap-2 rounded-sm border px-3 py-1.5 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
                             >
                                 <span
-                                    :class="active === '{{ $sectionKey }}' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-500'"
-                                    class="flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-bold transition"
+                                    :class="active === '{{ $sectionKey }}' ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'"
+                                    class="flex h-5 min-w-5 items-center justify-center rounded-sm text-[11px] font-bold"
                                     aria-hidden="true"
                                 >{{ $loop->iteration }}</span>
                                 {{ $section['label'] }}
@@ -185,7 +186,7 @@
                             {{-- Pindah antar bagian --}}
                             <div class="mt-4 flex items-center justify-between gap-3 text-sm">
                                 @if (! $loop->first)
-                                    <button type="button" @click="select('{{ $sectionKeys[$loop->index - 1] }}')" class="inline-flex items-center gap-2 rounded border border-gray-200 bg-white px-3 py-2 text-left font-medium text-gray-600 shadow-sm transition hover:border-gray-300 hover:text-gray-900">
+                                    <button type="button" @click="select('{{ $sectionKeys[$loop->index - 1] }}')" class="inline-flex items-center gap-2 rounded-sm border border-gray-300 bg-white px-3 py-2 text-left font-medium text-gray-700 transition hover:border-gray-400 hover:bg-gray-50">
                                         <span aria-hidden="true">&larr;</span>
                                         <span><span class="block text-[11px] font-normal text-gray-400">Sebelumnya</span>{{ $definition['sections'][$sectionKeys[$loop->index - 1]]['label'] }}</span>
                                     </button>
@@ -193,7 +194,7 @@
                                     <span></span>
                                 @endif
                                 @if (! $loop->last)
-                                    <button type="button" @click="select('{{ $sectionKeys[$loop->index + 1] }}')" class="inline-flex items-center gap-2 rounded border border-gray-200 bg-white px-3 py-2 text-right font-medium text-gray-600 shadow-sm transition hover:border-gray-300 hover:text-gray-900">
+                                    <button type="button" @click="select('{{ $sectionKeys[$loop->index + 1] }}')" class="inline-flex items-center gap-2 rounded-sm border border-gray-300 bg-white px-3 py-2 text-right font-medium text-gray-700 transition hover:border-gray-400 hover:bg-gray-50">
                                         <span><span class="block text-[11px] font-normal text-gray-400">Berikutnya</span>{{ $definition['sections'][$sectionKeys[$loop->index + 1]]['label'] }}</span>
                                         <span aria-hidden="true">&rarr;</span>
                                     </button>

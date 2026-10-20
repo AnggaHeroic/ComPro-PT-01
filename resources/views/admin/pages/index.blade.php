@@ -13,16 +13,16 @@
         <p class="mt-1 text-sm text-gray-500">Ubah teks dan foto pada halaman website. Tata letak dan desain tidak berubah.</p>
     </x-slot>
 
-    <div class="mb-6 flex gap-3 rounded border border-gray-200 bg-white p-4 text-sm text-gray-600 shadow-sm">
+    <div class="mb-6 flex gap-3 rounded-sm border border-gray-300 bg-white p-4 text-sm text-gray-600">
         <svg class="mt-0.5 h-5 w-5 shrink-0 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8h.01M11 12h1v5h1m8-5a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
         <p>Pilih halaman yang ingin dikelola, buka tab bagian untuk mengubah konten di dalamnya. Daftar kategori dan aktivitas usaha dikelola terpisah melalui menu <a href="{{ route('admin.categories.index') }}" class="font-medium text-primary hover:underline">Kategori</a> dan <a href="{{ route('admin.activities.index') }}" class="font-medium text-primary hover:underline">Aktivitas Usaha</a>.</p>
     </div>
 
     <div class="grid gap-4 md:grid-cols-2">
         @foreach ($pages as $key => $page)
-            <section class="flex flex-col rounded border border-gray-200 bg-white shadow-sm transition-colors hover:border-primary">
+            <section class="flex flex-col rounded-sm border border-gray-300 bg-white transition-colors hover:border-primary">
                 <a href="{{ route('admin.pages.edit', $key) }}" class="group flex flex-1 gap-4 p-5">
-                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded bg-red-50 text-primary">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-sm bg-red-50 text-primary">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ $icons[$key] ?? $icons['about'] }}"/></svg>
                     </span>
                     <span class="min-w-0">
@@ -31,7 +31,7 @@
                     </span>
                 </a>
 
-                <div class="flex items-center justify-between gap-4 border-t border-gray-100 bg-gray-50 px-5 py-3">
+                <div class="flex items-center justify-between gap-4 border-t border-gray-200 bg-gray-50 px-5 py-3">
                     <p class="text-xs text-gray-500">{{ count($page['sections']) }} bagian</p>
                     <x-primary-button :href="route('admin.pages.edit', $key)" size="sm">Kelola</x-primary-button>
                 </div>
