@@ -5,6 +5,11 @@ namespace App\Providers;
 use App\Models\BusinessActivity;
 use App\Models\ServiceCategory;
 use App\Support\PageContents;
+use App\Models\ActivityLog;
+use App\Support\ActivityLogger;
+use Illuminate\Auth\Events\Login;
+use Illuminate\Auth\Events\Logout;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -29,6 +34,10 @@ class AppServiceProvider extends ServiceProvider
             'nav.categories',
             fn () => ServiceCategory::published()->ordered()->get(['id', 'name', 'slug', 'description', 'icon', 'icon_image_path'])
         );
+
+        // Riwayat aktivitas: masuk dan keluar dari dashboard.
+        Event::listen(Login::class, fn (Login $event) => ActivityLogger::record(ActivityLog::ACTION_LOGIN, 'Akun', 'Masuk ke dashboard', $event->user));
+        Event::listen(Logout::class, fn (Logout $event) => $event->user ? ActivityLogger::record(ActivityLog::ACTION_LOGOUT, 'Akun', 'Keluar dari dashboard', $event->user) : null);
 
         // Sidebar admin: jumlah draft sebagai penanda.
         View::composer('layouts.navigation', function ($view) {

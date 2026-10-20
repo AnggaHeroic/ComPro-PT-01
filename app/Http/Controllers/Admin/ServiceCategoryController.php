@@ -7,8 +7,10 @@ use App\Http\Controllers\Admin\Concerns\StoresUploadedImage;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ReorderItemsRequest;
 use App\Http\Requests\Admin\ServiceCategoryRequest;
+use App\Models\ActivityLog;
 use App\Models\ServiceCategory;
 use App\Services\ImageUploader;
+use App\Support\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -22,6 +24,12 @@ class ServiceCategoryController extends Controller
     use FiltersByStatus, StoresUploadedImage;
 
     private const UPLOAD_FIELDS = ['image', 'remove_image', 'icon_image', 'remove_icon_image', 'status'];
+
+    /** Nama kolom untuk riwayat aktivitas. */
+    private const LOG_LABELS = [
+        'name' => 'Nama', 'slug' => 'Alamat URL', 'description' => 'Deskripsi', 'image_path' => 'Gambar',
+        'icon' => 'Ikon', 'icon_image_path' => 'Ikon kustom', 'is_published' => 'Status',
+    ];
 
     public function index(Request $request): View
     {
@@ -82,6 +90,8 @@ class ServiceCategoryController extends Controller
             throw $e;
         }
 
+        ActivityLogger::record(ActivityLog::ACTION_CREATED, 'Kategori', "\"{$category->name}\" ditambahkan (".ActivityLogger::status($category->is_published).')');
+
         return $this->redirectAfterSave($category, 'Kategori berhasil ditambahkan.');
     }
 
@@ -126,12 +136,18 @@ class ServiceCategoryController extends Controller
             throw $e;
         }
 
+        $changed = ActivityLogger::changedLabels($category, self::LOG_LABELS);
+
         if (array_key_exists('image_path', $data)) {
             $images->release($oldPath);
         }
 
         if (array_key_exists('icon_image_path', $data)) {
             $images->release($oldIconPath);
+        }
+
+        if ($changed !== '') {
+            ActivityLogger::record(ActivityLog::ACTION_UPDATED, 'Kategori', "\"{$category->name}\" — mengubah: {$changed}");
         }
 
         return $this->redirectAfterSave($category, 'Kategori berhasil diperbarui.');
@@ -150,6 +166,8 @@ class ServiceCategoryController extends Controller
         $category->delete();
         $images->release($category->image_path);
         $images->release($category->icon_image_path);
+
+        ActivityLogger::record(ActivityLog::ACTION_DELETED, 'Kategori', "\"{$category->name}\" dihapus");
 
         return redirect()
             ->route('admin.categories.index')
@@ -176,6 +194,8 @@ class ServiceCategoryController extends Controller
                 ServiceCategory::whereKey($id)->update(['sort_order' => $position + 1]);
             }
         });
+
+        ActivityLogger::record(ActivityLog::ACTION_REORDERED, 'Kategori', 'Urutan kategori diubah');
 
         return response()->json(['message' => 'Urutan kategori disimpan.']);
     }

@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Admin\Concerns\StoresUploadedImage;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\PageContentRequest;
+use App\Models\ActivityLog;
 use App\Models\PageContent;
 use App\Models\ServiceCategory;
 use App\Services\ImageUploader;
+use App\Support\ActivityLogger;
 use App\Support\PageContents;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -42,6 +44,7 @@ class PageContentController extends Controller
 
         $newPaths = [];
         $oldPaths = [];
+        $before = PageContent::where('page', $page)->pluck('value', 'key')->all();
 
         try {
             // Hanya kolom yang terdaftar yang diproses; kunci lain diabaikan.
@@ -107,6 +110,8 @@ class PageContentController extends Controller
             $images->release($path);
         }
 
+        $this->logChanges($page, $before);
+
         // Tetap di bagian yang sedang diedit.
         $section = $request->input('bagian');
         $section = is_string($section) && array_key_exists($section, PageContents::definitions()[$page]['sections']) ? $section : null;
@@ -147,6 +152,30 @@ class PageContentController extends Controller
         return response($html)->header('Content-Type', 'text/html; charset=UTF-8')->header('X-Robots-Tag', 'noindex, nofollow');
     }
 
+    /**
+     * Catat bagian halaman yang isinya berubah (dibanding sebelum disimpan).
+     *
+     * @param  array<string, string>  $before
+     */
+    private function logChanges(string $page, array $before): void
+    {
+        $after = PageContent::where('page', $page)->pluck('value', 'key')->all();
+        $definition = PageContents::definitions()[$page];
+        $sections = [];
+
+        foreach ($definition['sections'] as $section) {
+            foreach (array_keys($section['fields']) as $key) {
+                if (($before[$key] ?? null) !== ($after[$key] ?? null)) {
+                    $sections[$section['label']] = true;
+                }
+            }
+        }
+
+        if ($sections !== []) {
+            ActivityLogger::record(ActivityLog::ACTION_UPDATED, 'Konten Halaman', $definition['label'].' — mengubah bagian: '.implode(', ', array_keys($sections)));
+        }
+    }
+
     public function reset(string $page, ImageUploader $images): RedirectResponse
     {
         abort_unless(PageContents::has($page), 404);
@@ -161,6 +190,8 @@ class PageContentController extends Controller
         PageContent::where('page', $page)->delete();
 
         $paths->each(fn ($path) => $images->release($path));
+
+        ActivityLogger::record(ActivityLog::ACTION_RESET, 'Konten Halaman', PageContents::definitions()[$page]['label'].' — dikembalikan ke setelan default');
 
         return redirect()
             ->route('admin.pages.edit', $page)

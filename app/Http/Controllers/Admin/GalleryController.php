@@ -7,9 +7,11 @@ use App\Http\Requests\Admin\ReorderGalleryRequest;
 use App\Http\Requests\Admin\StoreGalleryImagesRequest;
 use App\Http\Requests\Admin\UpdateGalleryImageRequest;
 use App\Models\ActivityImage;
+use App\Models\ActivityLog;
 use App\Models\BusinessActivity;
 use App\Models\ServiceCategory;
 use App\Services\ImageUploader;
+use App\Support\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -116,6 +118,8 @@ class GalleryController extends Controller
             throw $e;
         }
 
+        ActivityLogger::record(ActivityLog::ACTION_CREATED, 'Galeri', count($paths)." foto ditambahkan ke \"{$activity->name}\"");
+
         return redirect()
             ->route('admin.gallery.show', $activity)
             ->with('success', count($paths).' foto berhasil ditambahkan.');
@@ -158,6 +162,12 @@ class GalleryController extends Controller
             $images->release($oldPath);
         }
 
+        $changed = ActivityLogger::changedLabels($image, ['caption' => 'Deskripsi', 'image_path' => 'Foto']);
+
+        if ($changed !== '') {
+            ActivityLogger::record(ActivityLog::ACTION_UPDATED, 'Galeri', "Foto pada \"{$activity->name}\" — mengubah: {$changed}");
+        }
+
         return redirect()
             ->route('admin.gallery.show', $activity)
             ->with('success', 'Foto berhasil diperbarui.');
@@ -170,6 +180,8 @@ class GalleryController extends Controller
         $path = $image->image_path;
         $image->delete();
         $images->release($path);
+
+        ActivityLogger::record(ActivityLog::ACTION_DELETED, 'Galeri', "1 foto dihapus dari \"{$activity->name}\"");
 
         return redirect()
             ->route('admin.gallery.show', $activity)
@@ -197,6 +209,8 @@ class GalleryController extends Controller
                 $activity->images()->whereKey($id)->update(['sort_order' => $position + 1]);
             }
         });
+
+        ActivityLogger::record(ActivityLog::ACTION_REORDERED, 'Galeri', "Urutan foto pada \"{$activity->name}\" diubah");
 
         return redirect()
             ->route('admin.gallery.show', $activity)

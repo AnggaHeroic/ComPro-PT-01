@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\ActivityLog;
+use App\Support\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
@@ -28,6 +30,12 @@ class ProfileController extends Controller
         $request->user()->fill($request->validated());
 
         $request->user()->save();
+
+        $changed = ActivityLogger::changedLabels($request->user(), ['name' => 'Nama', 'email' => 'Email']);
+
+        if ($changed !== '') {
+            ActivityLogger::record(ActivityLog::ACTION_UPDATED, 'Profil', "Informasi profil — mengubah: {$changed}");
+        }
 
         return Redirect::route('admin.profile.edit')->with('status', 'profile-updated');
     }

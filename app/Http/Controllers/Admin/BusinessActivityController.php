@@ -7,9 +7,11 @@ use App\Http\Controllers\Admin\Concerns\StoresUploadedImage;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\BusinessActivityRequest;
 use App\Http\Requests\Admin\ReorderItemsRequest;
+use App\Models\ActivityLog;
 use App\Models\BusinessActivity;
 use App\Models\ServiceCategory;
 use App\Services\ImageUploader;
+use App\Support\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -23,6 +25,13 @@ class BusinessActivityController extends Controller
     use FiltersByStatus, StoresUploadedImage;
 
     private const NON_COLUMN_FIELDS = ['image', 'remove_image', 'status'];
+
+    /** Nama kolom untuk riwayat aktivitas. */
+    private const LOG_LABELS = [
+        'service_category_id' => 'Kategori', 'kbli_code' => 'Kode KBLI', 'name' => 'Nama', 'slug' => 'Alamat URL',
+        'short_description' => 'Deskripsi singkat', 'description' => 'Deskripsi detail', 'image_path' => 'Gambar',
+        'is_published' => 'Status',
+    ];
 
     public function index(Request $request): View
     {
@@ -96,6 +105,9 @@ class BusinessActivityController extends Controller
             throw $e;
         }
 
+        $activity->loadMissing('category:id,name');
+        ActivityLogger::record(ActivityLog::ACTION_CREATED, 'Aktivitas Usaha', "\"{$activity->name}\" ditambahkan pada kategori \"{$activity->category?->name}\" (".ActivityLogger::status($activity->is_published).')');
+
         return $this->redirectAfterSave($activity, 'Aktivitas berhasil ditambahkan.');
     }
 
@@ -131,8 +143,14 @@ class BusinessActivityController extends Controller
             throw $e;
         }
 
+        $changed = ActivityLogger::changedLabels($activity, self::LOG_LABELS);
+
         if (array_key_exists('image_path', $data)) {
             $images->release($oldPath);
+        }
+
+        if ($changed !== '') {
+            ActivityLogger::record(ActivityLog::ACTION_UPDATED, 'Aktivitas Usaha', "\"{$activity->name}\" — mengubah: {$changed}");
         }
 
         return $this->redirectAfterSave($activity, 'Aktivitas berhasil diperbarui.');
@@ -143,12 +161,15 @@ class BusinessActivityController extends Controller
         // Baris galeri ikut terhapus oleh database (cascade); file fisiknya dibersihkan di sini.
         $paths = $activity->images()->pluck('image_path')->push($activity->image_path)->all();
         $categoryId = $activity->service_category_id;
+        $categoryName = $activity->category()->value('name');
 
         $activity->delete();
 
         foreach ($paths as $path) {
             $images->release($path);
         }
+
+        ActivityLogger::record(ActivityLog::ACTION_DELETED, 'Aktivitas Usaha', "\"{$activity->name}\" dihapus dari kategori \"{$categoryName}\"");
 
         return redirect()
             ->route('admin.activities.index', ['category' => $categoryId])
@@ -181,6 +202,8 @@ class BusinessActivityController extends Controller
                 BusinessActivity::where('service_category_id', $categoryId)->whereKey($id)->update(['sort_order' => $position + 1]);
             }
         });
+
+        ActivityLogger::record(ActivityLog::ACTION_REORDERED, 'Aktivitas Usaha', 'Urutan aktivitas pada kategori "'.ServiceCategory::whereKey($categoryId)->value('name').'" diubah');
 
         return response()->json(['message' => 'Urutan aktivitas disimpan.']);
     }

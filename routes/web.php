@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\BusinessActivityController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GalleryController;
@@ -71,6 +72,8 @@ Route::middleware('auth')
                 Route::delete('/{page}', 'reset')->name('reset');
                 Route::post('/{page}/preview/{section}', 'preview')->name('preview');
             });
+
+        Route::get('/activity-log', [ActivityLogController::class, 'index'])->name('activity-log.index');
 
         Route::get('/profil', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profil', [ProfileController::class, 'update'])->name('profile.update');
