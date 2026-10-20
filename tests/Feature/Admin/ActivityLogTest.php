@@ -155,7 +155,8 @@ class ActivityLogTest extends TestCase
 
         $this->put('/password', ['current_password' => 'password', 'password' => 'password-baru-123', 'password_confirmation' => 'password-baru-123']);
         $log = $this->last();
-        $this->assertSame(['updated', 'Profil', 'Kata sandi diubah'], [$log->action, $log->menu, $log->detail]);
+        $this->assertSame(['password', 'Profil', 'Password akun diubah'], [$log->action, $log->menu, $log->detail]);
+        $this->assertSame('Ganti password', $log->actionLabel());
 
         auth()->logout();
         $this->post('/login', ['email' => $this->admin->email, 'password' => 'password-baru-123']);
@@ -228,5 +229,24 @@ class ActivityLogTest extends TestCase
         $this->post('/admin/categories', ['name' => 'Tetap Tersimpan', 'description' => 'x', 'is_published' => 1])->assertRedirect();
 
         $this->assertDatabaseHas('service_categories', ['name' => 'Tetap Tersimpan']);
+    }
+
+    public function test_actions_show_a_small_icon_and_details_are_centered(): void
+    {
+        foreach (array_keys(ActivityLog::actions()) as $action) {
+            ActivityLogger::record($action, 'Profil', "Uji {$action}");
+        }
+
+        $html = $this->get('/admin/activity-log')->assertOk()->getContent();
+
+        foreach (ActivityLog::actions() as [$label, $class, $icon]) {
+            $this->assertStringContainsString('d="'.$icon.'"', $html, "ikon {$label}");
+            $this->assertStringContainsString($label, $html);
+        }
+
+        // Keterangan rata tengah, dan ganti password punya aksinya sendiri (juga di filter).
+        $this->assertStringContainsString('class="min-w-64 px-4 py-3 text-center text-gray-700"', $html);
+        $this->get('/admin/activity-log?action=password')->assertSee('Uji password')->assertDontSee('Uji login');
+        $this->assertStringContainsString('<option value="password"', $html);
     }
 }

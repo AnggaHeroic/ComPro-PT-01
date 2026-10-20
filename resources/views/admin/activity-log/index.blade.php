@@ -57,12 +57,15 @@
                             </td>
                             <td class="whitespace-nowrap px-4 py-3 text-center text-gray-700">{{ $log->user_name }}</td>
                             <td class="px-4 py-3 text-center">
-                                <span class="inline-block whitespace-nowrap rounded-sm px-2 py-0.5 text-xs font-medium {{ $log->actionClass() }}">{{ $log->actionLabel() }}</span>
+                                <span class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-sm px-2 py-0.5 text-xs font-medium {{ $log->actionClass() }}">
+                                    <svg class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ $log->actionIcon() }}"/></svg>
+                                    {{ $log->actionLabel() }}
+                                </span>
                             </td>
                             <td class="px-4 py-3 text-center">
                                 <span class="inline-block whitespace-nowrap rounded-sm bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">{{ $log->menu }}</span>
                             </td>
-                            <td class="min-w-64 px-4 py-3 text-gray-700">{{ $log->detail }}</td>
+                            <td class="min-w-64 px-4 py-3 text-center text-gray-700">{{ $log->detail }}</td>
                         </tr>
                     @empty
                         <tr>

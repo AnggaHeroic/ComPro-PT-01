@@ -26,7 +26,7 @@ class PasswordController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
-        ActivityLogger::record(ActivityLog::ACTION_UPDATED, 'Profil', 'Kata sandi diubah');
+        ActivityLogger::record(ActivityLog::ACTION_PASSWORD, 'Profil', 'Password akun diubah');
 
         return back()->with('status', 'password-updated');
     }
