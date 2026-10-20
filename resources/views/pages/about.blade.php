@@ -361,7 +361,7 @@
                                 {{ $objective['title'] }}
                             </h3>
                             <p
-                                class="font-body mt-3 max-w-sm text-justify text-[13.5px] leading-7 tracking-[-0.01em] text-slate-600 [word-spacing:-0.1em] hyphens-auto"
+                                class="font-body mt-3 max-w-sm text-sm leading-7 text-slate-600"
                             >
                                 {{ $objective['text'] }}
                             </p>
