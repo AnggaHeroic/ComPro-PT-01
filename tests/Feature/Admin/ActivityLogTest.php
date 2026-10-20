@@ -144,7 +144,7 @@ class ActivityLogTest extends TestCase
         $this->delete('/admin/pages/about');
         $log = $this->last();
         $this->assertSame(['reset', 'Konten Halaman'], [$log->action, $log->menu]);
-        $this->assertStringContainsString('Tentang Kami — dikembalikan ke setelan default', $log->detail);
+        $this->assertStringContainsString('Tentang Kami — seluruh konten dikembalikan ke setelan default (default bawaan sistem)', $log->detail);
     }
 
     public function test_profile_password_login_and_logout_are_logged(): void
@@ -276,7 +276,7 @@ class ActivityLogTest extends TestCase
         $this->get('/admin/activity-log?sampai=2026-10-01')->assertSee('Awal Oktober')->assertDontSee('Akhir sepuluh');
 
         // Terbalik: otomatis ditukar.
-        $this->get('/admin/activity-log?dari=2026-10-11&sampai=2026-10-01')->assertSee('3 catatan')->assertSee('value="2026-10-01"', false);
+        $this->get('/admin/activity-log?dari=2026-10-11&sampai=2026-10-01')->assertSee('3 catatan')->assertSee('01 Okt 2026 – 11 Okt 2026');
 
         // Tidak valid atau mustahil: diabaikan (semua tampil).
         foreach (['dari=abc', 'dari=2026-02-31', 'sampai=2026-13-01', 'dari[]=x'] as $query) {
@@ -324,5 +324,33 @@ class ActivityLogTest extends TestCase
             ->assertSee('30 catatan')
             ->assertSee('dari=2026-10-01&amp;sampai=2026-10-31&amp;page=2', false)
             ->assertDontSee('Di luar rentang');
+    }
+
+    public function test_date_filter_is_a_single_icon_button_with_a_panel_and_shows_the_active_range(): void
+    {
+        ActivityLogger::record('updated', 'Profil', 'Uji tombol tanggal');
+
+        $html = $this->get('/admin/activity-log')->assertOk()->getContent();
+
+        // Satu tombol ikon (kalender) membuka panel; tidak ada kolom tanggal di bar filter.
+        $this->assertSame(1, substr_count($html, 'title="Filter tanggal"'));
+        $this->assertStringContainsString('M16 3v4M8 3v4M3 10h18', $html);
+        $this->assertStringContainsString('role="dialog"', $html);
+        $this->assertStringContainsString('1 tanggal', $html);
+        $this->assertStringContainsString('Rentang tanggal', $html);
+        $this->assertStringContainsString('Terapkan', $html);
+        $this->assertStringContainsString('name="dari"', $html);
+        $this->assertStringContainsString('name="sampai"', $html);
+        $this->assertStringNotContainsString('type="hidden" name="dari" value=', $html);
+
+        // Tanpa filter tanggal: hanya ikon. Dengan filter: label rentang tampil di tombol.
+        $this->assertStringNotContainsString('aria-label="Filter tanggal:', $html);
+
+        $one = $this->get('/admin/activity-log?dari=2026-10-10&sampai=2026-10-10')->getContent();
+        $this->assertStringContainsString('aria-label="Filter tanggal: 10 Okt 2026"', $one);
+        $range = $this->get('/admin/activity-log?dari=2026-10-01&sampai=2026-10-10')->getContent();
+        $this->assertStringContainsString('aria-label="Filter tanggal: 01 Okt 2026 – 10 Okt 2026"', $range);
+        $this->get('/admin/activity-log?dari=2026-10-05')->assertSee('Sejak 05 Okt 2026');
+        $this->get('/admin/activity-log?sampai=2026-10-05')->assertSee('Sampai 05 Okt 2026');
     }
 }

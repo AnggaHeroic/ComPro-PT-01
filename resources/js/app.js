@@ -769,9 +769,10 @@ Alpine.store('confirm', {
     tone: 'primary', // primary | danger
     secondaryLabel: '', // bila diisi, muncul tombol tambahan yang menghasilkan 'secondary'
     hideCancel: false, // sembunyikan tombol Batal; dialog tetap bisa ditutup (Esc, klik di luar, tombol silang)
+    step: '', // penanda langkah pada konfirmasi bertahap, mis. 'Langkah 1 dari 2'
     resolver: null,
 
-    ask({ title, message, label, tone, secondaryLabel, hideCancel } = {}) {
+    ask({ title, message, label, tone, secondaryLabel, hideCancel, step } = {}) {
         this.resolver?.(false);
         this.title = title ?? 'Simpan perubahan?';
         this.message = message ?? 'Perubahan akan langsung diterapkan ke website.';
@@ -779,6 +780,7 @@ Alpine.store('confirm', {
         this.tone = tone ?? 'primary';
         this.secondaryLabel = secondaryLabel ?? '';
         this.hideCancel = hideCancel ?? false;
+        this.step = step ?? '';
         this.open = true;
 
         return new Promise((resolve) => {
@@ -831,9 +833,22 @@ document.addEventListener(
                     : 'Perubahan akan langsung diterapkan ke website.'),
             label: form.dataset.confirmLabel ?? (isDelete ? 'Ya, hapus' : 'Ya, simpan'),
             tone: isDelete ? 'danger' : 'primary',
+            step: form.dataset.confirmSecondTitle ? 'Konfirmasi 1 dari 2' : '',
         });
 
-        if (!ok) {
+        // Aksi besar (data-confirm-second-title) memerlukan konfirmasi kedua sebelum dikirim.
+        const second = ok && form.dataset.confirmSecondTitle
+            ? (await new Promise((resolve) => setTimeout(resolve, 200)),
+              await Alpine.store('confirm').ask({
+                  title: form.dataset.confirmSecondTitle,
+                  message: form.dataset.confirmSecondMessage,
+                  label: form.dataset.confirmSecondLabel ?? 'Ya, lanjutkan',
+                  tone: form.dataset.confirmSecondTone ?? 'danger',
+                  step: 'Konfirmasi 2 dari 2',
+              }))
+            : ok;
+
+        if (!second) {
             // Unggahan otomatis (mis. ganti foto) dibatalkan: kosongkan pilihan file.
             form.querySelectorAll('input[type="file"][data-reset-on-cancel]').forEach((input) => {
                 input.value = '';

@@ -229,8 +229,12 @@
                 method="POST"
                 action="{{ route('admin.pages.default.set', $page) }}"
                 data-confirm-title="Jadikan konten ini setelan default?"
-                data-confirm-message="Konten halaman yang sudah tersimpan akan menjadi setelan default baru. Perubahan di form yang belum disimpan tidak ikut. Tampilan website tidak berubah."
-                data-confirm-label="Ya, jadikan default"
+                data-confirm-message="Konten halaman {{ $definition['label'] }} yang sudah tersimpan akan menjadi setelan default baru, menggantikan default sebelumnya. Perubahan di form yang belum disimpan tidak ikut."
+                data-confirm-label="Lanjutkan"
+                data-confirm-second-title="Yakin menetapkan default baru?"
+                data-confirm-second-message="Ini mencakup seluruh konten halaman {{ $definition['label'] }} di website publik (teks, judul, daftar, dan foto). Setelan default sebelumnya diganti. Tampilan website saat ini tidak berubah."
+                data-confirm-second-label="Ya, tetapkan default baru"
+                data-confirm-second-tone="primary"
             >
                 @csrf
                 <x-secondary-button type="submit">Jadikan konten tersimpan sebagai default</x-secondary-button>
@@ -239,7 +243,12 @@
             <form
                 method="POST"
                 action="{{ route('admin.pages.reset', $page) }}"
-                data-confirm-title="Kembali ke setelan default?" data-confirm-message="Semua teks dan foto halaman ini akan dikembalikan ke setelan default. Perubahan yang pernah disimpan akan hilang." data-confirm-label="Ya, kembalikan"
+                data-confirm-title="Kembali ke setelan default?"
+                data-confirm-message="Seluruh konten halaman {{ $definition['label'] }} akan dikembalikan ke setelan default{{ $content->hasCustomDefaults() ? ' yang ditetapkan admin' : ' bawaan sistem' }}. Perubahan yang pernah disimpan akan hilang."
+                data-confirm-label="Lanjutkan"
+                data-confirm-second-title="Yakin mengembalikan seluruh halaman?"
+                data-confirm-second-message="Seluruh teks, judul, daftar, dan foto halaman {{ $definition['label'] }} di website publik akan langsung berubah ke setelan default dan tidak bisa dibatalkan."
+                data-confirm-second-label="Ya, kembalikan ke default"
             >
                 @csrf
                 @method('DELETE')
@@ -250,9 +259,12 @@
                 <form
                     method="POST"
                     action="{{ route('admin.pages.default.clear', $page) }}"
-                    data-confirm-title="Pakai default bawaan sistem?"
-                    data-confirm-message="Setelan default kustom dihapus dan acuannya kembali ke teks bawaan sistem. Tampilan website saat ini tidak berubah."
-                    data-confirm-label="Ya, hapus default kustom"
+                    data-confirm-title="Kembali ke default semula?"
+                    data-confirm-message="Setelan default yang ditetapkan admin untuk halaman {{ $definition['label'] }} dihapus dan acuannya kembali ke default bawaan sistem. Tampilan website saat ini tidak berubah."
+                    data-confirm-label="Lanjutkan"
+                    data-confirm-second-title="Yakin menghapus default kustom?"
+                    data-confirm-second-message="Ini mencakup seluruh konten halaman {{ $definition['label'] }}: setelah ini, &quot;Kembali ke setelan default&quot; akan memakai teks dan foto bawaan sistem, bukan lagi default yang Anda tetapkan."
+                    data-confirm-second-label="Ya, hapus default kustom"
                 >
                     @csrf
                     @method('DELETE')

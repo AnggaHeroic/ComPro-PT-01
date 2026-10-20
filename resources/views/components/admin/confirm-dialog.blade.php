@@ -47,6 +47,7 @@
             </span>
 
             <div class="min-w-0">
+                <p x-show="$store.confirm.step" x-cloak class="mb-0.5 text-[11px] font-semibold uppercase tracking-wide text-gray-500" x-text="$store.confirm.step"></p>
                 <h2 id="confirm-title" class="text-base font-semibold text-gray-900" x-text="$store.confirm.title"></h2>
                 <p id="confirm-message" class="mt-1.5 text-sm leading-6 text-gray-600" x-text="$store.confirm.message"></p>
             </div>

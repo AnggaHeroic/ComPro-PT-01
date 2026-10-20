@@ -80,7 +80,7 @@ class PageDefaultsTest extends TestCase
 
         $log = ActivityLog::where('menu', 'Konten Halaman')->latest('id')->first();
         $this->assertSame(['default', 'Konten Halaman'], [$log->action, $log->menu]);
-        $this->assertStringContainsString('konten saat ini dijadikan setelan default', $log->detail);
+        $this->assertStringContainsString('setelan default baru ditetapkan', $log->detail);
     }
 
     public function test_reset_returns_to_the_custom_default_including_lists_and_photos(): void
@@ -166,7 +166,11 @@ class PageDefaultsTest extends TestCase
         $this->actingAs(User::first());
         // Menghapus lagi saat sudah tidak ada default kustom tidak mencatat apa pun.
         $this->delete('/admin/pages/about/default')->assertSessionHas('success');
-        $this->assertSame(2, ActivityLog::where('action', 'default')->count());
+        $this->assertSame(1, ActivityLog::where('action', 'default')->count());
+        $this->assertSame(1, ActivityLog::where('action', 'default_revert')->count());
+        $revert = ActivityLog::where('action', 'default_revert')->first();
+        $this->assertStringContainsString('dikembalikan ke default semula', $revert->detail);
+        $this->assertSame('Revert default', $revert->actionLabel());
     }
 
     public function test_defaults_are_per_page_and_unknown_pages_are_not_found(): void
@@ -188,5 +192,30 @@ class PageDefaultsTest extends TestCase
 
         $this->get('/admin/pages/about')->assertSee('value="Tombol Default"', false);
         $this->post('/admin/pages/about/preview/cta', ['content' => []])->assertSee('Tombol Default');
+    }
+
+    public function test_all_three_default_actions_ask_for_two_confirmations_naming_the_whole_page(): void
+    {
+        $this->put('/admin/pages/about', $this->texts(['hero_label' => 'Profil Kami']));
+        $this->post('/admin/pages/about/default');
+
+        $html = $this->get('/admin/pages/about')->getContent();
+
+        // Set default baru, kembali ke default, dan pakai default bawaan: semuanya dua langkah.
+        $this->assertSame(3, substr_count($html, 'data-confirm-second-title='));
+        foreach (['Yakin menetapkan default baru?', 'Yakin mengembalikan seluruh halaman?', 'Yakin menghapus default kustom?'] as $title) {
+            $this->assertStringContainsString($title, $html);
+        }
+        // Pesan menyebut seluruh konten halaman yang dikelola di website publik.
+        $this->assertGreaterThanOrEqual(3, substr_count(strtolower($html), 'seluruh konten halaman tentang kami') + substr_count($html, 'Seluruh teks, judul, daftar, dan foto halaman Tentang Kami'));
+
+        $js = file_get_contents(resource_path('js/app.js'));
+        $this->assertStringContainsString("form.dataset.confirmSecondTitle", $js);
+        $this->assertStringContainsString("step: 'Konfirmasi 2 dari 2'", $js);
+        $this->assertStringContainsString('Konfirmasi 1 dari 2', $js);
+        $this->assertStringContainsString('$store.confirm.step', file_get_contents(resource_path('views/components/admin/confirm-dialog.blade.php')));
+
+        // Halaman biasa (hapus kategori, simpan form) tetap satu konfirmasi.
+        $this->get('/admin/categories')->assertDontSee('data-confirm-second-title', false);
     }
 }

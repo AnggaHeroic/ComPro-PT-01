@@ -225,7 +225,7 @@ class PageContentController extends Controller
 
         $this->releaseImages($page, $images, $stored + $oldDefaults);
 
-        ActivityLogger::record(ActivityLog::ACTION_DEFAULT, 'Konten Halaman', PageContents::definitions()[$page]['label'].' — konten saat ini dijadikan setelan default');
+        ActivityLogger::record(ActivityLog::ACTION_DEFAULT, 'Konten Halaman', PageContents::definitions()[$page]['label'].' — setelan default baru ditetapkan (konten tersimpan saat ini dijadikan default)');
 
         return redirect()
             ->route('admin.pages.edit', $page)
@@ -261,7 +261,7 @@ class PageContentController extends Controller
 
         $this->releaseImages($page, $images, $defaults);
 
-        ActivityLogger::record(ActivityLog::ACTION_DEFAULT, 'Konten Halaman', PageContents::definitions()[$page]['label'].' — setelan default kustom dihapus (kembali ke bawaan sistem)');
+        ActivityLogger::record(ActivityLog::ACTION_DEFAULT_REVERT, 'Konten Halaman', PageContents::definitions()[$page]['label'].' — setelan default dikembalikan ke default semula (bawaan sistem)');
 
         return redirect()
             ->route('admin.pages.edit', $page)
@@ -287,6 +287,7 @@ class PageContentController extends Controller
         abort_unless(PageContents::has($page), 404);
 
         $content = PageContents::for($page);
+        $custom = $content->hasCustomDefaults();
         $paths = collect(PageContents::fields($page))
             ->filter(fn ($field) => ($field['type'] ?? 'text') === 'image')
             ->keys()
@@ -297,7 +298,7 @@ class PageContentController extends Controller
 
         $paths->each(fn ($path) => $images->release($path));
 
-        ActivityLogger::record(ActivityLog::ACTION_RESET, 'Konten Halaman', PageContents::definitions()[$page]['label'].' — dikembalikan ke setelan default');
+        ActivityLogger::record(ActivityLog::ACTION_RESET, 'Konten Halaman', PageContents::definitions()[$page]['label'].' — seluruh konten dikembalikan ke setelan default'.($custom ? ' (default yang ditetapkan admin)' : ' (default bawaan sistem)'));
 
         return redirect()
             ->route('admin.pages.edit', $page)
