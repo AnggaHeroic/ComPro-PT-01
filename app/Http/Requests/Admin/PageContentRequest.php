@@ -23,6 +23,15 @@ class PageContentRequest extends FormRequest
 
         // Baris daftar yang dibiarkan kosong dibuang begitu saja.
         foreach (PageContents::fields((string) $this->route('page')) as $key => $field) {
+            if (($field['type'] ?? 'text') === 'cards' && is_array($content[$key] ?? null)) {
+                $content[$key] = array_values(array_filter(
+                    array_map(fn ($item) => is_array($item)
+                        ? ['title' => trim((string) ($item['title'] ?? '')), 'text' => trim((string) ($item['text'] ?? ''))]
+                        : ['title' => '', 'text' => ''], $content[$key]),
+                    fn (array $item) => $item['title'] !== '' || $item['text'] !== '',
+                ));
+            }
+
             if (($field['type'] ?? 'text') === 'list' && is_array($content[$key] ?? null)) {
                 $content[$key] = array_values(array_filter(
                     array_map(fn ($item) => is_string($item) ? trim($item) : '', $content[$key]),
@@ -70,6 +79,14 @@ class PageContentRequest extends FormRequest
                 continue;
             }
 
+            if (($field['type'] ?? 'text') === 'cards') {
+                $rules["content.{$key}"] = ['required', 'array', 'min:'.($field['min_items'] ?? 1), 'max:'.($field['max_items'] ?? 10)];
+                $rules["content.{$key}.*.title"] = ['required', 'string', 'max:'.($field['max_title'] ?? 60)];
+                $rules["content.{$key}.*.text"] = ['required', 'string', 'max:'.($field['max_text'] ?? 300)];
+
+                continue;
+            }
+
             if (($field['type'] ?? 'text') === 'list') {
                 $rules["content.{$key}"] = ['required', 'array', 'min:'.($field['min_items'] ?? 1), 'max:'.($field['max_items'] ?? 10)];
                 $rules["content.{$key}.*"] = ['required', 'string', 'max:'.($field['max'] ?? 300)];
@@ -97,6 +114,8 @@ class PageContentRequest extends FormRequest
         foreach (PageContents::fields((string) $this->route('page')) as $key => $field) {
             $attributes["content.{$key}"] = $field['label'];
             $attributes["content.{$key}.*"] = $field['item_label'] ?? $field['label'];
+            $attributes["content.{$key}.*.title"] = 'Judul '.mb_strtolower($field['item_label'] ?? 'butir');
+            $attributes["content.{$key}.*.text"] = 'Uraian '.mb_strtolower($field['item_label'] ?? 'butir');
             $attributes["image_{$key}"] = $field['label'];
         }
 

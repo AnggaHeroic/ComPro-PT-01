@@ -60,8 +60,13 @@ class PageContentController extends Controller
                     continue;
                 }
 
-                if (($field['type'] ?? 'text') === 'list') {
-                    $items = array_values(array_map('trim', (array) ($submitted[$key] ?? [])));
+                if (in_array($field['type'] ?? 'text', ['list', 'cards'], true)) {
+                    $items = array_values(array_map(
+                        fn ($item) => is_array($item)
+                            ? ['title' => trim((string) ($item['title'] ?? '')), 'text' => trim((string) ($item['text'] ?? ''))]
+                            : trim((string) $item),
+                        (array) ($submitted[$key] ?? []),
+                    ));
 
                     // Sama dengan bawaan: tidak perlu disimpan.
                     $value = $items === $field['default'] ? '' : json_encode($items, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);

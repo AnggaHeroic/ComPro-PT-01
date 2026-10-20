@@ -46,6 +46,16 @@
                                         :max-items="$field['max_items'] ?? 10"
                                         :min-items="$field['min_items'] ?? 1"
                                     />
+                                @elseif (($field['type'] ?? 'text') === 'cards')
+                                    <x-admin.card-list-field
+                                        :name="'content['.$key.']'"
+                                        :items="old('content.'.$key, $content->cards($key))"
+                                        :item-label="$field['item_label'] ?? 'Butir'"
+                                        :max-title="$field['max_title'] ?? 60"
+                                        :max-text="$field['max_text'] ?? 300"
+                                        :max-items="$field['max_items'] ?? 10"
+                                        :min-items="$field['min_items'] ?? 1"
+                                    />
                                 @elseif (($field['type'] ?? 'text') === 'textarea')
                                     <x-textarea :id="'content_'.$key" :name="'content['.$key.']'" rows="4" :maxlength="$field['max'] ?? 200" :required="! ($field['optional'] ?? false)">{{ old('content.'.$key, $content($key)) }}</x-textarea>
                                 @else

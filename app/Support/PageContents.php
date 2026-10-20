@@ -164,18 +164,14 @@ class PageContents
                             'objectives_label' => ['label' => 'Label kecil', 'default' => 'Tujuan Perusahaan', 'max' => 40],
                             'objectives_title_before' => ['label' => 'Judul: bagian awal', 'default' => 'Membangun usaha yang', 'max' => 60],
                             'objectives_title_highlight' => ['label' => 'Judul: bagian merah', 'default' => 'bernilai dan berkelanjutan.', 'max' => 60],
-                            'objective_1_title' => ['label' => 'Tujuan 1: judul', 'default' => 'Memenuhi Kebutuhan', 'max' => 40],
-                            'objective_1_text' => ['label' => 'Tujuan 1: uraian', 'default' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer tincidunt, justo vitae consequat efficitur.', 'type' => 'textarea', 'max' => 250],
-                            'objective_2_title' => ['label' => 'Tujuan 2: judul', 'default' => 'Memberikan Layanan', 'max' => 40],
-                            'objective_2_text' => ['label' => 'Tujuan 2: uraian', 'default' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse potenti. Praesent tincidunt mauris non consectetur interdum.', 'type' => 'textarea', 'max' => 250],
-                            'objective_3_title' => ['label' => 'Tujuan 3: judul', 'default' => 'Membangun Hubungan', 'max' => 40],
-                            'objective_3_text' => ['label' => 'Tujuan 3: uraian', 'default' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur tincidunt, mauris vitae consequat efficitur.', 'type' => 'textarea', 'max' => 250],
-                            'objective_4_title' => ['label' => 'Tujuan 4: judul', 'default' => 'Mengembangkan Usaha', 'max' => 40],
-                            'objective_4_text' => ['label' => 'Tujuan 4: uraian', 'default' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vitae neque at libero facilisis consequat.', 'type' => 'textarea', 'max' => 250],
-                            'objective_5_title' => ['label' => 'Tujuan 5: judul', 'default' => 'Menjaga Kualitas', 'max' => 40],
-                            'objective_5_text' => ['label' => 'Tujuan 5: uraian', 'default' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer tincidunt, justo vitae consequat efficitur.', 'type' => 'textarea', 'max' => 250],
-                            'objective_6_title' => ['label' => 'Tujuan 6: judul', 'default' => 'Membuka Peluang', 'max' => 40],
-                            'objective_6_text' => ['label' => 'Tujuan 6: uraian', 'default' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus vitae augue sed neque malesuada consequat.', 'type' => 'textarea', 'max' => 250],
+                            'objective_items' => ['label' => 'Daftar tujuan', 'type' => 'cards', 'item_label' => 'Tujuan', 'default' => [
+                                ['title' => 'Memenuhi Kebutuhan', 'text' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer tincidunt, justo vitae consequat efficitur.'],
+                                ['title' => 'Memberikan Layanan', 'text' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse potenti. Praesent tincidunt mauris non consectetur interdum.'],
+                                ['title' => 'Membangun Hubungan', 'text' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur tincidunt, mauris vitae consequat efficitur.'],
+                                ['title' => 'Mengembangkan Usaha', 'text' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vitae neque at libero facilisis consequat.'],
+                                ['title' => 'Menjaga Kualitas', 'text' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer tincidunt, justo vitae consequat efficitur.'],
+                                ['title' => 'Membuka Peluang', 'text' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus vitae augue sed neque malesuada consequat.'],
+                            ], 'max_title' => 40, 'max_text' => 250, 'min_items' => 1, 'max_items' => 12, 'hint' => 'Setiap tujuan tampil sebagai kartu bergaris merah di atasnya. Kartu baru otomatis bertambah ke bawah.'],
                         ],
                     ],
                     'cta' => [
@@ -243,6 +239,33 @@ class PageContents
         return is_array($items) && $items !== []
             ? array_values(array_filter($items, 'is_string'))
             : (array) (self::fields($this->page)[$key]['default'] ?? []);
+    }
+
+    /**
+     * Daftar kartu judul + uraian (kolom bertipe cards).
+     *
+     * @return list<array{title: string, text: string}>
+     */
+    public function cards(string $key): array
+    {
+        $this->load();
+
+        $items = isset($this->stored[$key]) ? json_decode($this->stored[$key], true) : null;
+
+        if (is_array($items) && $items !== []) {
+            $cards = [];
+            foreach ($items as $item) {
+                if (is_array($item) && is_string($item['title'] ?? null) && is_string($item['text'] ?? null)) {
+                    $cards[] = ['title' => $item['title'], 'text' => $item['text']];
+                }
+            }
+
+            if ($cards !== []) {
+                return $cards;
+            }
+        }
+
+        return (array) (self::fields($this->page)[$key]['default'] ?? []);
     }
 
     /** URL gambar: unggahan admin bila ada, selain itu gambar bawaan. */

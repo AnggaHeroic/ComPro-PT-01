@@ -209,4 +209,73 @@ class AboutPageContentTest extends TestCase
         auth()->logout();
         $this->get('/tentang-kami')->assertDontSee('<script>alert(1)</script>', false)->assertSee('&lt;script&gt;', false);
     }
+
+    public function test_objectives_are_cards_that_can_be_added_removed_and_reordered(): void
+    {
+        $this->put('/admin/pages/about', $this->texts(['objective_items' => [
+            ['title' => 'Tujuan Satu', 'text' => 'Uraian satu.'],
+            ['title' => 'Tujuan Dua', 'text' => 'Uraian dua.'],
+            ['title' => 'Tujuan Tiga', 'text' => 'Uraian tiga.'],
+            ['title' => 'Tujuan Empat', 'text' => 'Uraian empat.'],
+            ['title' => 'Tujuan Lima', 'text' => 'Uraian lima.'],
+            ['title' => 'Tujuan Enam', 'text' => 'Uraian enam.'],
+            ['title' => 'Tujuan Tujuh', 'text' => 'Uraian tujuh.'],
+            ['title' => 'Tujuan Delapan', 'text' => 'Uraian delapan.'],
+        ]]))->assertSessionHasNoErrors();
+
+        auth()->logout();
+        $html = $this->get('/tentang-kami')->getContent();
+        // Setiap kartu membawa garis atas yang sama.
+        $this->assertSame(8, substr_count($html, '<article class="border-t border-slate-300 py-7 sm:py-8">'));
+        $this->assertStringContainsString('Uraian delapan.', $html);
+        $this->assertStringNotContainsString('Memenuhi Kebutuhan', $html);
+
+        $this->actingAs(User::first());
+        $this->put('/admin/pages/about', $this->texts(['objective_items' => [
+            ['title' => 'Tujuan Dua', 'text' => 'Uraian dua.'],
+            ['title' => 'Tujuan Satu', 'text' => 'Uraian satu.'],
+        ]]))->assertSessionHasNoErrors();
+
+        auth()->logout();
+        $html = $this->get('/tentang-kami')->getContent();
+        $this->assertSame(2, substr_count($html, '<article class="border-t border-slate-300 py-7 sm:py-8">'));
+        $this->assertLessThan(strpos($html, 'Tujuan Satu'), strpos($html, 'Tujuan Dua'));
+    }
+
+    public function test_objective_cards_are_validated_and_empty_cards_are_dropped(): void
+    {
+        $this->put('/admin/pages/about', $this->texts(['objective_items' => [
+            ['title' => 'Satu', 'text' => 'Uraian'],
+            ['title' => '', 'text' => ''],
+        ]]))->assertSessionHasNoErrors();
+        $this->assertCount(1, PageContents::for('about')->cards('objective_items'));
+
+        $this->put('/admin/pages/about', $this->texts(['objective_items' => [['title' => 'Tanpa uraian', 'text' => '']]]))
+            ->assertSessionHasErrors('content.objective_items.0.text');
+
+        $this->put('/admin/pages/about', $this->texts(['objective_items' => [['title' => str_repeat('a', 41), 'text' => 'x']]]))
+            ->assertSessionHasErrors('content.objective_items.0.title');
+
+        $this->put('/admin/pages/about', $this->texts(['objective_items' => []]))
+            ->assertSessionHasErrors('content.objective_items');
+
+        $this->put('/admin/pages/about', $this->texts(['objective_items' => array_fill(0, 13, ['title' => 't', 'text' => 'x'])]))
+            ->assertSessionHasErrors('content.objective_items');
+
+        $this->assertSame('Satu', PageContents::for('about')->cards('objective_items')[0]['title']);
+    }
+
+    public function test_default_objectives_are_not_stored_escaped_output_and_form_lists_them(): void
+    {
+        $this->put('/admin/pages/about', $this->texts())->assertSessionHasNoErrors();
+        $this->assertNull(PageContent::where('key', 'objective_items')->first());
+
+        $this->get('/admin/pages/about')
+            ->assertSee('Tambah Tujuan')
+            ->assertSee('Memenuhi Kebutuhan');
+
+        $this->put('/admin/pages/about', $this->texts(['objective_items' => [['title' => '<b>x</b>', 'text' => '<i>y</i>']]]));
+        auth()->logout();
+        $this->get('/tentang-kami')->assertDontSee('<b>x</b>', false)->assertSee('&lt;b&gt;x&lt;/b&gt;', false);
+    }
 }
