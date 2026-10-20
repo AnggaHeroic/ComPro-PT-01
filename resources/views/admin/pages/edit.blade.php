@@ -220,7 +220,7 @@
                 @else
                     Halaman ini memakai setelan default bawaan sistem.
                 @endif
-                Tombol "Kembali ke setelan default" mengembalikan seluruh konten halaman ke setelan tersebut.
+                Setelan default adalah acuan konten halaman ini: "Simpan sebagai default" menjadikan konten tersimpan saat ini sebagai acuan baru, dan "Kembali ke setelan default" mengembalikan seluruh konten ke acuan tersebut.
             </p>
         </header>
 
@@ -228,26 +228,26 @@
             <form
                 method="POST"
                 action="{{ route('admin.pages.default.set', $page) }}"
-                data-confirm-title="Jadikan konten ini setelan default?"
-                data-confirm-message="Konten halaman {{ $definition['label'] }} yang sudah tersimpan akan menjadi setelan default baru, menggantikan default sebelumnya. Perubahan di form yang belum disimpan tidak ikut."
+                data-confirm-title="Simpan sebagai default?"
+                data-confirm-message="Fungsi tombol ini: konten halaman {{ $definition['label'] }} yang sudah tersimpan saat ini dijadikan setelan default baru, yaitu acuan yang dipakai tombol &quot;Kembali ke setelan default&quot;. Isi website tidak berubah sekarang, dan perubahan di form yang belum disimpan tidak ikut."
                 data-confirm-label="Lanjutkan"
-                data-confirm-second-title="Yakin menetapkan default baru?"
-                data-confirm-second-message="Ini mencakup seluruh konten halaman {{ $definition['label'] }} di website publik (teks, judul, daftar, dan foto). Setelan default sebelumnya diganti. Tampilan website saat ini tidak berubah."
-                data-confirm-second-label="Ya, tetapkan default baru"
+                data-confirm-second-title="Yakin menyimpan sebagai default?"
+                data-confirm-second-message="Setelan default baru mencakup seluruh konten halaman {{ $definition['label'] }} di website publik (teks, judul, daftar, dan foto) dan menggantikan setelan default sebelumnya."
+                data-confirm-second-label="Ya, simpan sebagai default"
                 data-confirm-second-tone="primary"
             >
                 @csrf
-                <x-secondary-button type="submit">Jadikan konten tersimpan sebagai default</x-secondary-button>
+                <x-secondary-button type="submit">Simpan sebagai default</x-secondary-button>
             </form>
 
             <form
                 method="POST"
                 action="{{ route('admin.pages.reset', $page) }}"
                 data-confirm-title="Kembali ke setelan default?"
-                data-confirm-message="Seluruh konten halaman {{ $definition['label'] }} akan dikembalikan ke setelan default{{ $content->hasCustomDefaults() ? ' yang ditetapkan admin' : ' bawaan sistem' }}. Perubahan yang pernah disimpan akan hilang."
+                data-confirm-message="Fungsi tombol ini: mengembalikan seluruh konten halaman {{ $definition['label'] }} ke setelan default ({{ $content->hasCustomDefaults() ? 'yang Anda simpan lewat "Simpan sebagai default"' : 'bawaan sistem' }}). Semua perubahan yang sudah tersimpan di halaman ini akan hilang."
                 data-confirm-label="Lanjutkan"
                 data-confirm-second-title="Yakin mengembalikan seluruh halaman?"
-                data-confirm-second-message="Seluruh teks, judul, daftar, dan foto halaman {{ $definition['label'] }} di website publik akan langsung berubah ke setelan default dan tidak bisa dibatalkan."
+                data-confirm-second-message="Seluruh teks, judul, daftar, dan foto halaman {{ $definition['label'] }} di website publik akan langsung berubah ke setelan default. Tindakan ini tidak dapat dibatalkan."
                 data-confirm-second-label="Ya, kembalikan ke default"
             >
                 @csrf

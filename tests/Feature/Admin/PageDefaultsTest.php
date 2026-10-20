@@ -43,7 +43,7 @@ class PageDefaultsTest extends TestCase
             ->assertOk()
             ->assertSee('Setelan default')
             ->assertSee('Halaman ini memakai setelan default bawaan sistem.')
-            ->assertSee('Jadikan konten tersimpan sebagai default')
+            ->assertSee('Simpan sebagai default')
             ->assertSee('Kembali ke setelan default')
             ->assertDontSee('Pakai default bawaan sistem');
 
@@ -203,7 +203,7 @@ class PageDefaultsTest extends TestCase
 
         // Set default baru, kembali ke default, dan pakai default bawaan: semuanya dua langkah.
         $this->assertSame(3, substr_count($html, 'data-confirm-second-title='));
-        foreach (['Yakin menetapkan default baru?', 'Yakin mengembalikan seluruh halaman?', 'Yakin menghapus default kustom?'] as $title) {
+        foreach (['Yakin menyimpan sebagai default?', 'Yakin mengembalikan seluruh halaman?', 'Yakin menghapus default kustom?'] as $title) {
             $this->assertStringContainsString($title, $html);
         }
         // Pesan menyebut seluruh konten halaman yang dikelola di website publik.
@@ -217,5 +217,24 @@ class PageDefaultsTest extends TestCase
 
         // Halaman biasa (hapus kategori, simpan form) tetap satu konfirmasi.
         $this->get('/admin/categories')->assertDontSee('data-confirm-second-title', false);
+    }
+
+    public function test_confirmation_texts_explain_what_each_button_does(): void
+    {
+        $this->get('/admin/pages/about')
+            ->assertSee('Simpan sebagai default')
+            ->assertDontSee('Jadikan konten tersimpan sebagai default')
+            ->assertSee('data-confirm-title="Simpan sebagai default?"', false)
+            ->assertSee('Fungsi tombol ini: konten halaman Tentang Kami yang sudah tersimpan saat ini dijadikan setelan default baru', false)
+            ->assertSee('acuan yang dipakai tombol &quot;Kembali ke setelan default&quot;', false)
+            ->assertSee('Fungsi tombol ini: mengembalikan seluruh konten halaman Tentang Kami ke setelan default (bawaan sistem)', false)
+            ->assertSee('Setelan default baru mencakup seluruh konten halaman Tentang Kami', false);
+
+        // Setelah ada default kustom, pesan reset menyebut asalnya.
+        $this->put('/admin/pages/about', $this->texts(['hero_label' => 'Profil Kami']));
+        $this->post('/admin/pages/about/default');
+
+        $this->get('/admin/pages/about')
+            ->assertSee('ke setelan default (yang Anda simpan lewat &quot;Simpan sebagai default&quot;)', false);
     }
 }
