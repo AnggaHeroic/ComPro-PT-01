@@ -13,7 +13,7 @@
     @endphp
 
     {{-- Contact Hero --}}
-    <section{!! $content->mark('hero') !!} class="relative overflow-hidden bg-white lg:min-h-[calc(100svh-5.75rem)]">
+    <section class="relative overflow-hidden bg-white lg:min-h-[calc(100svh-5.75rem)]">
 
         {{-- Desktop Background Image --}}
         <div
@@ -106,7 +106,7 @@
             <div class="grid gap-14 lg:grid-cols-12 lg:gap-0">
 
                 {{-- Contact Details --}}
-                <div{!! $content->mark('info') !!} class="lg:col-span-5 lg:pr-16">
+                <div class="lg:col-span-5 lg:pr-16">
 
                     {{-- Section Label --}}
                     <span
@@ -162,7 +162,7 @@
                 </div>
 
                 {{-- Location --}}
-                <div{!! $content->mark('location') !!} class="lg:col-span-7 lg:pl-16">
+                <div class="lg:col-span-7 lg:pl-16">
 
                     {{-- Section Label --}}
                     <span
@@ -218,7 +218,7 @@
     </section>
 
     {{-- Contact CTA --}}
-    <section{!! $content->mark('cta') !!} class="relative overflow-hidden bg-secondary-dark">
+    <section class="relative overflow-hidden bg-secondary-dark">
 
         {{-- Background Image --}}
         <div class="absolute inset-0">

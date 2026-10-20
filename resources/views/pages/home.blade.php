@@ -7,7 +7,7 @@
 @section('content')
 
     {{-- HERO --}}
-    <section{!! $content->mark('hero') !!} class="border-b border-slate-200 bg-white">
+    <section class="border-b border-slate-200 bg-white">
         <div class="container-site">
             <div class="max-w-6xl pt-16 pb-28 sm:pt-20 sm:pb-32 lg:pt-20 lg:pb-32">
                 <p class="font-display text-sm font-semibold uppercase tracking-[0.2em] text-primary">
@@ -41,7 +41,7 @@
     </section>
 
     {{-- COMPANY INTRODUCTION --}}
-    <section{!! $content->mark('intro') !!} class="bg-surface">
+    <section class="bg-surface">
         <div class="container-site">
             <div class="py-24 lg:py-32">
 
@@ -100,7 +100,7 @@
     </section>
 
     {{-- SERVICES --}}
-    <section{!! $content->mark('services') !!} class="bg-white">
+    <section class="bg-white">
         <div class="container-site">
             <div class="py-24 lg:py-32">
 
@@ -240,7 +240,7 @@
     </section>
 
     {{-- CONTACT CTA --}}
-    <section{!! $content->mark('cta') !!} class="bg-surface">
+    <section class="bg-surface">
         <div class="container-site pt-12 pb-16 lg:pt-14 lg:pb-18">
             <div class="mx-auto max-w-6xl border border-slate-300 bg-white">
                 <div class="grid lg:grid-cols-12">

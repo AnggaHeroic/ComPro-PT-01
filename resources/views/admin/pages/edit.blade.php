@@ -15,7 +15,7 @@
     }
     $requested = request('bagian');
     $initialSection = $errorSection ?? (in_array($requested, $sectionKeys, true) ? $requested : $sectionKeys[0]);
-    $noPreview = ['seo'];
+    $noPreview = ['seo']; // bagian yang tidak tampil di halaman
 @endphp
 
 <x-app-layout>
@@ -38,9 +38,6 @@
         x-data="pageEditor({
             active: @js($initialSection),
             sections: @js($sectionKeys),
-            noPreview: @js($noPreview),
-            external: @js(['identity' => ['label' => 'Identitas perusahaan (logo & footer)', 'url' => route('admin.pages.edit', ['page' => 'contact', 'bagian' => 'identity']), 'here' => $page === 'contact']]),
-            previewUrl: @js($publicRoute ? route($publicRoute, ['cms-preview' => 1]) : null),
         })"
         @invalid.capture="onInvalid($event)"
     >
@@ -48,21 +45,15 @@
         @method('PUT')
         <input type="hidden" name="bagian" :value="active">
 
-        <div class="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
-
-            {{-- ============ KOLOM FORM ============ --}}
+        <div class="max-w-3xl">
             <div class="min-w-0" x-ref="top">
 
                 {{-- Pilih bagian --}}
                 <div class="rounded border border-gray-200 bg-white p-4 shadow-sm">
                     <div class="flex items-center justify-between gap-3">
                         <p class="text-sm font-semibold text-gray-900">Pilih bagian yang ingin diubah</p>
-                        <button type="button" x-show="previewUrl && ! previewOpen" x-cloak @click="openPreview()" class="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline xl:hidden">
-                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
-                            Tampilkan pratinjau
-                        </button>
                     </div>
-                    <p class="mt-0.5 text-xs text-gray-500">Pilih tab di bawah{{ $publicRoute ? ', atau klik bagiannya langsung pada pratinjau halaman' : '' }}. Perubahan di semua bagian disimpan sekaligus saat Anda menekan Simpan.</p>
+                    <p class="mt-0.5 text-xs text-gray-500">Pilih tab di bawah untuk membuka bagian yang ingin diubah. Perubahan di semua bagian disimpan sekaligus saat Anda menekan Simpan.</p>
 
                     <div class="mt-3">
                         <div class="flex flex-wrap gap-2" role="tablist" aria-label="Bagian halaman">
@@ -84,23 +75,13 @@
                     </div>
                 </div>
 
-                {{-- Pemberitahuan bila yang diklik di pratinjau diatur di halaman lain --}}
-                <div x-show="notice" x-cloak x-transition class="mt-4 flex items-start justify-between gap-3 rounded border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900" role="status">
-                    <p>
-                        <span x-text="notice?.label"></span> diatur
-                        <template x-if="notice && ! notice.here"><span>di menu <a :href="notice.url" class="font-semibold underline">Kontak Kami</a>.</span></template>
-                        <template x-if="notice && notice.here"><span>pada bagian di atas.</span></template>
-                    </p>
-                    <button type="button" @click="notice = null" aria-label="Tutup" class="shrink-0 text-amber-700 hover:text-amber-900">&times;</button>
-                </div>
-
                 {{-- Form per bagian: hanya bagian aktif yang tampil (semua tetap ikut terkirim saat Simpan) --}}
                 <div class="mt-4">
                     @foreach ($definition['sections'] as $sectionKey => $section)
                         <div x-show="active === '{{ $sectionKey }}'" x-cloak data-section="{{ $sectionKey }}" role="tabpanel" aria-labelledby="tab-{{ $sectionKey }}">
                             <x-admin.card :title="$section['label']" :description="$section['description'] ?? null">
                                 @if (in_array($sectionKey, $noPreview, true))
-                                    <p class="mb-5 rounded bg-gray-50 px-3 py-2 text-xs text-gray-500">Bagian ini tidak tampil di halaman; hanya dibaca mesin pencari, sehingga tidak ada di pratinjau.</p>
+                                    <p class="mb-5 rounded bg-gray-50 px-3 py-2 text-xs text-gray-500">Bagian ini tidak tampil di halaman; hanya dibaca mesin pencari.</p>
                                 @endif
 
                                 <div class="space-y-6">
@@ -208,42 +189,6 @@
                 </div>
             </div>
 
-            {{-- ============ PRATINJAU HALAMAN ============ --}}
-            @if ($publicRoute)
-                <aside class="xl:sticky xl:top-20" x-show="previewOpen" x-cloak aria-label="Pratinjau halaman">
-                    <div class="overflow-hidden rounded border border-gray-200 bg-white shadow-sm">
-                        <div class="flex items-center justify-between gap-2 border-b border-gray-200 bg-gray-50 px-3 py-2.5">
-                            <div class="min-w-0">
-                                <p class="text-sm font-semibold text-gray-900">Pratinjau halaman</p>
-                                <p class="truncate text-xs text-gray-500">Klik bagian untuk mengeditnya</p>
-                            </div>
-                            <div class="flex shrink-0 items-center gap-1">
-                                <button type="button" @click="reloadPreview()" title="Muat ulang pratinjau" aria-label="Muat ulang pratinjau" class="rounded p-1.5 text-gray-500 hover:bg-gray-200 hover:text-gray-800">
-                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></svg>
-                                </button>
-                                <button type="button" x-show="! wide" @click="previewOpen = false" title="Sembunyikan pratinjau" aria-label="Sembunyikan pratinjau" class="rounded p-1.5 text-gray-500 hover:bg-gray-200 hover:text-gray-800 xl:hidden">
-                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6 6 18"/></svg>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div x-ref="pane" class="relative h-[70vh] overflow-hidden bg-slate-100 xl:h-[calc(100vh-13rem)]">
-                            <template x-if="previewOpen">
-                                <iframe
-                                    x-ref="frame"
-                                    :src="previewUrl"
-                                    title="Pratinjau halaman"
-                                    class="absolute left-0 top-0 origin-top-left border-0 bg-white"
-                                    :style="`width: 1280px; height: ${frameHeight}px; transform: scale(${scale});`"
-                                    @load="syncActive(false)"
-                                ></iframe>
-                            </template>
-                        </div>
-
-                        <p class="border-t border-gray-200 bg-gray-50 px-3 py-2 text-[11px] leading-4 text-gray-500">Pratinjau menampilkan versi yang sudah tersimpan. Setelah menekan Simpan, pratinjau dimuat ulang otomatis.</p>
-                    </div>
-                </aside>
-            @endif
         </div>
 
         <x-admin.form-actions :cancel="route('admin.pages.index')" />

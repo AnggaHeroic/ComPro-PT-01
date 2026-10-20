@@ -287,27 +287,6 @@ class PageContents
         ];
     }
 
-    /** Mode pratinjau admin: halaman publik dibuka di iframe dengan ?cms-preview, hanya untuk admin yang login. */
-    public static function previewing(): bool
-    {
-        return request()->query('cms-preview') !== null && auth()->check();
-    }
-
-    /**
-     * Atribut penanda bagian halaman. Kosong di halaman publik biasa; di mode pratinjau
-     * dipakai agar admin bisa mengklik bagian dan langsung membuka form-nya.
-     */
-    public function mark(string $section): HtmlString
-    {
-        $label = self::definitions()[$this->page]['sections'][$section]['label'] ?? null;
-
-        if ($label === null || ! self::previewing()) {
-            return new HtmlString('');
-        }
-
-        return new HtmlString(' data-cms-section="'.e($section).'" data-cms-label="'.e($label).'"');
-    }
-
     /** Tautan telepon: hanya angka dan tanda + yang dipertahankan. */
     public static function telHref(string $phone): string
     {

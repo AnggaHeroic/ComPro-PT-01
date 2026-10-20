@@ -16,7 +16,7 @@
 
     <div class="mb-6 flex gap-3 rounded border border-gray-200 bg-white p-4 text-sm text-gray-600 shadow-sm">
         <svg class="mt-0.5 h-5 w-5 shrink-0 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8h.01M11 12h1v5h1m8-5a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
-        <p>Pilih halaman, lalu <strong class="font-semibold text-gray-900">klik bagian pada pratinjau</strong> atau pilih tab untuk mengubah bagian itu saja. Daftar kategori dan aktivitas usaha dikelola terpisah lewat menu <a href="{{ route('admin.categories.index') }}" class="font-medium text-primary hover:underline">Kategori</a> dan <a href="{{ route('admin.activities.index') }}" class="font-medium text-primary hover:underline">Aktivitas Usaha</a>.</p>
+        <p>Pilih halaman, lalu pilih <strong class="font-semibold text-gray-900">tab bagian</strong> untuk mengubah bagian itu saja. Daftar kategori dan aktivitas usaha dikelola terpisah lewat menu <a href="{{ route('admin.categories.index') }}" class="font-medium text-primary hover:underline">Kategori</a> dan <a href="{{ route('admin.activities.index') }}" class="font-medium text-primary hover:underline">Aktivitas Usaha</a>.</p>
     </div>
 
     <div class="grid gap-4 md:grid-cols-2">
