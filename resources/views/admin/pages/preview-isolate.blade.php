@@ -33,7 +33,7 @@
             });
         });
 
-        // Bagian bersarang (mis. ajakan di dalam "Tujuan perusahaan") tidak ikut tampil.
+        // Bagian bersarang (mis. CTA di dalam "Tujuan perusahaan") tidak ikut tampil.
         targets.forEach(function (target) {
             Array.prototype.forEach.call(target.querySelectorAll('section[data-cms-section]'), function (nested) {
                 nested.style.display = 'none';

@@ -77,7 +77,7 @@ class PageContents
                         ],
                     ],
                     'cta' => [
-                        'label' => 'Ajakan menghubungi',
+                        'label' => 'CTA',
                         'description' => 'Telepon, email, dan alamat pada bagian ini belum bisa diubah dari sini.',
                         'fields' => [
                             'cta_label' => ['label' => 'Label kecil', 'default' => 'Terhubung Dengan Kami', 'max' => 50],
@@ -170,7 +170,7 @@ class PageContents
                         ],
                     ],
                     'cta' => [
-                        'label' => 'Ajakan lanjutan',
+                        'label' => 'CTA',
                         'fields' => [
                             'cta_label' => ['label' => 'Label kecil', 'default' => 'Lanjutkan Eksplorasi', 'max' => 40],
                             'cta_title' => ['label' => 'Judul', 'default' => 'Kenali bidang usaha kami.', 'max' => 80],
@@ -210,7 +210,7 @@ class PageContents
                         ],
                     ],
                     'cta' => [
-                        'label' => 'Ajakan menghubungi',
+                        'label' => 'CTA',
                         'fields' => [
                             'cta_label' => ['label' => 'Label kecil', 'default' => 'Hubungi Kami', 'max' => 50],
                             'cta_title' => ['label' => 'Judul', 'type' => 'title', 'default' => 'Kenali layanan kami *lebih lanjut.*', 'max' => 100],
@@ -273,7 +273,7 @@ class PageContents
                         ],
                     ],
                     'cta' => [
-                        'label' => 'Ajakan di bagian bawah',
+                        'label' => 'CTA',
                         'fields' => [
                             'cta_label' => ['label' => 'Label kecil', 'default' => 'Ada Pertanyaan?', 'max' => 50],
                             'cta_title' => ['label' => 'Judul', 'default' => 'Kami siap membantu Anda.', 'max' => 80],
