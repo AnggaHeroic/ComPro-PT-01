@@ -351,92 +351,22 @@
                     </h2>
                 </div>
 
-                {{-- Objective Grid --}}
+                {{-- Objective Grid: kartu bertambah ke bawah mengikuti isi dari admin --}}
                 <div class="mt-10 grid grid-cols-1 gap-x-8 sm:grid-cols-2 lg:grid-cols-3">
-
-                    {{-- Memenuhi Kebutuhan --}}
-                    <article class="border-t border-slate-300 py-7 sm:py-8">
-                        <h3
-                            class="font-display text-lg font-semibold tracking-tight text-secondary-dark sm:text-xl"
-                        >
-                            {{ $content('objective_1_title') }}
-                        </h3>
-                        <p
-                            class="font-body mt-3 max-w-sm text-sm leading-7 text-slate-600"
-                        >
-                            {{ $content('objective_1_text') }}
-                        </p>
-                    </article>
-
-                    {{-- Memberikan Layanan --}}
-                    <article class="border-t border-slate-300 py-7 sm:py-8">
-                        <h3
-                            class="font-display text-lg font-semibold tracking-tight text-secondary-dark sm:text-xl"
-                        >
-                            {{ $content('objective_2_title') }}
-                        </h3>
-                        <p
-                            class="font-body mt-3 max-w-sm text-sm leading-7 text-slate-600"
-                        >
-                            {{ $content('objective_2_text') }}
-                        </p>
-                    </article>
-
-                    {{-- Membangun Hubungan --}}
-                    <article class="border-t border-slate-300 py-7 sm:py-8">
-                        <h3
-                            class="font-display text-lg font-semibold tracking-tight text-secondary-dark sm:text-xl"
-                        >
-                            {{ $content('objective_3_title') }}
-                        </h3>
-                        <p
-                            class="font-body mt-3 max-w-sm text-sm leading-7 text-slate-600"
-                        >
-                            {{ $content('objective_3_text') }}
-                        </p>
-                    </article>
-
-                    {{-- Mengembangkan Usaha --}}
-                    <article class="border-t border-slate-300 py-7 sm:py-8">
-                        <h3
-                            class="font-display text-lg font-semibold tracking-tight text-secondary-dark sm:text-xl"
-                        >
-                            {{ $content('objective_4_title') }}
-                        </h3>
-                        <p
-                            class="font-body mt-3 max-w-sm text-sm leading-7 text-slate-600"
-                        >
-                            {{ $content('objective_4_text') }}
-                        </p>
-                    </article>
-
-                    {{-- Menjaga Kualitas --}}
-                    <article class="border-t border-slate-300 py-7 sm:py-8">
-                        <h3
-                            class="font-display text-lg font-semibold tracking-tight text-secondary-dark sm:text-xl"
-                        >
-                            {{ $content('objective_5_title') }}
-                        </h3>
-                        <p
-                            class="font-body mt-3 max-w-sm text-sm leading-7 text-slate-600"
-                        >
-                            {{ $content('objective_5_text') }}
-                        </p>
-                    </article>
-
-                    {{-- Membuka Peluang --}}
-                    <article class="border-t border-slate-300 py-7 sm:py-8">
-                        <h3
-                            class="font-display text-lg font-semibold tracking-tight text-secondary-dark sm:text-xl"
-                        >
-                            {{ $content('objective_6_title') }}
-                        </h3>
-                        <p
-                            class="font-body mt-3 max-w-sm text-sm leading-7 text-slate-600"
-                        >
-                            {{ $content('objective_6_text') }}
-                        </p>
-                    </article>
+                    @foreach ($content->cards('objective_items') as $objective)
+                        <article class="border-t border-slate-300 py-7 sm:py-8">
+                            <h3
+                                class="font-display text-lg font-semibold tracking-tight text-secondary-dark sm:text-xl"
+                            >
+                                {{ $objective['title'] }}
+                            </h3>
+                            <p
+                                class="font-body mt-3 max-w-sm text-sm leading-7 text-slate-600"
+                            >
+                                {{ $objective['text'] }}
+                            </p>
+                        </article>
+                    @endforeach
                 </div>
             </div>
         </div>
