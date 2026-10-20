@@ -19,13 +19,13 @@
         @if ($reorder)
             {{-- Mode atur urutan: urutan berlaku di dalam kategori masing-masing --}}
             <div class="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-gray-200 bg-primary-light/60 px-4 py-3">
-                <x-admin.reorder-toggle :active="true" :href="route('admin.activities.index', $categoryParam)" />
+                <x-admin.reorder-toggle :active="true" :href="route('admin.activities.index', $categoryParam)" @click.prevent="finish($el.href)" />
 
-                <p class="text-sm text-gray-600">Seret baris atau pakai tombol panah untuk mengubah urutan di dalam kategorinya. Perubahan langsung tersimpan.</p>
+                <p class="text-sm text-gray-600">Seret baris atau pakai tombol panah untuk mengubah urutan di dalam kategorinya. Perubahan baru disimpan saat Anda menekan Selesai.</p>
 
                 <x-admin.reorder-status />
 
-                <x-secondary-button :href="route('admin.activities.index', $categoryParam)" class="ml-auto">Selesai</x-secondary-button>
+                <x-secondary-button :href="route('admin.activities.index', $categoryParam)" @click.prevent="finish($el.href)" class="ml-auto">Selesai</x-secondary-button>
             </div>
         @else
             <x-admin.status-tabs :current="$status" :counts="$counts" route="admin.activities.index" :params="request()->only(['q', 'category'])" />

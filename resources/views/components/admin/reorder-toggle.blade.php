@@ -15,6 +15,7 @@
     </span>
 @else
     <a
+        {{ $attributes }}
         href="{{ $href }}"
         role="switch"
         aria-checked="{{ $active ? 'true' : 'false' }}"

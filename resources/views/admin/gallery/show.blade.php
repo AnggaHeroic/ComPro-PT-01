@@ -159,7 +159,7 @@
                             </div>
                         </div>
 
-                        <div class="p-3" x-data="{ dirty: {{ $bag->any() ? 'true' : 'false' }} }">
+                        <div class="p-3" x-data="{ dirty: {{ $bag->any() ? 'true' : 'false' }}, fileName: '' }">
                             <form
                                 id="update-{{ $image->id }}"
                                 method="POST"
@@ -183,13 +183,15 @@
                                     class="block w-full resize-none rounded border border-gray-300 bg-white px-2.5 py-2 text-[13px] leading-snug text-gray-900 placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                                 >{{ $bag->any() ? old('caption', $image->caption) : $image->caption }}</textarea>
 
+                                <p x-show="fileName" x-cloak class="mt-1.5 truncate text-xs text-amber-700">Foto pengganti: <span x-text="fileName" class="font-medium"></span> — tekan Simpan untuk menerapkan.</p>
+
                                 <div class="mt-2 flex items-center gap-1.5">
-                                    {{-- Ganti foto: pilih file lalu otomatis tersimpan --}}
+                                    {{-- Ganti foto: pilih file, lalu tekan Simpan (dengan konfirmasi) --}}
                                     <label class="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded border border-gray-300 bg-white px-2.5 text-xs font-semibold text-gray-600 transition focus-within:ring-2 focus-within:ring-primary hover:border-primary hover:text-primary">
                                         <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L7 9m5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
                                         Ganti
                                         <span class="sr-only">foto {{ $loop->iteration }}</span>
-                                        <input type="file" name="image" accept="image/jpeg,image/png,image/webp" class="sr-only" data-reset-on-cancel @change="$el.form.requestSubmit()">
+                                        <input type="file" name="image" accept="image/jpeg,image/png,image/webp" class="sr-only" @change="dirty = true; fileName = $el.files[0]?.name ?? ''">
                                     </label>
 
                                     {{-- Hapus: mengirim form terpisah di bawah (atribut form) --}}

@@ -394,7 +394,7 @@ class CategoryCrudTest extends TestCase
             ->assertSee('data-drag-handle', false)
             ->assertSee('touch-none', false)
             ->assertSee('aria-checked="true"', false)
-            ->assertSee('Perubahan langsung tersimpan')
+            ->assertSee('Perubahan baru disimpan saat Anda menekan Selesai.')
             ->assertSee('Naikkan Urut 01', false)
             ->assertSee('Turunkan Urut 01', false)
             ->assertDontSee('+ Tambah Kategori')

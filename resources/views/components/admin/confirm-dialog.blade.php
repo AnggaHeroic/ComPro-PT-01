@@ -51,6 +51,13 @@
             >Batal</button>
             <button
                 type="button"
+                x-show="$store.confirm.secondaryLabel"
+                @click="$store.confirm.answer('secondary')"
+                class="rounded border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                x-text="$store.confirm.secondaryLabel"
+            ></button>
+            <button
+                type="button"
                 @click="$store.confirm.answer(true)"
                 class="rounded bg-primary px-4 py-2 text-sm font-semibold text-white ring-1 ring-inset ring-black/10 hover:bg-primary-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                 x-text="$store.confirm.label"

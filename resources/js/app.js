@@ -347,8 +347,8 @@ Alpine.data('serviceCarousel', (total, interval = 6000) => ({
 
 /**
  * Atur urutan baris tabel admin (kategori / aktivitas) dengan seret (pointer
- * events: mouse, sentuh, stylus) atau tombol panah. Setiap perubahan langsung disimpan ke server; bila gagal,
- * urutan di layar dikembalikan seperti sebelumnya.
+ * events: mouse, sentuh, stylus) atau tombol panah. Perubahan hanya ditampung di layar; baru disimpan ke
+ * server (setelah konfirmasi) saat admin menekan Selesai atau mematikan mode atur urutan.
  *
  * Setiap baris punya data-id dan data-group (kosong untuk kategori, id kategori
  * untuk aktivitas); baris hanya bisa dipindah di dalam grup yang sama.
@@ -362,6 +362,17 @@ Alpine.data('reorderList', ({ url }) => ({
     scrollTimer: null,
     snapshot: [],
     resetTimer: null,
+    dirty: {}, // grup yang urutannya berubah tetapi belum disimpan
+
+    init() {
+        // Cegah kehilangan urutan yang belum disimpan saat halaman ditinggalkan.
+        window.addEventListener('beforeunload', (event) => {
+            if (Object.keys(this.dirty).length > 0) {
+                event.preventDefault();
+                event.returnValue = '';
+            }
+        });
+    },
 
     rows(group = null) {
         const all = Array.from(this.$refs.body.querySelectorAll('tr[data-id]'));
@@ -447,7 +458,7 @@ Alpine.data('reorderList', ({ url }) => ({
         const after = this.rows().map((item) => item.dataset.id).join();
 
         if (before !== after) {
-            this.confirmThenSave(row.dataset.group);
+            this.stage(row.dataset.group);
         }
     },
 
@@ -483,18 +494,51 @@ Alpine.data('reorderList', ({ url }) => ({
         delta < 0 ? target.before(row) : target.after(row);
         row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 
-        this.confirmThenSave(group);
+        this.stage(group);
     },
 
-    /** Minta konfirmasi sebelum urutan disimpan; bila dibatalkan, urutan di layar dikembalikan. */
-    async confirmThenSave(group) {
-        const ok = await Alpine.store('confirm').ask({
+    /** Tandai urutan grup ini berubah (belum disimpan) dan perbarui nomor urut di layar. */
+    stage(group) {
+        clearTimeout(this.resetTimer);
+        this.dirty[group] = true;
+        this.renumber(group);
+        this.state = 'dirty';
+        this.message = '';
+    },
+
+    /**
+     * Dipanggil tombol Selesai / saklar atur urutan. Tanpa perubahan langsung keluar;
+     * bila ada, minta konfirmasi: simpan, buang, atau tetap di mode ini.
+     */
+    async finish(url) {
+        if (Object.keys(this.dirty).length === 0) {
+            window.location.href = url;
+
+            return;
+        }
+
+        const choice = await Alpine.store('confirm').ask({
             title: 'Simpan urutan baru?',
-            message: 'Urutan baru langsung diterapkan ke website.',
+            message: 'Urutan baru akan diterapkan ke website.',
             label: 'Ya, simpan',
+            secondaryLabel: 'Buang perubahan',
         });
 
-        ok ? this.save(group) : this.restore();
+        if (choice === false) return;
+
+        if (choice === 'secondary') {
+            this.dirty = {};
+            window.location.href = url;
+
+            return;
+        }
+
+        for (const group of Object.keys(this.dirty)) {
+            if (!(await this.save(group))) return;
+        }
+
+        this.dirty = {};
+        window.location.href = url;
     },
 
     restore() {
@@ -549,12 +593,15 @@ Alpine.data('reorderList', ({ url }) => ({
             }
 
             this.renumber(group);
-            this.state = 'saved';
-            this.resetTimer = setTimeout(() => (this.state = 'idle'), 2500);
+            delete this.dirty[group];
+            this.state = Object.keys(this.dirty).length > 0 ? 'dirty' : 'saved';
+
+            return true;
         } catch (error) {
-            this.restore();
             this.state = 'error';
             this.message = error.message || 'Gagal menyimpan urutan.';
+
+            return false;
         }
     },
 }));
@@ -570,14 +617,16 @@ Alpine.store('confirm', {
     message: '',
     label: 'Ya, lanjutkan',
     tone: 'primary', // primary | danger
+    secondaryLabel: '', // bila diisi, muncul tombol ketiga yang menghasilkan 'secondary'
     resolver: null,
 
-    ask({ title, message, label, tone } = {}) {
+    ask({ title, message, label, tone, secondaryLabel } = {}) {
         this.resolver?.(false);
         this.title = title ?? 'Simpan perubahan?';
         this.message = message ?? 'Perubahan akan langsung diterapkan ke website.';
         this.label = label ?? 'Ya, lanjutkan';
         this.tone = tone ?? 'primary';
+        this.secondaryLabel = secondaryLabel ?? '';
         this.open = true;
 
         return new Promise((resolve) => {

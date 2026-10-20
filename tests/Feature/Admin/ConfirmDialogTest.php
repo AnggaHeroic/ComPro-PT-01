@@ -65,7 +65,10 @@ class ConfirmDialogTest extends TestCase
             ->assertDontSee('onsubmit', false)
             ->assertSee('data-confirm-title="Hapus foto?"', false)
             ->assertSee('data-confirm-title="Unggah foto?"', false)
-            ->assertSee('data-reset-on-cancel', false);
+            // Ganti foto tidak lagi mengirim otomatis: file dipilih, lalu admin menekan Simpan.
+            ->assertDontSee('data-reset-on-cancel', false)
+            ->assertDontSee('@change="$el.form.requestSubmit()"', false)
+            ->assertSee('Foto pengganti:', false);
 
         $this->get('/admin/pages/home')
             ->assertDontSee('onsubmit', false)
@@ -79,8 +82,25 @@ class ConfirmDialogTest extends TestCase
         $this->assertStringContainsString("Alpine.store('confirm'", $js);
         $this->assertMatchesRegularExpression("/document\.addEventListener\(\s*'submit'/", $js);
         $this->assertStringContainsString("method === 'GET'", $js);
-        // Urutan hasil seret hanya disimpan setelah dikonfirmasi; bila batal, dikembalikan.
-        $this->assertStringContainsString('ok ? this.save(group) : this.restore();', $js);
-        $this->assertStringNotContainsString("this.save(row.dataset.group)", $js);
+        // Urutan hasil seret hanya ditampung; konfirmasi muncul saat Selesai ditekan.
+        $this->assertStringContainsString('this.stage(row.dataset.group)', $js);
+        $this->assertStringContainsString('async finish(url)', $js);
+        $this->assertStringNotContainsString('this.save(row.dataset.group)', $js);
+        $this->assertStringNotContainsString('confirmThenSave', $js);
+        $this->assertStringContainsString("secondaryLabel: 'Buang perubahan'", $js);
+    }
+
+    public function test_reorder_screens_confirm_on_finish_not_while_dragging(): void
+    {
+        ServiceCategory::factory()->count(2)->create();
+
+        foreach (['/admin/categories?reorder=1', '/admin/activities?reorder=1'] as $url) {
+            $this->get($url)
+                ->assertOk()
+                ->assertSee('@click.prevent="finish($el.href)"', false)
+                ->assertSee('Urutan belum disimpan')
+                ->assertSee('Perubahan baru disimpan saat Anda menekan Selesai.')
+                ->assertDontSee('Perubahan langsung tersimpan');
+        }
     }
 }
