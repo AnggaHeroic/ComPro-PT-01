@@ -229,7 +229,7 @@ class AboutPageContentTest extends TestCase
         auth()->logout();
         $html = $this->get('/tentang-kami')->getContent();
         // Setiap kartu membawa garis atas yang sama.
-        $this->assertSame(8, substr_count($html, '<article class="relative border-t border-slate-300 py-7 sm:py-8">'));
+        $this->assertSame(8, substr_count($html, '<article class="border-t border-slate-300 py-7 sm:py-8">'));
         $this->assertStringContainsString('Uraian delapan.', $html);
         $this->assertStringNotContainsString('Memenuhi Kebutuhan', $html);
 
@@ -241,7 +241,7 @@ class AboutPageContentTest extends TestCase
 
         auth()->logout();
         $html = $this->get('/tentang-kami')->getContent();
-        $this->assertSame(2, substr_count($html, '<article class="relative border-t border-slate-300 py-7 sm:py-8">'));
+        $this->assertSame(2, substr_count($html, '<article class="border-t border-slate-300 py-7 sm:py-8">'));
         $this->assertLessThan(strpos($html, 'Tujuan Satu'), strpos($html, 'Tujuan Dua'));
     }
 
