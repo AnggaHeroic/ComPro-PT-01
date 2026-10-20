@@ -43,6 +43,9 @@ class AppServiceProvider extends ServiceProvider
         View::composer('pages.contact', fn ($view) => $view->with('content', PageContents::for('contact')));
         View::composer('pages.about', fn ($view) => $view->with('content', PageContents::for('about')));
 
+        // Logo, deskripsi footer, dan data kontak dikelola dari menu Kontak Kami.
+        View::composer(['components.navbar', 'components.footer'], fn ($view) => $view->with('siteInfo', PageContents::for('contact')));
+
         View::composer(['components.navbar', 'components.footer', 'pages.home'], function ($view) {
             $view->with('navCategories', app('nav.categories'));
         });

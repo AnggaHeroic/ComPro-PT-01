@@ -71,7 +71,9 @@ class ContactPageContentTest extends TestCase
         $this->assertStringContainsString('+62 361 (123) 456', $html);
         $this->assertStringContainsString('query='.rawurlencode('Jl. Sunset Road No. 10, Kuta, Badung'), $html);
         $this->assertStringContainsString('q='.rawurlencode('Jl. Sunset Road No. 10, Kuta, Badung').'&amp;output=embed', $html);
-        // Footer belum terhubung ke data ini (tahap footer), jadi nilai lama masih ada di sana.
+        // Footer di halaman yang sama ikut berubah.
+        $this->assertStringContainsString('Jl. Sunset Road No. 10, Kuta, Badung', $html);
+        $this->assertSame(0, substr_count($html, 'sputramaju@gmail.com'));
 
         // Bagian kontak di Beranda memakai data yang sama.
         $home = $this->get('/')->getContent();
@@ -155,5 +157,44 @@ class ContactPageContentTest extends TestCase
         $after = $normalize($this->get('/kontak-kami')->getContent());
 
         $this->assertSame($before, str_replace(['Hubungi Tim Kami', 'Kontak Resmi'], ['Kami siap membantu Anda.', 'Terhubung dengan kami.'], $after));
+    }
+
+    public function test_logo_and_footer_description_are_shared_by_navbar_and_footer(): void
+    {
+        auth()->logout();
+        $default = $this->get('/tentang-kami')->getContent();
+        $this->assertSame(2, substr_count($default, asset('images/logo.png')) - substr_count($default, 'rel="icon"'));
+        $this->assertStringContainsString('beragam kebutuhan pelanggan dan mitra bisnis.', $default);
+
+        $this->actingAs(User::first());
+        $this->get('/admin/pages/contact')
+            ->assertSee('name="image_company_logo"', false)
+            ->assertSee('name="content[footer_description]"', false);
+
+        $this->put('/admin/pages/contact', $this->texts([
+            'company_logo_alt' => 'Logo Baru',
+            'footer_description' => 'Deskripsi footer yang baru.',
+        ]) + ['image_company_logo' => UploadedFile::fake()->image('logo.png', 600, 200)])->assertSessionHasNoErrors();
+
+        $path = PageContent::where(['page' => 'contact', 'key' => 'company_logo'])->value('value');
+        $this->assertStringStartsWith('pages/', $path);
+        $url = Storage::disk('public')->url($path);
+
+        auth()->logout();
+        foreach (['/', '/layanan-jasa', '/kontak-kami', '/halaman-tidak-ada'] as $page) {
+            $html = $this->get($page)->getContent();
+            // Logo yang sama di navbar dan footer.
+            $this->assertSame(2, substr_count($html, 'src="'.$url.'"'), $page);
+            $this->assertStringContainsString('alt="Logo Baru"', $html);
+            $this->assertStringContainsString('Deskripsi footer yang baru.', $html);
+            $this->assertStringNotContainsString('beragam kebutuhan pelanggan dan mitra bisnis.', $html);
+        }
+
+        // Mengembalikan ke bawaan menghapus file dan memakai logo semula.
+        $this->actingAs(User::first());
+        $this->put('/admin/pages/contact', $this->texts() + ['remove_image_company_logo' => 1])->assertSessionHasNoErrors();
+        Storage::disk('public')->assertMissing($path);
+        auth()->logout();
+        $this->assertStringContainsString('src="'.asset('images/logo.png').'"', $this->get('/')->getContent());
     }
 }

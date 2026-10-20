@@ -223,7 +223,7 @@ class PageContents
             ],
             'contact' => [
                 'label' => 'Kontak Kami',
-                'description' => 'Teks, foto, dan data kontak perusahaan. Telepon, email, dan alamat juga tampil di bagian kontak Beranda.',
+                'description' => 'Teks, foto, data kontak, logo, dan deskripsi footer. Telepon, email, dan alamat juga tampil di Beranda dan footer; logo tampil di navbar dan footer.',
                 'sections' => [
                     'hero' => [
                         'label' => 'Bagian utama',
@@ -238,7 +238,7 @@ class PageContents
                     ],
                     'info' => [
                         'label' => 'Informasi kontak',
-                        'description' => 'Email, telepon, dan alamat ini juga tampil di bagian kontak halaman Beranda. Footer website belum terhubung dan akan disambungkan pada tahap footer.',
+                        'description' => 'Email, telepon, dan alamat ini juga tampil di bagian kontak halaman Beranda dan di footer.',
                         'fields' => [
                             'info_label' => ['label' => 'Label kecil', 'default' => 'Informasi Kontak', 'max' => 50],
                             'info_title' => ['label' => 'Judul', 'default' => 'Terhubung dengan kami.', 'max' => 80],
@@ -248,6 +248,15 @@ class PageContents
                             'phone_description' => ['label' => 'Keterangan telepon', 'default' => 'Hubungi kami pada jam operasional untuk respon lebih cepat.', 'type' => 'textarea', 'max' => 160],
                             'contact_address' => ['label' => 'Alamat', 'default' => 'Jalan Tukad Batanghari Nomor 6, Panjer, Denpasar Selatan, Kota Denpasar', 'type' => 'textarea', 'max' => 250, 'hint' => 'Dipakai juga untuk tautan dan peta Google Maps.'],
                             'address_description' => ['label' => 'Keterangan alamat', 'default' => 'Kunjungi kantor kami untuk diskusi lebih lanjut.', 'type' => 'textarea', 'max' => 160],
+                        ],
+                    ],
+                    'identity' => [
+                        'label' => 'Identitas perusahaan',
+                        'description' => 'Logo dan deskripsi singkat ini tampil di navbar dan footer seluruh halaman website. Email, telepon, dan alamat di atas juga dipakai footer.',
+                        'fields' => [
+                            'company_logo' => ['label' => 'Logo', 'type' => 'image', 'default' => '/images/logo.png', 'hint' => 'Dipakai di navbar dan footer dengan tinggi tetap; lebar menyesuaikan. Gunakan logo berlatar transparan atau putih, karena di footer logo tampil di dalam kotak putih.'],
+                            'company_logo_alt' => ['label' => 'Nama perusahaan pada logo (untuk pembaca layar)', 'default' => 'PT. Putra Maju Sukses', 'max' => 80],
+                            'footer_description' => ['label' => 'Deskripsi singkat di bawah logo footer', 'default' => 'PT. Putra Maju Sukses merupakan perusahaan yang bergerak dalam berbagai bidang perdagangan dan layanan untuk memenuhi beragam kebutuhan pelanggan dan mitra bisnis.', 'type' => 'textarea', 'max' => 300],
                         ],
                     ],
                     'location' => [
@@ -385,9 +394,19 @@ class PageContents
     {
         $custom = $this->customImagePath($key);
 
-        return $custom !== null
-            ? Storage::disk(config('images.disk'))->url($custom)
-            : (string) (self::fields($this->page)[$key]['default'] ?? '');
+        if ($custom !== null) {
+            return Storage::disk(config('images.disk'))->url($custom);
+        }
+
+        return $this->defaultImage($key);
+    }
+
+    /** URL gambar bawaan; path relatif (mis. logo di /public) mengikuti URL aplikasi. */
+    public function defaultImage(string $key): string
+    {
+        $default = (string) (self::fields($this->page)[$key]['default'] ?? '');
+
+        return str_starts_with($default, '/') ? asset(ltrim($default, '/')) : $default;
     }
 
     /** Path gambar unggahan admin (relatif terhadap disk), atau null bila memakai bawaan. */

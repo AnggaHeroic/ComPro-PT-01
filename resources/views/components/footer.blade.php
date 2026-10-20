@@ -23,8 +23,8 @@
                 >
                     <div class="rounded-lg bg-white px-3 py-2">
                         <img
-                            src="{{ asset('images/logo.png') }}"
-                            alt="PT. Putra Maju Sukses"
+                            src="{{ $siteInfo->image('company_logo') }}"
+                            alt="{{ $siteInfo('company_logo_alt') }}"
                             class="h-10 w-auto"
                         >
                     </div>
@@ -32,9 +32,7 @@
 
                 {{-- Description --}}
                 <p class="mt-6 max-w-md text-sm leading-7 text-slate-400">
-                    PT. Putra Maju Sukses merupakan perusahaan yang bergerak
-                    dalam berbagai bidang perdagangan dan layanan untuk
-                    memenuhi beragam kebutuhan pelanggan dan mitra bisnis.
+                    {{ $siteInfo('footer_description') }}
                 </p>
 
                 {{-- Contact Information --}}
@@ -42,33 +40,33 @@
 
                     {{-- Phone --}}
                     <a
-                        href="tel:081130521216"
+                        href="{{ \App\Support\PageContents::telHref($siteInfo('contact_phone')) }}"
                         class="group flex items-center gap-3 text-sm text-slate-400 transition-colors hover:text-white"
                     >
                         <x-icons.phone
                             class="h-[18px] w-[18px] shrink-0 transition-colors group-hover:text-primary"
                         />
                         <span>
-                            081130521216
+                            {{ $siteInfo('contact_phone') }}
                         </span>
                     </a>
 
                     {{-- Email --}}
                     <a
-                        href="mailto:sputramaju@gmail.com"
+                        href="mailto:{{ $siteInfo('contact_email') }}"
                         class="group flex items-center gap-3 text-sm text-slate-400 transition-colors hover:text-white"
                     >
                         <x-icons.mail
                             class="h-[18px] w-[18px] shrink-0 transition-colors group-hover:text-primary"
                         />
                         <span>
-                            sputramaju@gmail.com
+                            {{ $siteInfo('contact_email') }}
                         </span>
                     </a>
 
                     {{-- Address --}}
                     <a
-                        href="https://www.google.com/maps/search/?api=1&query={{ urlencode('Jalan Tukad Batanghari Nomor 6, Panjer, Denpasar Selatan, Kota Denpasar') }}"
+                        href="{{ \App\Support\PageContents::mapsSearchUrl($siteInfo('contact_address')) }}"
                         target="_blank"
                         rel="noopener noreferrer"
                         class="group flex items-start gap-3 text-sm text-slate-400 transition-colors hover:text-white"
@@ -78,11 +76,7 @@
                             class="mt-0.5 h-[18px] w-[18px] shrink-0 transition-colors group-hover:text-primary"
                         />
                         <p class="max-w-md leading-6">
-                            Jalan Tukad Batanghari No. 6,
-                            Panjer, Denpasar Selatan,
-                            <span class="block">
-                                Kota Denpasar
-                            </span>
+                            {{ $siteInfo('contact_address') }}
                         </p>
                     </a>
                 </div>

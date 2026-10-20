@@ -34,7 +34,7 @@
                                         :label="$field['label']"
                                         :current="$content->image($key)"
                                         :removable="$custom !== null"
-                                        :fallback="$custom !== null ? $field['default'] : null"
+                                        :fallback="$custom !== null ? $content->defaultImage($key) : null"
                                         remove-label="Kembalikan gambar bawaan"
                                         :hint="$field['hint'] ?? null"
                                     />

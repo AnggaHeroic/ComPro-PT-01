@@ -65,8 +65,8 @@
                 aria-label="PT. Putra Maju Sukses - Beranda"
             >
                 <img
-                    src="{{ asset('images/logo.png') }}"
-                    alt="PT. Putra Maju Sukses"
+                    src="{{ $siteInfo->image('company_logo') }}"
+                    alt="{{ $siteInfo('company_logo_alt') }}"
                     class="h-12 w-auto"
                 >
             </a>
