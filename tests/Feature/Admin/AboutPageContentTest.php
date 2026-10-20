@@ -47,6 +47,9 @@ class AboutPageContentTest extends TestCase
             ->assertSee('Established')
             ->assertSee('Misi Utama')
             ->assertSee('Kenali bidang usaha kami.')
+            ->assertSee('Membuka Peluang')
+            ->assertSee('Phasellus vitae augue sed neque malesuada consequat.')
+            ->assertSee('Memenuhi Kebutuhan')
             ->assertSee('photo-1497366811353', false);
     }
 
