@@ -241,7 +241,7 @@ class PageDefaultsTest extends TestCase
         $this->get('/admin/pages/about')
             ->assertSee('ke setelan default (yang Anda tetapkan lewat &quot;Setel default&quot;).', false)
             // Kedua tombol berukuran sama.
-            ->assertSee('w-full sm:w-64', false);
+            ->assertSee('w-40', false);
     }
 
     public function test_first_confirmation_shows_a_caution_box_wired_in_script_and_dialog(): void
@@ -256,6 +256,6 @@ class PageDefaultsTest extends TestCase
 
         // Dua tombol utama sama lebarnya.
         $html = $this->get('/admin/pages/about')->getContent();
-        $this->assertSame(2, substr_count($html, 'sm:w-64'));
+        $this->assertSame(2, substr_count($html, 'w-40"'));
     }
 }

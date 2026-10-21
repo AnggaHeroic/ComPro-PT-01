@@ -238,7 +238,7 @@
                 data-confirm-second-tone="primary"
             >
                 @csrf
-                <x-secondary-button type="submit" class="w-full sm:w-64">Setel default</x-secondary-button>
+                <x-secondary-button type="submit" size="sm" class="w-40">Setel default</x-secondary-button>
             </form>
 
             <form
@@ -254,7 +254,7 @@
             >
                 @csrf
                 @method('DELETE')
-                <x-secondary-button type="submit" class="w-full border-red-300! text-red-700! hover:border-red-400! hover:bg-red-50! sm:w-64">Reset default</x-secondary-button>
+                <x-secondary-button type="submit" size="sm" class="border-red-300! text-red-700! hover:border-red-400! hover:bg-red-50! w-40">Reset default</x-secondary-button>
             </form>
 
             @if ($content->hasCustomDefaults())
