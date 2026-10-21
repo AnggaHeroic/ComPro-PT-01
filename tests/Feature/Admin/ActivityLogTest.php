@@ -353,4 +353,22 @@ class ActivityLogTest extends TestCase
         $this->get('/admin/activity-log?dari=2026-10-05')->assertSee('Sejak 05 Okt 2026');
         $this->get('/admin/activity-log?sampai=2026-10-05')->assertSee('Sampai 05 Okt 2026');
     }
+
+    public function test_set_default_and_every_reset_use_the_names_setel_default_and_reset_default(): void
+    {
+        $actions = ActivityLog::actions();
+
+        $this->assertSame('Setel default', $actions['default'][0]);
+        $this->assertSame('Reset default', $actions['reset'][0]);
+        // "Reset konten" dan "Revert default" sudah digabung ke "Reset default".
+        $this->assertArrayNotHasKey('default_revert', $actions);
+        $this->assertNotContains('Reset konten', array_column($actions, 0));
+        $this->assertNotContains('Revert default', array_column($actions, 0));
+        $this->assertNotContains('Set default', array_column($actions, 0));
+        $this->assertSame(1, count(array_filter(array_column($actions, 0), fn ($label) => $label === 'Reset default')));
+
+        $html = $this->get('/admin/activity-log')->getContent();
+        $this->assertSame(1, substr_count($html, '>Reset default</option>'));
+        $this->assertSame(1, substr_count($html, '>Setel default</option>'));
+    }
 }

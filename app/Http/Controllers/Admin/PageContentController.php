@@ -180,7 +180,7 @@ class PageContentController extends Controller
 
     /**
      * Jadikan isi halaman yang sudah tersimpan sebagai setelan default baru. Tampilan website
-     * tidak berubah; hanya acuan untuk "Kembali ke setelan default" yang berganti.
+     * tidak berubah; hanya acuan untuk "Reset default" yang berganti.
      */
     public function setDefault(string $page, ImageUploader $images): RedirectResponse
     {
@@ -261,7 +261,7 @@ class PageContentController extends Controller
 
         $this->releaseImages($page, $images, $defaults);
 
-        ActivityLogger::record(ActivityLog::ACTION_DEFAULT_REVERT, 'Konten Halaman', PageContents::definitions()[$page]['label'].' — setelan default dikembalikan ke default semula (bawaan sistem)');
+        ActivityLogger::record(ActivityLog::ACTION_RESET, 'Konten Halaman', PageContents::definitions()[$page]['label'].' — setelan default dikembalikan ke default semula (bawaan sistem)');
 
         return redirect()
             ->route('admin.pages.edit', $page)

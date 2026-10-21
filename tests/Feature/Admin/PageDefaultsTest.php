@@ -43,8 +43,8 @@ class PageDefaultsTest extends TestCase
             ->assertOk()
             ->assertSee('Setelan default')
             ->assertSee('Halaman ini memakai setelan default bawaan sistem.')
-            ->assertSee('Simpan sebagai default')
-            ->assertSee('Kembali ke setelan default')
+            ->assertSee('Setel default')
+            ->assertSee('Reset default')
             ->assertDontSee('Pakai default bawaan sistem');
 
         auth()->logout();
@@ -154,7 +154,7 @@ class PageDefaultsTest extends TestCase
         $this->assertSame($before, $this->get('/tentang-kami')->getContent());
         Storage::disk('public')->assertExists($heroPath);
 
-        // Setelah itu "Kembali ke setelan default" berarti teks bawaan sistem.
+        // Setelah itu "Reset default" berarti teks bawaan sistem.
         $this->actingAs(User::first());
         $this->delete('/admin/pages/about');
         auth()->logout();
@@ -167,10 +167,11 @@ class PageDefaultsTest extends TestCase
         // Menghapus lagi saat sudah tidak ada default kustom tidak mencatat apa pun.
         $this->delete('/admin/pages/about/default')->assertSessionHas('success');
         $this->assertSame(1, ActivityLog::where('action', 'default')->count());
-        $this->assertSame(1, ActivityLog::where('action', 'default_revert')->count());
-        $revert = ActivityLog::where('action', 'default_revert')->first();
+        // Menghapus default kustom juga dicatat sebagai "Reset default" (satu aksi untuk semua reset).
+        $revert = ActivityLog::where('menu', 'Konten Halaman')->where('action', 'reset')->where('detail', 'like', '%default semula%')->first();
         $this->assertStringContainsString('dikembalikan ke default semula', $revert->detail);
-        $this->assertSame('Revert default', $revert->actionLabel());
+        $this->assertSame('Reset default', $revert->actionLabel());
+        $this->assertSame(0, ActivityLog::where('action', 'default_revert')->count());
     }
 
     public function test_defaults_are_per_page_and_unknown_pages_are_not_found(): void
@@ -203,7 +204,7 @@ class PageDefaultsTest extends TestCase
 
         // Set default baru, kembali ke default, dan pakai default bawaan: semuanya dua langkah.
         $this->assertSame(3, substr_count($html, 'data-confirm-second-title='));
-        foreach (['Yakin menyimpan sebagai default?', 'Yakin mengembalikan seluruh halaman?', 'Yakin menghapus default kustom?'] as $title) {
+        foreach (['Yakin menyetel default baru?', 'Yakin mereset seluruh halaman?', 'Yakin menghapus default kustom?'] as $title) {
             $this->assertStringContainsString($title, $html);
         }
         // Pesan menyebut seluruh konten halaman yang dikelola di website publik.
@@ -222,9 +223,11 @@ class PageDefaultsTest extends TestCase
     public function test_confirmation_texts_explain_what_each_button_does(): void
     {
         $this->get('/admin/pages/about')
-            ->assertSee('Simpan sebagai default')
-            ->assertDontSee('Jadikan konten tersimpan sebagai default')
-            ->assertSee('data-confirm-title="Simpan sebagai default?"', false)
+            ->assertSee('Setel default')
+            ->assertDontSee('Simpan sebagai default')
+            ->assertDontSee('Kembali ke setelan default')
+            ->assertSee('data-confirm-title="Setel default?"', false)
+            ->assertSee('data-confirm-title="Reset default?"', false)
             ->assertSee('Konten halaman Tentang Kami yang sudah tersimpan akan dijadikan setelan default baru.', false)
             ->assertSee('data-confirm-caution="Setelan default yang lama akan diganti.', false)
             ->assertSee('Seluruh konten halaman Tentang Kami akan dikembalikan ke setelan default (bawaan sistem).', false)
@@ -236,7 +239,7 @@ class PageDefaultsTest extends TestCase
         $this->post('/admin/pages/about/default');
 
         $this->get('/admin/pages/about')
-            ->assertSee('ke setelan default (yang Anda simpan lewat &quot;Simpan sebagai default&quot;).', false)
+            ->assertSee('ke setelan default (yang Anda tetapkan lewat &quot;Setel default&quot;).', false)
             // Kedua tombol berukuran sama.
             ->assertSee('w-full sm:w-64', false);
     }

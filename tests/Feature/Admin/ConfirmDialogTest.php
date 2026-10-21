@@ -72,7 +72,7 @@ class ConfirmDialogTest extends TestCase
 
         $this->get('/admin/pages/home')
             ->assertDontSee('onsubmit', false)
-            ->assertSee('data-confirm-title="Kembali ke setelan default?"', false);
+            ->assertSee('data-confirm-title="Reset default?"', false);
     }
 
     public function test_confirmation_logic_is_wired_in_the_script(): void
@@ -120,6 +120,6 @@ class ConfirmDialogTest extends TestCase
         preg_match('/<input[^>]*name="content\[contact_email\]"[^>]*>/s', $html, $required);
         $this->assertStringContainsString('required', $required[0]);
 
-        $this->get('/admin/pages/about')->assertSee('Kembali ke setelan default')->assertDontSee('Kembalikan semua teks');
+        $this->get('/admin/pages/about')->assertSee('Reset default')->assertDontSee('Kembalikan semua teks');
     }
 }
