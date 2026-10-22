@@ -90,7 +90,7 @@ class ServiceCategoryController extends Controller
             throw $e;
         }
 
-        ActivityLogger::record(ActivityLog::ACTION_CREATED, 'Kategori', "\"{$category->name}\" ditambahkan (".ActivityLogger::status($category->is_published).')');
+        ActivityLogger::record(ActivityLog::ACTION_CREATED, 'Kategori', "Menambahkan kategori \"{$category->name}\" dengan status ".ActivityLogger::status($category->is_published));
 
         return $this->redirectAfterSave($category, 'Kategori berhasil ditambahkan.');
     }
@@ -147,7 +147,7 @@ class ServiceCategoryController extends Controller
         }
 
         if ($changed !== '') {
-            ActivityLogger::record(ActivityLog::ACTION_UPDATED, 'Kategori', "\"{$category->name}\" — mengubah: {$changed}");
+            ActivityLogger::record(ActivityLog::ACTION_UPDATED, 'Kategori', "Mengubah kategori \"{$category->name}\" (yang diubah: {$changed})");
         }
 
         return $this->redirectAfterSave($category, 'Kategori berhasil diperbarui.');
@@ -167,7 +167,7 @@ class ServiceCategoryController extends Controller
         $images->release($category->image_path);
         $images->release($category->icon_image_path);
 
-        ActivityLogger::record(ActivityLog::ACTION_DELETED, 'Kategori', "\"{$category->name}\" dihapus");
+        ActivityLogger::record(ActivityLog::ACTION_DELETED, 'Kategori', "Menghapus kategori \"{$category->name}\"");
 
         return redirect()
             ->route('admin.categories.index')
@@ -195,7 +195,7 @@ class ServiceCategoryController extends Controller
             }
         });
 
-        ActivityLogger::record(ActivityLog::ACTION_REORDERED, 'Kategori', 'Urutan kategori diubah');
+        ActivityLogger::record(ActivityLog::ACTION_REORDERED, 'Kategori', 'Mengubah urutan kategori');
 
         return response()->json(['message' => 'Urutan kategori disimpan.']);
     }
