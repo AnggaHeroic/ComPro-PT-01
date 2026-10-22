@@ -194,7 +194,7 @@
 
         @if ($logs->hasPages())
             <div class="border-t border-gray-200 bg-gray-50 px-4 py-3">
-                {{ $logs->links() }}
+                {{ $logs->links('pagination.admin', ['label' => 'catatan']) }}
             </div>
         @endif
     </div>

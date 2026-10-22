@@ -179,7 +179,7 @@
 
         @if (! $reorder && $activities->hasPages())
             <div class="border-t border-gray-200 bg-gray-50 px-4 py-3">
-                {{ $activities->links() }}
+                {{ $activities->links('pagination.admin', ['label' => 'aktivitas']) }}
             </div>
         @endif
     </div>

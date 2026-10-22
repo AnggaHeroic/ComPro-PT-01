@@ -371,4 +371,34 @@ class ActivityLogTest extends TestCase
         $this->assertSame(1, substr_count($html, '>Reset default</option>'));
         $this->assertSame(1, substr_count($html, '>Setel default</option>'));
     }
+
+    public function test_pagination_uses_the_admin_design_in_indonesian(): void
+    {
+        for ($i = 1; $i <= 60; $i++) {
+            $this->logAt('2026-10-05 10:00:00', "Catatan halaman {$i}");
+        }
+
+        $first = $this->get('/admin/activity-log')->assertOk();
+        $first->assertSee('Menampilkan')->assertSee('1–25')->assertSee('60')->assertSee('catatan')
+            ->assertDontSee('Showing')->assertDontSee('results')
+            ->assertSee('aria-label="Navigasi halaman"', false)
+            ->assertSee('aria-label="Halaman berikutnya"', false)
+            ->assertSee('rel="next"', false)
+            // Halaman pertama: tombol sebelumnya nonaktif dan halaman 1 aktif.
+            ->assertSee('aria-disabled="true"', false)
+            ->assertSee('aria-current="page"', false);
+        $this->assertStringNotContainsString('rel="prev"', $first->getContent());
+
+        $second = $this->get('/admin/activity-log?page=2')->assertOk();
+        $second->assertSee('26–50')->assertSee('rel="prev"', false)->assertSee('rel="next"', false);
+        $this->assertMatchesRegularExpression('/aria-current="page"[^>]*>\s*2\s*</', $second->getContent());
+
+        // Halaman terakhir: tombol berikutnya nonaktif.
+        $last = $this->get('/admin/activity-log?page=3')->assertOk();
+        $last->assertSee('51–60')->assertSee('rel="prev"', false);
+        $this->assertStringNotContainsString('rel="next"', $last->getContent());
+
+        // Satu halaman saja: tidak ada navigasi.
+        $this->get('/admin/activity-log?q=halaman 7')->assertDontSee('Navigasi halaman');
+    }
 }

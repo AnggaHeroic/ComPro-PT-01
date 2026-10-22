@@ -148,7 +148,7 @@
 
         @if (! $reorder && $categories->hasPages())
             <div class="border-t border-gray-200 bg-gray-50 px-4 py-3">
-                {{ $categories->links() }}
+                {{ $categories->links('pagination.admin', ['label' => 'kategori']) }}
             </div>
         @endif
     </div>
