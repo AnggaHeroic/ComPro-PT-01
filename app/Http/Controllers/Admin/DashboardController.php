@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityImage;
 use App\Models\BusinessActivity;
 use App\Models\ServiceCategory;
+use App\Support\PageContents;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
@@ -19,6 +20,8 @@ class DashboardController extends Controller
             'activityPublished' => BusinessActivity::published()->count(),
             'photoCount' => ActivityImage::count(),
             'activitiesWithGallery' => BusinessActivity::has('images')->count(),
+            // Kelola konten halaman
+            'pages' => PageContents::definitions(),
         ]);
     }
 }
