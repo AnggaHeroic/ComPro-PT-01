@@ -757,6 +757,197 @@ Alpine.data('sectionPreview', ({ url }) => ({
 }));
 
 /**
+ * Penjaga ketidakaktifan admin. Aktivitas (gerak mouse, ketik, gulir, sentuh, klik) dicatat di
+ * localStorage agar semua tab dashboard berbagi satu pewaktu. Selama admin aktif, server
+ * di-ping berkala (agar sesi tidak dianggap diam walau form dibiarkan terbuka lama). Mendekati
+ * batas, muncul peringatan dengan hitung mundur; aktivitas apa pun diabaikan sampai admin menekan
+ * "Tetap masuk", dan peringatan tetap ada (dengan hitungan yang sama) saat pindah halaman atau memuat ulang;
+ * melewati batas, admin dikeluarkan lewat server
+ * (yang mencatatnya di riwayat aktivitas) dan diarahkan ke halaman login.
+ */
+Alpine.data('idleGuard', ({ timeout, warning, pingUrl, warningUrl, logoutUrl, loginUrl }) => ({
+    remaining: null, // detik tersisa saat peringatan tampil; null = disembunyikan
+    storageKey: 'admin-last-activity',
+    warningKey: 'admin-idle-warning', // penanda bersama antar tab: peringatan sedang berjalan
+    memory: Date.now(),
+    lastPing: Date.now(),
+    leaving: false,
+
+    init() {
+        // Memuat halaman dihitung sebagai aktivitas, kecuali peringatan sedang berjalan: berpindah halaman
+        // atau memuat ulang tidak boleh mengulang hitungan mundur.
+        const warningFrom = (timeout - warning) * 60 * 1000;
+
+        if (Date.now() - this.lastActivity() < warningFrom) {
+            this.touch(true);
+        }
+
+        ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'click'].forEach((name) => {
+            window.addEventListener(name, () => this.touch(), { passive: true, capture: true });
+        });
+
+        window.addEventListener('storage', (event) => {
+            if (event.key === this.storageKey) this.tick();
+        });
+
+        this.tick();
+        setInterval(() => this.tick(), 1000);
+    },
+
+    get clock() {
+        const seconds = Math.max(0, this.remaining ?? 0);
+
+        return String(Math.floor(seconds / 60)).padStart(2, '0') + ':' + String(seconds % 60).padStart(2, '0');
+    },
+
+    lastActivity() {
+        try {
+            return Number(window.localStorage.getItem(this.storageKey)) || this.memory;
+        } catch {
+            return this.memory;
+        }
+    },
+
+    flagged() {
+        try {
+            return window.localStorage.getItem(this.warningKey) === '1';
+        } catch {
+            return false;
+        }
+    },
+
+    setFlag(on) {
+        try {
+            on ? window.localStorage.setItem(this.warningKey, '1') : window.localStorage.removeItem(this.warningKey);
+        } catch {
+            // penyimpanan tidak tersedia
+        }
+    },
+
+    /**
+     * Catat aktivitas (maksimal sekali per detik); sesekali ping server selagi admin aktif.
+     * Saat peringatan tampil, aktivitas biasa (gerak mouse, ketikan, gulir) tidak dihitung: sesi
+     * hanya berlanjut bila admin menekan "Tetap masuk" (stay()).
+     */
+    touch(force = false) {
+        if (this.remaining !== null && !force) return;
+
+        const now = Date.now();
+
+        if (!force && now - this.memory < 1000) return;
+
+        this.memory = now;
+        this.remaining = null;
+
+        try {
+            window.localStorage.setItem(this.storageKey, String(now));
+        } catch {
+            // penyimpanan tidak tersedia: pewaktu tetap jalan per tab
+        }
+
+        // Peringatan sebelumnya (mungkin di tab/halaman lain) selesai: server juga dilanjutkan.
+        if (this.flagged()) {
+            this.setFlag(false);
+            this.ping();
+        } else if (now - this.lastPing > 4 * 60 * 1000) {
+            this.ping();
+        }
+    },
+
+    tick() {
+        if (this.leaving) return;
+
+        const limit = timeout * 60 * 1000;
+        const idle = Date.now() - this.lastActivity();
+
+        if (idle >= limit) {
+            this.expire();
+
+            return;
+        }
+
+        const left = limit - idle;
+        const inWarning = left <= warning * 60 * 1000;
+
+        // Peringatan baru dimulai: beri tahu server agar jamnya selaras dan tidak disegarkan oleh pindah halaman.
+        if (inWarning && this.remaining === null) {
+            this.markWarning(Math.round(idle / 1000));
+        }
+
+        this.remaining = inWarning ? Math.ceil(left / 1000) : null;
+    },
+
+    headers() {
+        return {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? '',
+            'X-Requested-With': 'XMLHttpRequest',
+            Accept: 'application/json',
+        };
+    },
+
+    async markWarning(idleSeconds) {
+        this.setFlag(true);
+
+        try {
+            await fetch(warningUrl, {
+                method: 'POST',
+                headers: { ...this.headers(), 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idle: idleSeconds }),
+            });
+        } catch {
+            // jaringan terputus: server akan memakai waktu aktivitas terakhir yang diketahuinya
+        }
+    },
+
+    async ping() {
+        this.lastPing = Date.now();
+
+        try {
+            await fetch(pingUrl, { method: 'POST', headers: this.headers() });
+        } catch {
+            // jaringan terputus: coba lagi pada aktivitas berikutnya
+        }
+    },
+
+    /** Tombol "Tetap masuk" pada peringatan. */
+    stay() {
+        this.setFlag(false);
+        this.touch(true);
+        this.ping();
+    },
+
+    async expire() {
+        this.leaving = true;
+
+        try {
+            const response = await fetch(logoutUrl, { method: 'POST', headers: this.headers() });
+
+            if (response.redirected) {
+                window.location.href = response.url;
+
+                return;
+            }
+
+            const data = await response.json().catch(() => ({}));
+
+            // Server menilai admin masih aktif (mis. di tab lain): lanjutkan seperti biasa.
+            if (data.active) {
+                this.leaving = false;
+                this.setFlag(false);
+                this.touch(true);
+
+                return;
+            }
+
+            this.setFlag(false);
+            window.location.href = data.redirect ?? loginUrl;
+        } catch {
+            window.location.href = loginUrl;
+        }
+    },
+}));
+
+/**
  * Dialog konfirmasi admin. Dipakai otomatis untuk semua form non-GET di admin
  * (lihat listener di bawah) dan bisa dipanggil langsung:
  *   const ok = await Alpine.store('confirm').ask({ title, message, label, tone });

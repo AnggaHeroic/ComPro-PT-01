@@ -51,4 +51,30 @@ class AuthenticationTest extends TestCase
         $this->assertGuest();
         $response->assertRedirect('/');
     }
+
+    public function test_login_screen_has_no_remember_me_option(): void
+    {
+        $this->get('/login')
+            ->assertOk()
+            ->assertDontSee('Ingat saya')
+            ->assertDontSee('remember_me', false)
+            ->assertDontSee('name="remember"', false);
+    }
+
+    public function test_remember_me_is_ignored_even_if_a_client_sends_it(): void
+    {
+        $user = User::factory()->create(['remember_token' => null]);
+
+        $response = $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+            'remember' => '1',
+        ]);
+
+        $this->assertAuthenticated();
+        // Tidak ada cookie "ingat saya" dan tidak ada token yang disimpan.
+        $remember = collect($response->headers->getCookies())->first(fn ($cookie) => str_starts_with($cookie->getName(), 'remember_web_'));
+        $this->assertNull($remember);
+        $this->assertNull($user->fresh()->remember_token);
+    }
 }

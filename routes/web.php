@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GalleryController;
 use App\Http\Controllers\Admin\PageContentController;
 use App\Http\Controllers\Admin\ServiceCategoryController;
+use App\Http\Controllers\Admin\SessionActivityController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ServiceController;
 
@@ -30,12 +31,20 @@ Route::view('/kontak-kami', 'pages.contact')
 
 require __DIR__.'/auth.php';
 
-Route::middleware('auth')
+// Dipanggil pewaktu tidak aktif di browser; sengaja di luar admin.idle agar sesi yang sudah lewat batas tetap tercatat keluar otomatis.
+Route::post('/admin/idle-logout', [SessionActivityController::class, 'idleLogout'])
+    ->middleware('auth')
+    ->name('admin.idle-logout');
+
+Route::middleware(['auth', 'admin.idle'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
         Route::get('/', [DashboardController::class, 'index'])
             ->name('dashboard');
+
+        Route::post('/keep-alive', [SessionActivityController::class, 'keepAlive'])->name('keep-alive');
+        Route::post('/idle-warning', [SessionActivityController::class, 'idleWarning'])->name('idle-warning');
 
         // Harus sebelum resource: "reorder" bukan id.
         Route::put('categories/reorder', [ServiceCategoryController::class, 'reorder'])->name('categories.reorder');

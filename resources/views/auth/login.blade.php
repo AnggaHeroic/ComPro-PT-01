@@ -24,11 +24,6 @@
             <x-input-error :messages="$errors->get('password')" class="mt-2" />
         </div>
 
-        <label for="remember_me" class="flex items-center gap-2 text-sm text-gray-600">
-            <input id="remember_me" type="checkbox" name="remember" class="h-4 w-4 rounded border-gray-300 accent-primary">
-            Ingat saya
-        </label>
-
         <x-primary-button class="w-full">Masuk</x-primary-button>
     </form>
 </x-guest-layout>

@@ -33,6 +33,8 @@ class ActivityLog extends Model
 
     public const ACTION_LOGOUT = 'logout';
 
+    public const ACTION_TIMEOUT = 'timeout';
+
     /**
      * Label aksi untuk tampilan: [teks, kelas badge, path ikon (24x24, garis)].
      *
@@ -49,6 +51,7 @@ class ActivityLog extends Model
             self::ACTION_DEFAULT => ['Setel default', 'bg-indigo-100 text-indigo-800', 'M12 3l2.7 5.5 6 .9-4.4 4.2 1 6L12 16.8 6.7 19.6l1-6L3.3 9.4l6-.9L12 3Z'],
             self::ACTION_PASSWORD => ['Ganti password', 'bg-violet-100 text-violet-800', 'M21 2l-2 2m-7.6 7.6a5.5 5.5 0 1 1-7.8 7.8 5.5 5.5 0 0 1 7.8-7.8Zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3'],
             self::ACTION_LOGIN => ['Masuk', 'bg-gray-100 text-gray-700', 'M15 3h4a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1h-4M10 17l5-5-5-5M15 12H3'],
+            self::ACTION_TIMEOUT => ['Keluar otomatis', 'bg-amber-100 text-amber-800', 'M12 7v5l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z'],
             self::ACTION_LOGOUT => ['Keluar', 'bg-gray-100 text-gray-700', 'M9 21H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h4M16 17l5-5-5-5M21 12H9'],
         ];
     }

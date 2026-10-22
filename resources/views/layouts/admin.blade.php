@@ -50,5 +50,6 @@
             </div>
         </div>
         <x-admin.confirm-dialog />
+        <x-admin.idle-guard />
     </body>
 </html>

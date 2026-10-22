@@ -14,9 +14,11 @@ Route::middleware('guest')->group(function () {
         ->middleware('throttle:10,1');
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'admin.idle'])->group(function () {
     Route::put('password', [PasswordController::class, 'update'])->name('password.update');
+});
 
+Route::middleware('auth')->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
 });

@@ -37,7 +37,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Riwayat aktivitas: masuk dan keluar dari dashboard.
         Event::listen(Login::class, fn (Login $event) => ActivityLogger::record(ActivityLog::ACTION_LOGIN, 'Akun', 'Masuk ke dashboard', $event->user));
-        Event::listen(Logout::class, fn (Logout $event) => $event->user ? ActivityLogger::record(ActivityLog::ACTION_LOGOUT, 'Akun', 'Keluar dari dashboard', $event->user) : null);
+        Event::listen(Logout::class, fn (Logout $event) => $event->user && ! request()->attributes->get('idle_logout') ? ActivityLogger::record(ActivityLog::ACTION_LOGOUT, 'Akun', 'Keluar dari dashboard', $event->user) : null);
 
         // Sidebar admin: jumlah draft sebagai penanda.
         View::composer('layouts.navigation', function ($view) {
