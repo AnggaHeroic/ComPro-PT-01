@@ -6,6 +6,10 @@
     'maxText' => 300,
     'maxItems' => 10,
     'minItems' => 1,
+    // Untuk isi pendek (satu baris, mis. data perusahaan) isi memakai kolom teks biasa, bukan kotak teks besar.
+    'singleLine' => false,
+    'titlePlaceholder' => 'Judul',
+    'textPlaceholder' => 'Uraian',
 ])
 
 {{-- Daftar kartu (judul + uraian) yang bisa ditambah, dihapus, dan diurutkan. Kartu yang kosong total dibuang saat disimpan. --}}
@@ -43,19 +47,31 @@
                 :name="'{{ $name }}[' + index + '][title]'"
                 x-model="item.title"
                 maxlength="{{ $maxTitle }}"
-                placeholder="Judul"
+                placeholder="{{ $titlePlaceholder }}"
                 aria-label="Judul {{ mb_strtolower($itemLabel) }}"
                 class="block w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             >
+            @if ($singleLine)
+                <input
+                    type="text"
+                    :name="'{{ $name }}[' + index + '][text]'"
+                    x-model="item.text"
+                    maxlength="{{ $maxText }}"
+                    placeholder="{{ $textPlaceholder }}"
+                    aria-label="Isi {{ mb_strtolower($itemLabel) }}"
+                    class="mt-2 block w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                >
+            @else
             <textarea
                 :name="'{{ $name }}[' + index + '][text]'"
                 x-model="item.text"
                 rows="3"
                 maxlength="{{ $maxText }}"
-                placeholder="Uraian"
+                placeholder="{{ $textPlaceholder }}"
                 aria-label="Uraian {{ mb_strtolower($itemLabel) }}"
                 class="mt-2 block w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             ></textarea>
+            @endif
         </div>
     </template>
 

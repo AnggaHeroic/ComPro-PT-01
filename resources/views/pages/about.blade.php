@@ -163,38 +163,16 @@
                     </div>
                     <div{!! $content->mark('facts') !!} class="mt-6 border border-slate-300 bg-white px-7 sm:px-8">
                         <div class="divide-y divide-slate-200">
-                            <div class="py-5">
-                                <span class="font-display text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                                    {{ $content('facts_1_label') }}
-                                </span>
-                                <p class="font-body mt-2 text-sm text-secondary-dark">
-                                    {{ $content('facts_1_value') }}
-                                </p>
-                            </div>
-                            <div class="py-5">
-                                <span class="font-display text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                                    {{ $content('facts_2_label') }}
-                                </span>
-                                <p class="font-body mt-2 text-sm leading-6 text-secondary-dark">
-                                    {{ $content('facts_2_value') }}
-                                </p>
-                            </div>
-                            <div class="py-5">
-                                <span class="font-display text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                                    {{ $content('facts_3_label') }}
-                                </span>
-                                <p class="font-body mt-2 text-sm text-secondary-dark">
-                                    {{ $content('facts_3_value') }}
-                                </p>
-                            </div>
-                            <div class="py-5">
-                                <span class="font-display text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                                    {{ $content('facts_4_label') }}
-                                </span>
-                                <p class="font-body mt-2 text-sm leading-6 text-secondary-dark">
-                                    {{ $content('facts_4_value') }}
-                                </p>
-                            </div>
+                            @foreach ($content->cards('facts_items') as $fact)
+                                <div class="py-5">
+                                    <span class="font-display text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+                                        {{ $fact['title'] }}
+                                    </span>
+                                    <p class="font-body mt-2 text-sm leading-6 text-secondary-dark">
+                                        {{ $fact['text'] }}
+                                    </p>
+                                </div>
+                            @endforeach
                         </div>
                     </div>
                 </div>
