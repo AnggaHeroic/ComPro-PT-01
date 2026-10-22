@@ -128,4 +128,32 @@
         </a>
     </div>
 
+    {{-- Kelola konten halaman: kartu per halaman; jarak, sudut, dan bayangan mengikuti tiga kartu ringkasan di atasnya --}}
+    @php
+        $pageIcons = [
+            'home' => 'M3 10.5 12 3l9 7.5M5 9.5V21h14V9.5M9 21v-6h6v6',
+            'about' => 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-8 9c0-4 4-6 8-6s8 2 8 6',
+            'services' => 'M3 7l9-4 9 4-9 4-9-4zM3 12l9 4 9-4M3 17l9 4 9-4',
+            'contact' => 'M4 6h16v12H4zM4 7l8 6 8-6',
+        ];
+    @endphp
+
+    <section class="mt-8" aria-labelledby="page-content-title">
+        <h2 id="page-content-title" class="mb-3 text-xs font-bold uppercase tracking-wider text-gray-500">Kelola konten halaman</h2>
+
+        <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+            @foreach ($pages as $key => $page)
+                <a href="{{ route('admin.pages.edit', $key) }}" class="group flex items-center gap-3.5 rounded border border-gray-200 bg-white p-4 shadow-sm transition hover:border-primary/40">
+                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-primary-light text-primary">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ $pageIcons[$key] ?? $pageIcons['about'] }}"/></svg>
+                    </span>
+                    <span class="min-w-0">
+                        <span class="block truncate text-sm font-semibold text-gray-900 group-hover:text-primary">{{ $page['label'] }}</span>
+                        <span class="block text-xs text-gray-500">{{ count($page['sections']) }} bagian dapat diubah</span>
+                    </span>
+                </a>
+            @endforeach
+        </div>
+    </section>
+
 </x-app-layout>
