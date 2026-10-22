@@ -34,7 +34,7 @@ class ProfileController extends Controller
         $changed = ActivityLogger::changedLabels($request->user(), ['name' => 'Nama', 'email' => 'Email']);
 
         if ($changed !== '') {
-            ActivityLogger::record(ActivityLog::ACTION_UPDATED, 'Profil', "Informasi profil — mengubah: {$changed}");
+            ActivityLogger::record(ActivityLog::ACTION_UPDATED, 'Profil', "Mengubah informasi profil (yang diubah: {$changed})");
         }
 
         return Redirect::route('admin.profile.edit')->with('status', 'profile-updated');

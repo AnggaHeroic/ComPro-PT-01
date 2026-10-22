@@ -174,7 +174,7 @@ class PageContentController extends Controller
         }
 
         if ($sections !== []) {
-            ActivityLogger::record(ActivityLog::ACTION_UPDATED, 'Konten Halaman', $definition['label'].' — mengubah bagian: '.implode(', ', array_keys($sections)));
+            ActivityLogger::record(ActivityLog::ACTION_UPDATED, 'Konten Halaman', 'Mengubah konten halaman '.$definition['label'].' (bagian yang diubah: '.implode(', ', array_keys($sections)).')');
         }
     }
 
@@ -225,7 +225,7 @@ class PageContentController extends Controller
 
         $this->releaseImages($page, $images, $stored + $oldDefaults);
 
-        ActivityLogger::record(ActivityLog::ACTION_DEFAULT, 'Konten Halaman', PageContents::definitions()[$page]['label'].' — setelan default baru ditetapkan (konten tersimpan saat ini dijadikan default)');
+        ActivityLogger::record(ActivityLog::ACTION_DEFAULT, 'Konten Halaman', 'Menetapkan konten halaman '.PageContents::definitions()[$page]['label'].' yang tersimpan sebagai setelan default baru');
 
         return redirect()
             ->route('admin.pages.edit', $page)
@@ -261,7 +261,7 @@ class PageContentController extends Controller
 
         $this->releaseImages($page, $images, $defaults);
 
-        ActivityLogger::record(ActivityLog::ACTION_RESET, 'Konten Halaman', PageContents::definitions()[$page]['label'].' — setelan default dikembalikan ke default semula (bawaan sistem)');
+        ActivityLogger::record(ActivityLog::ACTION_RESET, 'Konten Halaman', 'Menghapus setelan default yang ditetapkan admin untuk halaman '.PageContents::definitions()[$page]['label'].' (kembali ke default bawaan sistem)');
 
         return redirect()
             ->route('admin.pages.edit', $page)
@@ -298,7 +298,7 @@ class PageContentController extends Controller
 
         $paths->each(fn ($path) => $images->release($path));
 
-        ActivityLogger::record(ActivityLog::ACTION_RESET, 'Konten Halaman', PageContents::definitions()[$page]['label'].' — seluruh konten dikembalikan ke setelan default'.($custom ? ' (default yang ditetapkan admin)' : ' (default bawaan sistem)'));
+        ActivityLogger::record(ActivityLog::ACTION_RESET, 'Konten Halaman', 'Mengembalikan seluruh konten halaman '.PageContents::definitions()[$page]['label'].' ke setelan default '.($custom ? 'yang ditetapkan admin' : 'bawaan sistem'));
 
         return redirect()
             ->route('admin.pages.edit', $page)

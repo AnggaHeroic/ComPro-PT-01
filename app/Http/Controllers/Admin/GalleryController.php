@@ -118,7 +118,7 @@ class GalleryController extends Controller
             throw $e;
         }
 
-        ActivityLogger::record(ActivityLog::ACTION_CREATED, 'Galeri', count($paths)." foto ditambahkan ke \"{$activity->name}\"");
+        ActivityLogger::record(ActivityLog::ACTION_CREATED, 'Galeri', "Menambahkan ".count($paths)." foto ke galeri aktivitas \"{$activity->name}\"");
 
         return redirect()
             ->route('admin.gallery.show', $activity)
@@ -165,7 +165,7 @@ class GalleryController extends Controller
         $changed = ActivityLogger::changedLabels($image, ['caption' => 'Deskripsi', 'image_path' => 'Foto']);
 
         if ($changed !== '') {
-            ActivityLogger::record(ActivityLog::ACTION_UPDATED, 'Galeri', "Foto pada \"{$activity->name}\" — mengubah: {$changed}");
+            ActivityLogger::record(ActivityLog::ACTION_UPDATED, 'Galeri', "Mengubah foto di galeri aktivitas \"{$activity->name}\" (yang diubah: {$changed})");
         }
 
         return redirect()
@@ -181,7 +181,7 @@ class GalleryController extends Controller
         $image->delete();
         $images->release($path);
 
-        ActivityLogger::record(ActivityLog::ACTION_DELETED, 'Galeri', "1 foto dihapus dari \"{$activity->name}\"");
+        ActivityLogger::record(ActivityLog::ACTION_DELETED, 'Galeri', "Menghapus 1 foto dari galeri aktivitas \"{$activity->name}\"");
 
         return redirect()
             ->route('admin.gallery.show', $activity)
@@ -210,7 +210,7 @@ class GalleryController extends Controller
             }
         });
 
-        ActivityLogger::record(ActivityLog::ACTION_REORDERED, 'Galeri', "Urutan foto pada \"{$activity->name}\" diubah");
+        ActivityLogger::record(ActivityLog::ACTION_REORDERED, 'Galeri', "Mengubah urutan foto di galeri aktivitas \"{$activity->name}\"");
 
         return redirect()
             ->route('admin.gallery.show', $activity)

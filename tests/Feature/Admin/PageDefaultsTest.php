@@ -80,7 +80,7 @@ class PageDefaultsTest extends TestCase
 
         $log = ActivityLog::where('menu', 'Konten Halaman')->latest('id')->first();
         $this->assertSame(['default', 'Konten Halaman'], [$log->action, $log->menu]);
-        $this->assertStringContainsString('setelan default baru ditetapkan', $log->detail);
+        $this->assertStringContainsString('sebagai setelan default baru', $log->detail);
     }
 
     public function test_reset_returns_to_the_custom_default_including_lists_and_photos(): void
@@ -168,8 +168,8 @@ class PageDefaultsTest extends TestCase
         $this->delete('/admin/pages/about/default')->assertSessionHas('success');
         $this->assertSame(1, ActivityLog::where('action', 'default')->count());
         // Menghapus default kustom juga dicatat sebagai "Reset default" (satu aksi untuk semua reset).
-        $revert = ActivityLog::where('menu', 'Konten Halaman')->where('action', 'reset')->where('detail', 'like', '%default semula%')->first();
-        $this->assertStringContainsString('dikembalikan ke default semula', $revert->detail);
+        $revert = ActivityLog::where('menu', 'Konten Halaman')->where('action', 'reset')->where('detail', 'like', 'Menghapus setelan default%')->first();
+        $this->assertStringContainsString('(kembali ke default bawaan sistem)', $revert->detail);
         $this->assertSame('Reset default', $revert->actionLabel());
         $this->assertSame(0, ActivityLog::where('action', 'default_revert')->count());
     }
