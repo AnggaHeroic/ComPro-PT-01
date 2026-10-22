@@ -59,7 +59,7 @@ class AboutPageContentTest extends TestCase
             'hero_title' => "Mengenal
 *CV. Maju Jaya*
 lebih dekat.",
-            'facts_1_value' => '2015',
+            'facts_items' => [['title' => 'Established', 'text' => '2015'], ['title' => 'Headquarters', 'text' => 'Denpasar, Bali, Indonesia']],
             'mission_items' => ['Misi pertama.', 'Misi kedua yang baru.'],
         ]))->assertSessionHasNoErrors();
 
@@ -326,5 +326,79 @@ lebih dekat.", 'cta_button' => 'Lihat Semua']));
 
         $this->put('/admin/pages/about', $this->texts())->assertSessionHasNoErrors();
         $this->assertNull(PageContent::where('key', 'hero_title')->first());
+    }
+
+    public function test_company_data_is_a_list_where_each_item_already_has_a_title_and_a_value(): void
+    {
+        // Form: tiap data satu blok berisi judul + isi; tidak ada lagi "Baris 1: judul" / "Baris 1: isi".
+        $html = $this->get('/admin/pages/about')->assertOk()
+            ->assertDontSee('Baris 1: judul')->assertDontSee('Baris 1: isi')
+            ->assertSee('Setiap data otomatis berisi judul dan isi.')
+            ->assertSee('Tambah Data')
+            ->getContent();
+        $this->assertStringContainsString("'content[facts_items][' + index + '][title]'", $html);
+        $this->assertStringContainsString("'content[facts_items][' + index + '][text]'", $html);
+        // Isi data pendek: kolom teks satu baris, bukan kotak teks besar.
+        $this->assertStringContainsString('placeholder="Isi, mis. 2015"', $html);
+        $this->assertMatchesRegularExpression('/<input\s+type="text"\s+:name="[^"]*facts_items/', $html);
+
+        // Halaman publik: empat data bawaan.
+        auth()->logout();
+        $default = $this->get('/tentang-kami')->getContent();
+        foreach (['Established', 'XXXX', 'Headquarters', 'Denpasar, Bali, Indonesia', 'Business Activities', '14 bidang usaha', 'Business Scope', 'Perdagangan dan layanan'] as $text) {
+            $this->assertStringContainsString($text, $default);
+        }
+
+        // Tambah, ubah, dan hapus: jumlah data di halaman publik mengikuti.
+        $this->actingAs(User::first());
+        $this->put('/admin/pages/about', $this->texts(['facts_items' => [
+            ['title' => 'Didirikan', 'text' => '2015'],
+            ['title' => 'Karyawan', 'text' => '120 orang'],
+            ['title' => 'Cabang', 'text' => '3 kota'],
+        ]]))->assertSessionHasNoErrors();
+
+        auth()->logout();
+        $html = $this->get('/tentang-kami')->getContent();
+        foreach (['Didirikan', '2015', 'Karyawan', '120 orang', 'Cabang', '3 kota'] as $text) {
+            $this->assertStringContainsString($text, $html);
+        }
+        $this->assertStringNotContainsString('Established', $html);
+        $this->assertStringNotContainsString('Business Scope', $html);
+    }
+
+    public function test_company_data_items_are_validated_like_other_card_lists(): void
+    {
+        $this->put('/admin/pages/about', $this->texts(['facts_items' => [['title' => 'Judul saja', 'text' => '']]]))
+            ->assertSessionHasErrors('content.facts_items.0.text');
+
+        $this->put('/admin/pages/about', $this->texts(['facts_items' => [['title' => str_repeat('a', 41), 'text' => 'x']]]))
+            ->assertSessionHasErrors('content.facts_items.0.title');
+
+        $this->put('/admin/pages/about', $this->texts(['facts_items' => [['title' => 'x', 'text' => str_repeat('b', 101)]]]))
+            ->assertSessionHasErrors('content.facts_items.0.text');
+
+        $this->put('/admin/pages/about', $this->texts(['facts_items' => []]))->assertSessionHasErrors('content.facts_items');
+        $this->put('/admin/pages/about', $this->texts(['facts_items' => array_fill(0, 9, ['title' => 't', 'text' => 'x'])]))->assertSessionHasErrors('content.facts_items');
+
+        // Baris kosong total dibuang; yang sama dengan bawaan tidak disimpan.
+        $this->put('/admin/pages/about', $this->texts(['facts_items' => [['title' => 'A', 'text' => 'B'], ['title' => '', 'text' => '']]]))->assertSessionHasNoErrors();
+        $this->assertCount(1, PageContents::for('about')->cards('facts_items'));
+    }
+
+    public function test_old_separate_facts_rows_are_moved_into_the_list_by_the_migration(): void
+    {
+        PageContent::insert([
+            ['page' => 'about', 'key' => 'facts_1_value', 'value' => '2015', 'created_at' => now(), 'updated_at' => now()],
+            ['page' => 'about', 'key' => 'facts_2_label', 'value' => 'Kantor Pusat', 'created_at' => now(), 'updated_at' => now()],
+        ]);
+
+        (require database_path('migrations/2026_10_22_000000_move_about_facts_into_a_list.php'))->up();
+
+        $this->assertSame(0, PageContent::where('key', 'like', 'facts\_%\_%')->count());
+        $items = PageContents::for('about')->cards('facts_items');
+        $this->assertCount(4, $items);
+        $this->assertSame(['title' => 'Established', 'text' => '2015'], $items[0]);
+        $this->assertSame(['title' => 'Kantor Pusat', 'text' => 'Denpasar, Bali, Indonesia'], $items[1]);
+        $this->assertSame('Business Scope', $items[3]['title']);
     }
 }

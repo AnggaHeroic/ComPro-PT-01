@@ -168,6 +168,9 @@
                                                         :item-label="$field['item_label'] ?? 'Butir'"
                                                         :max-title="$field['max_title'] ?? 60"
                                                         :max-text="$field['max_text'] ?? 300"
+                                                        :single-line="$field['single_line'] ?? false"
+                                                        :title-placeholder="$field['title_placeholder'] ?? 'Judul'"
+                                                        :text-placeholder="$field['text_placeholder'] ?? 'Uraian'"
                                                         :max-items="$field['max_items'] ?? 10"
                                                         :min-items="$field['min_items'] ?? 1"
                                                     />

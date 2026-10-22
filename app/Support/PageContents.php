@@ -131,16 +131,14 @@ class PageContents
                     ],
                     'facts' => [
                         'label' => 'Data perusahaan',
-                        'description' => 'Empat baris ringkasan di bawah foto.',
+                        'description' => 'Ringkasan di bawah foto. Setiap data otomatis berisi judul dan isi.',
                         'fields' => [
-                            'facts_1_label' => ['label' => 'Baris 1: judul', 'default' => 'Established', 'max' => 40],
-                            'facts_1_value' => ['label' => 'Baris 1: isi', 'default' => 'XXXX', 'max' => 100],
-                            'facts_2_label' => ['label' => 'Baris 2: judul', 'default' => 'Headquarters', 'max' => 40],
-                            'facts_2_value' => ['label' => 'Baris 2: isi', 'default' => 'Denpasar, Bali, Indonesia', 'max' => 100],
-                            'facts_3_label' => ['label' => 'Baris 3: judul', 'default' => 'Business Activities', 'max' => 40],
-                            'facts_3_value' => ['label' => 'Baris 3: isi', 'default' => '14 bidang usaha', 'max' => 100],
-                            'facts_4_label' => ['label' => 'Baris 4: judul', 'default' => 'Business Scope', 'max' => 40],
-                            'facts_4_value' => ['label' => 'Baris 4: isi', 'default' => 'Perdagangan dan layanan', 'max' => 100],
+                            'facts_items' => ['label' => 'Daftar data', 'type' => 'cards', 'item_label' => 'Data', 'single_line' => true, 'title_placeholder' => 'Judul, mis. Established', 'text_placeholder' => 'Isi, mis. 2015', 'default' => [
+                                ['title' => 'Established', 'text' => 'XXXX'],
+                                ['title' => 'Headquarters', 'text' => 'Denpasar, Bali, Indonesia'],
+                                ['title' => 'Business Activities', 'text' => '14 bidang usaha'],
+                                ['title' => 'Business Scope', 'text' => 'Perdagangan dan layanan'],
+                            ], 'max_title' => 40, 'max_text' => 100, 'min_items' => 1, 'max_items' => 8, 'hint' => 'Tambah, hapus, atau ubah urutan data. Tampilan kotak menyesuaikan jumlahnya.'],
                         ],
                     ],
                     'direction' => [
