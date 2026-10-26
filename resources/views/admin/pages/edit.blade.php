@@ -54,7 +54,8 @@
                     <h2 class="text-sm font-semibold text-gray-900">Bagian halaman</h2>
                     <p class="mt-0.5 text-xs leading-5 text-gray-500">Pilih bagian yang ingin diubah. Perubahan di semua bagian disimpan sekaligus saat Anda menekan Simpan.</p>
 
-                    <div class="mt-4 flex flex-wrap gap-2" role="tablist" aria-label="Bagian halaman">
+                    {{-- Ponsel: kotak sama lebar dua kolom (sisa ganjil melebar penuh); layar lebar: berderet mengikuti panjang teks --}}
+                    <div class="mt-4 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap" role="tablist" aria-label="Bagian halaman">
                         @foreach ($definition['sections'] as $sectionKey => $section)
                             <button
                                 type="button"
@@ -63,11 +64,11 @@
                                 @click="select('{{ $sectionKey }}')"
                                 :aria-selected="active === '{{ $sectionKey }}'"
                                 :class="active === '{{ $sectionKey }}' ? 'border-primary bg-primary text-white' : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400 hover:bg-gray-50'"
-                                class="inline-flex items-center gap-2 rounded-sm border px-3 py-1.5 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
+                                class="flex min-h-11 items-center gap-2 rounded-sm border px-3 py-2 text-left text-sm font-medium leading-tight transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 max-sm:[&:last-child:nth-child(odd)]:col-span-2 sm:min-h-0 sm:py-1.5"
                             >
                                 <span
                                     :class="active === '{{ $sectionKey }}' ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'"
-                                    class="flex h-5 min-w-5 items-center justify-center rounded-sm text-[11px] font-bold"
+                                    class="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-sm text-[11px] font-bold"
                                     aria-hidden="true"
                                 >{{ $loop->iteration }}</span>
                                 {{ $section['label'] }}

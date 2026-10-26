@@ -57,7 +57,7 @@
                 </x-side-link>
                 <x-side-link :href="route('admin.categories.index')" :active="request()->routeIs('admin.categories.*')">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 12l9 4 9-4"/><path d="M3 17l9 4 9-4"/></svg>
-                    Kategori
+                    Kategori Usaha
                     @if (($draftCounts['categories'] ?? 0) > 0)
                         <span class="ml-auto rounded-sm bg-yellow-400 px-1.5 py-0.5 text-[10px] font-bold leading-none text-yellow-950" title="{{ $draftCounts['categories'] }} draft">{{ $draftCounts['categories'] }}</span>
                     @endif

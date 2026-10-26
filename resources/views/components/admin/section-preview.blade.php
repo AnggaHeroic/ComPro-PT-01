@@ -6,7 +6,7 @@
     x-effect="active === @js($section) && ! loadedOnce && schedule(0)"
     class="mb-8 overflow-hidden rounded-sm border border-gray-300 bg-white"
 >
-    <div class="flex items-start justify-between gap-4 border-b border-gray-300 bg-gray-50 px-4 py-3">
+    <div class="flex flex-col gap-3 border-b border-gray-300 bg-gray-50 px-4 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
         <div class="min-w-0">
             <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1">
                 <h3 class="text-sm font-semibold text-gray-900">Pratinjau di website</h3>
@@ -15,15 +15,15 @@
                     Belum disimpan
                 </span>
             </div>
-            <p class="mt-0.5 text-xs leading-5 text-gray-500">Tampilan bagian yang dikelola di halaman publik. Pratinjau ikut berubah saat Anda menyimpan perubahan.</p>
+            <p class="mt-0.5 text-xs leading-5 text-gray-500">Begini tampilan bagian ini di halaman publik. Pratinjau diperbarui setelah Anda menyimpan.</p>
         </div>
 
-        <div class="flex shrink-0 items-center gap-1">
-            <button type="button" @click="schedule(0)" class="inline-flex items-center gap-1.5 rounded px-2 py-1 text-xs font-medium text-gray-600 transition hover:bg-gray-200 hover:text-gray-900">
+        <div class="flex shrink-0 items-center gap-2">
+            <button type="button" @click="schedule(0)" class="inline-flex items-center gap-1.5 rounded border border-gray-300 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 transition hover:bg-gray-100">
                 <svg class="h-3.5 w-3.5" :class="loading && 'animate-spin'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></svg>
                 Muat ulang
             </button>
-            <button type="button" @click="open = ! open" :aria-expanded="open" class="rounded px-2 py-1 text-xs font-medium text-gray-600 transition hover:bg-gray-200 hover:text-gray-900" x-text="open ? 'Sembunyikan' : 'Tampilkan'"></button>
+            <button type="button" @click="open = ! open" :aria-expanded="open" class="rounded border border-gray-300 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 transition hover:bg-gray-100" x-text="open ? 'Sembunyikan' : 'Tampilkan'"></button>
         </div>
     </div>
 
