@@ -11,7 +11,7 @@ Route::middleware('guest')->group(function () {
         ->name('login');
 
     Route::post('login', [AuthenticatedSessionController::class, 'store'])
-        ->middleware('throttle:10,1');
+        ->middleware('throttle:60,1');
 });
 
 Route::middleware(['auth', 'admin.idle'])->group(function () {

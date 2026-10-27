@@ -33,4 +33,19 @@ return [
         'password' => env('ADMIN_PASSWORD'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Pembatasan percobaan login
+    |--------------------------------------------------------------------------
+    |
+    | Salah memasukkan email atau password "max_attempts" kali berturut-turut
+    | mengunci percobaan berikutnya selama "lockout_seconds" detik.
+    |
+    */
+
+    'login' => [
+        'max_attempts' => 3,
+        'lockout_seconds' => 10,
+    ],
+
 ];

@@ -756,6 +756,21 @@ Alpine.data('sectionPreview', ({ url }) => ({
     },
 }));
 
+/** Masa tunggu setelah terlalu banyak salah login: tombol Masuk dinonaktifkan dengan hitung mundur, lalu peringatannya hilang. */
+Alpine.data('loginLock', (seconds) => ({
+    wait: Number(seconds) || 0,
+    lock: Number(seconds) > 0, // halaman dibuka karena terkunci: peringatannya ikut hilang saat selesai
+
+    init() {
+        if (this.wait <= 0) return;
+
+        const timer = setInterval(() => {
+            this.wait = Math.max(0, this.wait - 1);
+            if (this.wait === 0) clearInterval(timer);
+        }, 1000);
+    },
+}));
+
 /**
  * Penjaga ketidakaktifan admin. Aktivitas (gerak mouse, ketik, gulir, sentuh, klik) dicatat di
  * localStorage agar semua tab dashboard berbagi satu pewaktu. Selama admin aktif, server

@@ -6,13 +6,16 @@
 
     <x-auth-session-status class="mb-5" :status="session('status')" />
 
-    <form method="POST" action="{{ route('login') }}" class="space-y-5">
+    <form method="POST" action="{{ route('login') }}" class="space-y-5" x-data="loginLock({{ (int) session('login_wait', 0) }})">
         @csrf
 
         <div>
             <x-input-label for="email" value="Email" />
             <x-text-input id="email" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" placeholder="nama@email.com" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+            {{-- Peringatan masa tunggu hilang sendiri saat hitung mundur 10 detik selesai --}}
+            <div x-show="! lock || wait > 0">
+                <x-input-error :messages="$errors->get('email')" class="mt-2" />
+            </div>
         </div>
 
         <div x-data="{ show: false }">
@@ -24,6 +27,9 @@
             <x-input-error :messages="$errors->get('password')" class="mt-2" />
         </div>
 
-        <x-primary-button class="w-full">Masuk</x-primary-button>
+        <x-primary-button class="w-full" x-bind:disabled="wait > 0">
+            <span x-show="wait === 0">Masuk</span>
+            <span x-show="wait > 0" x-cloak>Coba lagi dalam <span x-text="wait"></span> detik</span>
+        </x-primary-button>
     </form>
 </x-guest-layout>
