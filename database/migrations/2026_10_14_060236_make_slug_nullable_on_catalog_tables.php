@@ -30,8 +30,12 @@ return new class extends Migration
     public function down(): void
     {
         // Slug NULL tidak boleh tersisa saat kolom kembali wajib diisi.
-        DB::table('service_categories')->whereNull('slug')->update(['slug' => DB::raw("'draft-' || id")]);
-        DB::table('business_activities')->whereNull('slug')->update(['slug' => DB::raw("'draft-' || id")]);
+        // Digabung lewat PHP (bukan "||" SQL) agar sama di SQLite dan MySQL.
+        foreach (['service_categories', 'business_activities'] as $table) {
+            DB::table($table)->whereNull('slug')->pluck('id')->each(
+                fn ($id) => DB::table($table)->where('id', $id)->update(['slug' => "draft-{$id}"])
+            );
+        }
 
         Schema::table('service_categories', function (Blueprint $table) {
             $table->string('slug', 120)->nullable(false)->change();

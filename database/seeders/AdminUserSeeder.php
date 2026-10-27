@@ -13,8 +13,8 @@ class AdminUserSeeder extends Seeder
      */
     public function run(): void
     {
-        $email = env('ADMIN_EMAIL');
-        $password = env('ADMIN_PASSWORD');
+        $email = config('admin.account.email');
+        $password = config('admin.account.password');
 
         if (! $email || ! $password) {
             $this->command?->warn('ADMIN_EMAIL / ADMIN_PASSWORD belum diisi di .env, akun admin dilewati.');
@@ -25,7 +25,7 @@ class AdminUserSeeder extends Seeder
         User::updateOrCreate(
             ['email' => $email],
             [
-                'name' => env('ADMIN_NAME', 'Admin'),
+                'name' => config('admin.account.name'),
                 'password' => Hash::make($password),
             ],
         );
