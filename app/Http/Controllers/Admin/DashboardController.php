@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ActivityImage;
+use App\Models\ActivityLog;
 use App\Models\BusinessActivity;
 use App\Models\ServiceCategory;
 use App\Support\PageContents;
@@ -22,6 +23,9 @@ class DashboardController extends Controller
             'activitiesWithGallery' => BusinessActivity::has('images')->count(),
             // Kelola konten halaman
             'pages' => PageContents::definitions(),
+            // Terakhir diubah: lima perubahan isi situs terbaru dari riwayat aktivitas
+            'recent' => ActivityLog::whereIn('action', ActivityLog::contentActions())
+                ->latest('created_at')->latest('id')->limit(5)->get(),
         ]);
     }
 }

@@ -70,7 +70,7 @@
                             <td class="px-4 py-3 text-center">
                                 <a href="{{ route('admin.gallery.show', $activity) }}" class="inline-flex items-center gap-1.5 whitespace-nowrap rounded bg-secondary-dark px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-primary">
                                     Kelola galeri
-                                    <span aria-hidden="true">&rarr;</span>
+                                    <x-admin.arrow class="h-3.5 w-3.5" />
                                 </a>
                             </td>
                         </tr>

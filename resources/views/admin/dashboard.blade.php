@@ -5,7 +5,9 @@
     </x-slot>
 
     <x-slot name="actions">
-        <x-secondary-button size="sm" :href="route('home')" target="_blank" rel="noopener">Lihat website &nearr;</x-secondary-button>
+        <x-secondary-button size="sm" :href="route('home')" target="_blank" rel="noopener">Lihat website
+            <x-admin.arrow direction="external" class="h-3.5 w-3.5" />
+        </x-secondary-button>
     </x-slot>
 
     {{-- Banner: elemen visual yang sama dengan halaman login --}}
@@ -94,7 +96,7 @@
                 </span>
             </div>
             <p class="mt-3 text-sm text-gray-500">{{ $categoryPublished }} terbit, {{ $categoryCount - $categoryPublished }} draft</p>
-            <p class="mt-4 text-sm font-semibold text-primary">Kelola kategori <span class="inline-block transition group-hover:translate-x-1">&rarr;</span></p>
+            <p class="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">Kelola kategori <x-admin.arrow class="transition group-hover:translate-x-1" /></p>
         </a>
 
         <a href="{{ route('admin.activities.index') }}" class="group relative overflow-hidden rounded border border-gray-200 bg-white p-6 shadow-sm transition hover:border-primary/40">
@@ -109,7 +111,7 @@
                 </span>
             </div>
             <p class="mt-3 text-sm text-gray-500">{{ $activityPublished }} terbit, {{ $activityCount - $activityPublished }} draft</p>
-            <p class="mt-4 text-sm font-semibold text-primary">Kelola aktivitas <span class="inline-block transition group-hover:translate-x-1">&rarr;</span></p>
+            <p class="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">Kelola aktivitas <x-admin.arrow class="transition group-hover:translate-x-1" /></p>
         </a>
 
         <a href="{{ route('admin.gallery.index') }}" class="group relative overflow-hidden rounded border border-gray-200 bg-white p-6 shadow-sm transition hover:border-primary/40">
@@ -124,7 +126,7 @@
                 </span>
             </div>
             <p class="mt-3 text-sm text-gray-500">di {{ $activitiesWithGallery }} dari {{ $activityCount }} aktivitas</p>
-            <p class="mt-4 text-sm font-semibold text-primary">Kelola galeri <span class="inline-block transition group-hover:translate-x-1">&rarr;</span></p>
+            <p class="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">Kelola galeri <x-admin.arrow class="transition group-hover:translate-x-1" /></p>
         </a>
     </div>
 
@@ -156,4 +158,66 @@
         </div>
     </section>
 
+    {{-- Pemisah visual antara "Kelola konten halaman" dan "Terakhir diubah" --}}
+    <div class="relative mt-12 overflow-hidden rounded border border-primary/15 bg-primary-light px-5 py-4 sm:px-6" data-recent-banner>
+        <div class="pointer-events-none absolute inset-0 opacity-[0.5]" aria-hidden="true" style="background-image: linear-gradient(to right, rgba(203, 30, 27, 0.07) 1px, transparent 1px), linear-gradient(to bottom, rgba(203, 30, 27, 0.07) 1px, transparent 1px); background-size: 32px 32px; mask-image: linear-gradient(to right, #000 15%, transparent 85%); -webkit-mask-image: linear-gradient(to right, #000 15%, transparent 85%);"></div>
+
+        <div class="relative flex items-center gap-4">
+            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded bg-white text-primary shadow-sm ring-1 ring-primary/10">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+            </span>
+
+            <div class="min-w-0">
+                <p class="text-sm font-semibold text-gray-900">Semua perubahan tercatat otomatis</p>
+                <p class="mt-0.5 text-xs leading-5 text-gray-600">Siapa mengubah apa dan kapan dapat ditelusuri kembali di Riwayat Aktivitas.</p>
+            </div>
+
+            {{-- Ilustrasi garis waktu (hanya layar lebar) --}}
+            <svg class="ml-auto hidden h-12 w-40 shrink-0 text-primary md:block" viewBox="0 0 160 48" fill="none" aria-hidden="true">
+                <path d="M10 24h140" stroke="currentColor" stroke-opacity="0.25" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="22" cy="24" r="5" fill="currentColor" fill-opacity="0.35"/>
+                <circle cx="62" cy="24" r="5" fill="currentColor" fill-opacity="0.55"/>
+                <circle cx="102" cy="24" r="5" fill="currentColor" fill-opacity="0.8"/>
+                <circle cx="142" cy="24" r="6" fill="currentColor"/>
+                <rect x="12" y="6" width="20" height="6" rx="3" fill="currentColor" fill-opacity="0.18"/>
+                <rect x="52" y="36" width="20" height="6" rx="3" fill="currentColor" fill-opacity="0.18"/>
+                <rect x="92" y="6" width="20" height="6" rx="3" fill="currentColor" fill-opacity="0.18"/>
+                <rect x="130" y="36" width="24" height="6" rx="3" fill="currentColor" fill-opacity="0.3"/>
+            </svg>
+        </div>
+    </div>
+
+    {{-- Terakhir diubah: lima perubahan isi situs terbaru (dari Riwayat Aktivitas) --}}
+    <section class="mt-10" aria-labelledby="recent-title">
+        <div class="mb-3 flex items-center justify-between gap-4">
+            <h2 id="recent-title" class="text-xs font-bold uppercase tracking-wider text-gray-500">Terakhir diubah</h2>
+            <a href="{{ route('admin.activity-log.index') }}" class="group inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:text-primary-dark">Lihat semua riwayat <x-admin.arrow class="transition group-hover:translate-x-1" /></a>
+        </div>
+
+        <div class="rounded border border-gray-200 bg-white shadow-sm">
+            @forelse ($recent as $log)
+                @php($time = $log->created_at->copy()->timezone(config('app.timezone'))->locale('id'))
+                <div class="flex flex-col gap-2 border-b border-gray-100 px-5 py-3.5 last:border-b-0 sm:flex-row sm:items-center sm:gap-4">
+                    <span class="inline-flex w-fit shrink-0 items-center gap-1.5 whitespace-nowrap rounded-sm px-2 py-0.5 text-xs font-medium sm:w-36 {{ $log->actionClass() }}">
+                        <svg class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ $log->actionIcon() }}"/></svg>
+                        {{ $log->actionLabel() }}
+                    </span>
+
+                    <div class="min-w-0 flex-1">
+                        @php([$main, $note] = $log->detailLines())
+                        <p class="text-sm text-gray-900">{{ $main }}</p>
+                        @if ($note)
+                            <p class="mt-0.5 text-xs text-gray-500">{{ $note }}</p>
+                        @endif
+                        <p class="mt-0.5 text-xs text-gray-500">
+                            {{ $log->user_name }} &middot; {{ $log->menu }} &middot;
+                            <time datetime="{{ $log->created_at->toIso8601String() }}" title="{{ $time->translatedFormat('d M Y, H:i') }}">{{ $time->diffForHumans() }}</time>
+                        </p>
+                    </div>
+                </div>
+            @empty
+                <p class="px-5 py-8 text-center text-sm text-gray-500">Belum ada perubahan konten. Perubahan yang Anda buat akan muncul di sini.</p>
+            @endforelse
+        </div>
+    </section>
 </x-app-layout>

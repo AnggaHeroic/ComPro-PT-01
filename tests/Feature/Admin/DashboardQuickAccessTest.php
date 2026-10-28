@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Models\ActivityLog;
 use App\Models\User;
 use App\Support\PageContents;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -64,5 +65,76 @@ class DashboardQuickAccessTest extends TestCase
         // Sudut dan bayangan sama seperti kartu di atasnya.
         $cards = substr($html, strpos($html, 'aria-labelledby="page-content-title"'));
         $this->assertStringContainsString('rounded border border-gray-200 bg-white p-4 shadow-sm', $cards);
+    }
+
+    public function test_the_recent_changes_panel_is_empty_before_anything_is_changed(): void
+    {
+        $this->get('/admin')
+            ->assertOk()
+            ->assertSee('Terakhir diubah')
+            ->assertSee('Belum ada perubahan konten')
+            ->assertSee('Lihat semua riwayat');
+    }
+
+    public function test_the_recent_changes_panel_lists_the_five_newest_content_changes_and_ignores_logins(): void
+    {
+        for ($i = 1; $i <= 7; $i++) {
+            ActivityLog::forceCreate([
+                'user_name' => 'Admin Uji', 'action' => 'updated', 'menu' => 'Kategori',
+                'detail' => "Perubahan nomor {$i}", 'created_at' => now()->subMinutes(60 - $i),
+            ]);
+        }
+        // Masuk, keluar, dan ganti password bukan perubahan konten.
+        ActivityLog::forceCreate(['user_name' => 'Admin Uji', 'action' => 'login', 'menu' => 'Akun', 'detail' => 'Masuk ke dashboard', 'created_at' => now()]);
+        ActivityLog::forceCreate(['user_name' => 'Admin Uji', 'action' => 'password', 'menu' => 'Profil', 'detail' => 'Mengganti password akun', 'created_at' => now()]);
+
+        $html = $this->get('/admin')->assertOk()->getContent();
+        $panel = substr($html, strpos($html, 'id="recent-title"'));
+
+        $this->assertSame(5, substr_count($panel, 'Perubahan nomor'));
+        // Terbaru di atas; dua yang paling lama tidak tampil.
+        $this->assertTrue(strpos($panel, 'Perubahan nomor 7') < strpos($panel, 'Perubahan nomor 3'));
+        $this->assertStringNotContainsString('Perubahan nomor 2', $panel);
+        $this->assertStringNotContainsString('Perubahan nomor 1<', $panel);
+        $this->assertStringNotContainsString('Masuk ke dashboard', $panel);
+        $this->assertStringNotContainsString('Mengganti password akun', $panel);
+        $this->assertStringContainsString('Admin Uji', $panel);
+    }
+
+    public function test_the_recent_changes_panel_shows_who_where_and_when_in_indonesian(): void
+    {
+        ActivityLog::forceCreate([
+            'user_name' => 'Admin Uji', 'action' => 'created', 'menu' => 'Aktivitas Usaha',
+            'detail' => 'Menambahkan aktivitas "Contoh Baru" (kategori: Kat, status: Draft)',
+            'created_at' => now()->subHours(3),
+        ]);
+
+        $this->get('/admin')
+            ->assertSee('Menambahkan aktivitas')
+            ->assertSee('Admin Uji')
+            ->assertSee('Aktivitas Usaha')
+            ->assertSee('3 jam yang lalu')
+            ->assertSee('href="'.route('admin.activity-log.index').'"', false);
+    }
+
+    public function test_the_recent_changes_panel_does_not_change_the_page_card_grid(): void
+    {
+        $html = $this->get('/admin')->getContent();
+
+        $this->assertSame(2, substr_count($html, 'grid gap-5'));
+        $this->assertSame(4, substr_count($html, 'bagian dapat diubah'));
+        $this->assertTrue(strpos($html, 'page-content-title') < strpos($html, 'recent-title'));
+    }
+
+    public function test_a_visual_banner_sits_between_the_page_cards_and_the_recent_changes(): void
+    {
+        $html = $this->get('/admin')->assertOk()->assertSee('Semua perubahan tercatat otomatis')->getContent();
+
+        $this->assertTrue(strpos($html, 'page-content-title') < strpos($html, 'data-recent-banner'));
+        $this->assertTrue(strpos($html, 'data-recent-banner') < strpos($html, 'recent-title'));
+        $this->assertSame(1, substr_count($html, 'data-recent-banner'));
+        // Jarak ke bawah lebih lega daripada sebelumnya (mt-8 → mt-10 / mt-12).
+        $this->assertStringContainsString('mt-12 overflow-hidden', $html);
+        $this->assertStringContainsString('class="mt-10" aria-labelledby="recent-title"', $html);
     }
 }
