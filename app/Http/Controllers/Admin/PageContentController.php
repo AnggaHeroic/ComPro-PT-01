@@ -174,7 +174,7 @@ class PageContentController extends Controller
         }
 
         if ($sections !== []) {
-            ActivityLogger::record(ActivityLog::ACTION_UPDATED, 'Konten Halaman', 'Mengubah konten halaman '.$definition['label'].' (bagian yang diubah: '.implode(', ', array_keys($sections)).')');
+            ActivityLogger::record(ActivityLog::ACTION_UPDATED, 'Konten Halaman', 'Mengubah konten halaman '.$definition['label'].' (bagian yang diubah: '.implode(', ', array_keys($sections)).')', subject: 'page:'.$page);
         }
     }
 
@@ -298,7 +298,7 @@ class PageContentController extends Controller
 
         $paths->each(fn ($path) => $images->release($path));
 
-        ActivityLogger::record(ActivityLog::ACTION_RESET, 'Konten Halaman', 'Mengembalikan seluruh konten halaman '.PageContents::definitions()[$page]['label'].' ke setelan default '.($custom ? 'yang ditetapkan admin' : 'bawaan sistem'));
+        ActivityLogger::record(ActivityLog::ACTION_RESET, 'Konten Halaman', 'Mengembalikan seluruh konten halaman '.PageContents::definitions()[$page]['label'].' ke setelan default '.($custom ? 'yang ditetapkan admin' : 'bawaan sistem'), subject: 'page:'.$page);
 
         return redirect()
             ->route('admin.pages.edit', $page)

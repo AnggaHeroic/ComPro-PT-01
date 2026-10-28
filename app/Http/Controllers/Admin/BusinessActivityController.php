@@ -106,7 +106,7 @@ class BusinessActivityController extends Controller
         }
 
         $activity->loadMissing('category:id,name');
-        ActivityLogger::record(ActivityLog::ACTION_CREATED, 'Aktivitas Usaha', "Menambahkan aktivitas \"{$activity->name}\" pada kategori \"{$activity->category?->name}\" dengan status ".ActivityLogger::status($activity->is_published));
+        ActivityLogger::record(ActivityLog::ACTION_CREATED, 'Aktivitas Usaha', "Menambahkan aktivitas \"{$activity->name}\" (kategori: {$activity->category?->name}, status: ".ActivityLogger::status($activity->is_published).')', subject: $activity);
 
         return $this->redirectAfterSave($activity, 'Aktivitas berhasil ditambahkan.');
     }
@@ -150,7 +150,7 @@ class BusinessActivityController extends Controller
         }
 
         if ($changed !== '') {
-            ActivityLogger::record(ActivityLog::ACTION_UPDATED, 'Aktivitas Usaha', "Mengubah aktivitas \"{$activity->name}\" (yang diubah: {$changed})");
+            ActivityLogger::record(ActivityLog::ACTION_UPDATED, 'Aktivitas Usaha', "Mengubah aktivitas \"{$activity->name}\" (yang diubah: {$changed})", subject: $activity);
         }
 
         return $this->redirectAfterSave($activity, 'Aktivitas berhasil diperbarui.');
@@ -169,7 +169,7 @@ class BusinessActivityController extends Controller
             $images->release($path);
         }
 
-        ActivityLogger::record(ActivityLog::ACTION_DELETED, 'Aktivitas Usaha', "Menghapus aktivitas \"{$activity->name}\" dari kategori \"{$categoryName}\"");
+        ActivityLogger::record(ActivityLog::ACTION_DELETED, 'Aktivitas Usaha', "Menghapus aktivitas \"{$activity->name}\" (kategori: {$categoryName})");
 
         return redirect()
             ->route('admin.activities.index', ['category' => $categoryId])

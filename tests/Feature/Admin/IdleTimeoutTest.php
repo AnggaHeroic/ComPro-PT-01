@@ -53,7 +53,8 @@ class IdleTimeoutTest extends TestCase
         // Dicatat sebagai keluar otomatis (satu catatan, bukan juga "Keluar" biasa).
         $log = ActivityLog::latest('id')->first();
         $this->assertSame(['timeout', 'Akun', 'Admin Uji', $this->admin->id], [$log->action, $log->menu, $log->user_name, $log->user_id]);
-        $this->assertSame('Keluar otomatis karena tidak aktif selama 30 menit', $log->detail);
+        $this->assertSame('Keluar otomatis (tidak aktif selama 30 menit)', $log->detail);
+        $this->assertSame(['Keluar otomatis', '(tidak aktif selama 30 menit)'], $log->detailLines());
         $this->assertSame('Keluar otomatis', $log->actionLabel());
         $this->assertSame(0, ActivityLog::where('action', 'logout')->count());
 
@@ -189,10 +190,10 @@ class IdleTimeoutTest extends TestCase
         $this->idleFor(40)->get('/admin')->assertRedirect('/login');
         $this->actingAs($this->admin);
 
-        $this->get('/admin/activity-log')
+        $this->get('/admin/activity-log?jenis=akses')
             ->assertSee('Keluar otomatis')
-            ->assertSee('Keluar otomatis karena tidak aktif selama 30 menit');
-        $this->get('/admin/activity-log?action=timeout')->assertSee('Keluar otomatis karena tidak aktif');
+            ->assertSee('(tidak aktif selama 30 menit)', false);
+        $this->get('/admin/activity-log?action=timeout')->assertSee('(tidak aktif selama 30 menit)', false);
         $this->get('/admin/activity-log?action=logout')->assertDontSee('tidak aktif selama 30 menit');
     }
 

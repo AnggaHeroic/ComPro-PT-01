@@ -50,7 +50,7 @@ class ActivityLogTest extends TestCase
         $log = $this->last();
         $this->assertSame(['created', 'Kategori', 'Admin Uji'], [$log->action, $log->menu, $log->user_name]);
         $this->assertSame($this->admin->id, $log->user_id);
-        $this->assertStringContainsString('Menambahkan kategori "Kategori Baru" dengan status Terbit', $log->detail);
+        $this->assertStringContainsString('Menambahkan kategori "Kategori Baru" (status: Terbit)', $log->detail);
         $this->assertStringContainsString('Terbit', $log->detail);
 
         $category = ServiceCategory::where('name', 'Kategori Baru')->first();
@@ -98,7 +98,7 @@ class ActivityLogTest extends TestCase
         $this->post("/admin/gallery/{$activity->id}/images", ['images' => [UploadedFile::fake()->image('a.jpg'), UploadedFile::fake()->image('b.jpg')]]);
         $log = $this->last();
         $this->assertSame(['created', 'Galeri'], [$log->action, $log->menu]);
-        $this->assertStringContainsString('Menambahkan 2 foto ke galeri aktivitas "Akt Y2"', $log->detail);
+        $this->assertStringContainsString('Menambahkan foto ke galeri aktivitas "Akt Y2" (2 foto)', $log->detail);
 
         $image = ActivityImage::first();
         $this->patch("/admin/gallery/{$activity->id}/images/{$image->id}", ['caption' => 'Deskripsi baru']);
@@ -120,7 +120,7 @@ class ActivityLogTest extends TestCase
         $this->delete("/admin/activities/{$activity->id}");
         $log = $this->last();
         $this->assertSame(['deleted', 'Aktivitas Usaha'], [$log->action, $log->menu]);
-        $this->assertStringContainsString('dari kategori "Kat X"', $log->detail);
+        $this->assertStringContainsString('(kategori: Kat X)', $log->detail);
     }
 
     public function test_page_content_changes_name_the_sections_and_reset_is_logged(): void
@@ -152,6 +152,8 @@ class ActivityLogTest extends TestCase
         $this->patch('/admin/profil', ['name' => 'Nama Baru', 'email' => $this->admin->email]);
         $this->assertStringContainsString('(yang diubah: Nama)', $this->last()->detail);
         $this->assertSame('Profil', $this->last()->menu);
+        $this->assertSame('profile', $this->last()->action);
+        $this->assertSame('Ubah profil', $this->last()->actionLabel());
 
         $this->put('/password', ['current_password' => 'password', 'password' => 'password-baru-123', 'password_confirmation' => 'password-baru-123']);
         $log = $this->last();
@@ -198,6 +200,8 @@ class ActivityLogTest extends TestCase
     public function test_pagination_and_empty_state(): void
     {
         $this->get('/admin/activity-log')->assertSee('Belum ada aktivitas yang tercatat');
+        $this->get('/admin/activity-log?jenis=konten')->assertSee('Belum ada perubahan konten yang tercatat');
+        $this->get('/admin/activity-log?jenis=akses')->assertSee('Belum ada catatan akses akun');
 
         for ($i = 1; $i <= 30; $i++) {
             ActivityLogger::record('updated', 'Profil', "Catatan nomor {$i}");
@@ -237,7 +241,7 @@ class ActivityLogTest extends TestCase
             ActivityLogger::record($action, 'Profil', "Uji {$action}");
         }
 
-        $html = $this->get('/admin/activity-log')->assertOk()->getContent();
+        $html = $this->get('/admin/activity-log?jenis=semua')->assertOk()->getContent();
 
         foreach (ActivityLog::actions() as [$label, $class, $icon]) {
             $this->assertStringContainsString('d="'.$icon.'"', $html, "ikon {$label}");
@@ -432,5 +436,101 @@ class ActivityLogTest extends TestCase
         foreach ($old as $index => [, , $expected]) {
             $this->assertSame($expected, ActivityLog::find($ids[$index])->detail);
         }
+    }
+
+    public function test_added_entries_are_tidied_by_the_migration_so_the_extra_info_sits_in_parentheses(): void
+    {
+        $rows = [
+            ['Kategori', 'Menambahkan kategori "A" dengan status Draft', 'Menambahkan kategori "A" (status: Draft)'],
+            ['Kategori', 'Menambahkan kategori "A (bekas)" dengan status Terbit', 'Menambahkan kategori "A (bekas)" (status: Terbit)'],
+            ['Aktivitas Usaha', 'Menambahkan aktivitas "B" pada kategori "A" dengan status Terbit', 'Menambahkan aktivitas "B" (kategori: A, status: Terbit)'],
+            ['Galeri', 'Menambahkan 3 foto ke galeri aktivitas "B"', 'Menambahkan foto ke galeri aktivitas "B" (3 foto)'],
+            // Yang bukan "tambah" atau polanya tidak dikenal dibiarkan.
+            ['Kategori', 'Menghapus kategori "A"', 'Menghapus kategori "A"'],
+            ['Kategori', 'Catatan bebas', 'Catatan bebas'],
+        ];
+
+        $ids = [];
+        foreach ($rows as [$menu, $detail]) {
+            $action = str_starts_with($detail, 'Menambahkan') ? 'created' : 'deleted';
+            $ids[] = ActivityLog::create(['user_name' => 'A', 'action' => $action, 'menu' => $menu, 'detail' => $detail])->id;
+        }
+
+        $migration = require database_path('migrations/2026_10_28_000000_tidy_added_activity_log_details.php');
+        $migration->up();
+        $migration->up();
+
+        foreach ($rows as $index => [, , $expected]) {
+            $this->assertSame($expected, ActivityLog::find($ids[$index])->detail);
+        }
+
+        $this->assertSame(['Menambahkan aktivitas "B"', '(kategori: A, status: Terbit)'], ActivityLog::find($ids[2])->detailLines());
+    }
+
+    public function test_deleted_entries_are_tidied_by_the_migration_the_same_way(): void
+    {
+        $rows = [
+            ['Aktivitas Usaha', 'deleted', 'Menghapus aktivitas "B" dari kategori "A"', 'Menghapus aktivitas "B" (kategori: A)'],
+            ['Aktivitas Usaha', 'deleted', 'Menghapus aktivitas "B (lama)" dari kategori "A (bekas)"', 'Menghapus aktivitas "B (lama)" (kategori: A (bekas))'],
+            ['Galeri', 'deleted', 'Menghapus 1 foto dari galeri aktivitas "B"', 'Menghapus foto dari galeri aktivitas "B" (1 foto)'],
+            // Kategori hanya satu baris; yang bukan "hapus" atau tak dikenal dibiarkan.
+            ['Kategori', 'deleted', 'Menghapus kategori "A"', 'Menghapus kategori "A"'],
+            ['Aktivitas Usaha', 'created', 'Menghapus aktivitas "B" dari kategori "A"', 'Menghapus aktivitas "B" dari kategori "A"'],
+        ];
+
+        $ids = [];
+        foreach ($rows as [$menu, $action, $detail]) {
+            $ids[] = ActivityLog::create(['user_name' => 'A', 'action' => $action, 'menu' => $menu, 'detail' => $detail])->id;
+        }
+
+        $migration = require database_path('migrations/2026_10_28_100000_tidy_deleted_activity_log_details.php');
+        $migration->up();
+        $migration->up();
+
+        foreach ($rows as $index => [, , , $expected]) {
+            $this->assertSame($expected, ActivityLog::find($ids[$index])->detail);
+        }
+
+        $this->assertSame(['Menghapus aktivitas "B"', '(kategori: A)'], ActivityLog::find($ids[0])->detailLines());
+    }
+
+    public function test_details_split_into_the_sentence_and_the_parenthesis_note_for_display(): void
+    {
+        $cases = [
+            ['Mengubah kategori "Kat X" (yang diubah: Nama, Status)', ['Mengubah kategori "Kat X"', '(yang diubah: Nama, Status)']],
+            ['Mengubah konten halaman Tentang Kami (bagian yang diubah: Data perusahaan)', ['Mengubah konten halaman Tentang Kami', '(bagian yang diubah: Data perusahaan)']],
+            ['Menghapus setelan default yang ditetapkan admin untuk halaman Beranda (kembali ke default bawaan sistem)', ['Menghapus setelan default yang ditetapkan admin untuk halaman Beranda', '(kembali ke default bawaan sistem)']],
+            // Tanda kurung di dalam nama (bukan di akhir kalimat) tidak dipecah.
+            ['Menghapus kategori "Alat (bekas)"', ['Menghapus kategori "Alat (bekas)"', null]],
+            ['Mengubah kategori "Alat (bekas)" (yang diubah: Nama)', ['Mengubah kategori "Alat (bekas)"', '(yang diubah: Nama)']],
+            ['Menambahkan kategori "Baru" (status: Draft)', ['Menambahkan kategori "Baru"', '(status: Draft)']],
+            ['Menambahkan aktivitas "Akt" (kategori: Kat, status: Terbit)', ['Menambahkan aktivitas "Akt"', '(kategori: Kat, status: Terbit)']],
+            ['Menghapus aktivitas "Akt" (kategori: Kat)', ['Menghapus aktivitas "Akt"', '(kategori: Kat)']],
+            ['Menghapus foto dari galeri aktivitas "Akt" (1 foto)', ['Menghapus foto dari galeri aktivitas "Akt"', '(1 foto)']],
+            ['Masuk ke dashboard', ['Masuk ke dashboard', null]],
+        ];
+
+        foreach ($cases as [$detail, $expected]) {
+            $this->assertSame($expected, (new ActivityLog(['detail' => $detail]))->detailLines(), $detail);
+        }
+        $this->assertSame(['', null], (new ActivityLog)->detailLines());
+    }
+
+    public function test_the_log_page_shows_the_note_on_its_own_second_line_and_keeps_the_stored_text(): void
+    {
+        $log = ActivityLog::create([
+            'user_name' => 'Admin', 'action' => 'updated', 'menu' => 'Kategori',
+            'detail' => 'Mengubah kategori "Kat X" (yang diubah: Nama)',
+        ]);
+
+        $html = $this->get('/admin/activity-log')->assertOk()->getContent();
+
+        $this->assertMatchesRegularExpression('#<p>Mengubah kategori &quot;Kat X&quot;</p>\s*<p class="mt-0\.5 text-xs text-gray-500">\(yang diubah: Nama\)</p>#', $html);
+        $this->assertSame('Mengubah kategori "Kat X" (yang diubah: Nama)', $log->fresh()->detail);
+
+        // Kalimat tanpa keterangan tambahan hanya satu baris.
+        ActivityLog::create(['user_name' => 'Admin', 'action' => 'created', 'menu' => 'Kategori', 'detail' => 'Menghapus kategori "Baru"']);
+        $html = $this->get('/admin/activity-log')->getContent();
+        $this->assertMatchesRegularExpression('#<p>Menghapus kategori &quot;Baru&quot;</p>\s*</td>#', $html);
     }
 }

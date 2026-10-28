@@ -13,7 +13,11 @@ use Throwable;
  */
 class ActivityLogger
 {
-    public static function record(string $action, string $menu, ?string $detail = null, ?Authenticatable $user = null): void
+    /**
+     * @param  Model|string|null  $subject  item yang diubah (model, atau teks seperti "page:about"); dipakai untuk
+     *                                      keterangan "Terakhir diubah oleh ..." di halaman ubah
+     */
+    public static function record(string $action, string $menu, ?string $detail = null, ?Authenticatable $user = null, Model|string|null $subject = null): void
     {
         try {
             $user ??= auth()->user();
@@ -23,6 +27,7 @@ class ActivityLogger
                 'user_name' => mb_substr((string) ($user->name ?? 'Sistem'), 0, 120),
                 'action' => $action,
                 'menu' => $menu,
+                'subject' => $subject === null ? null : ActivityLog::subjectKey($subject),
                 'detail' => $detail === null ? null : mb_substr($detail, 0, 500),
             ]);
         } catch (Throwable $e) {

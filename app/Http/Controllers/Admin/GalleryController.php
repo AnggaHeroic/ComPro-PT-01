@@ -118,7 +118,7 @@ class GalleryController extends Controller
             throw $e;
         }
 
-        ActivityLogger::record(ActivityLog::ACTION_CREATED, 'Galeri', "Menambahkan ".count($paths)." foto ke galeri aktivitas \"{$activity->name}\"");
+        ActivityLogger::record(ActivityLog::ACTION_CREATED, 'Galeri', "Menambahkan foto ke galeri aktivitas \"{$activity->name}\" (".count($paths).' foto)');
 
         return redirect()
             ->route('admin.gallery.show', $activity)
@@ -181,7 +181,7 @@ class GalleryController extends Controller
         $image->delete();
         $images->release($path);
 
-        ActivityLogger::record(ActivityLog::ACTION_DELETED, 'Galeri', "Menghapus 1 foto dari galeri aktivitas \"{$activity->name}\"");
+        ActivityLogger::record(ActivityLog::ACTION_DELETED, 'Galeri', "Menghapus foto dari galeri aktivitas \"{$activity->name}\" (1 foto)");
 
         return redirect()
             ->route('admin.gallery.show', $activity)

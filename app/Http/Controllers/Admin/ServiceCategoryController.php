@@ -90,7 +90,7 @@ class ServiceCategoryController extends Controller
             throw $e;
         }
 
-        ActivityLogger::record(ActivityLog::ACTION_CREATED, 'Kategori', "Menambahkan kategori \"{$category->name}\" dengan status ".ActivityLogger::status($category->is_published));
+        ActivityLogger::record(ActivityLog::ACTION_CREATED, 'Kategori', "Menambahkan kategori \"{$category->name}\" (status: ".ActivityLogger::status($category->is_published).')', subject: $category);
 
         return $this->redirectAfterSave($category, 'Kategori berhasil ditambahkan.');
     }
@@ -147,7 +147,7 @@ class ServiceCategoryController extends Controller
         }
 
         if ($changed !== '') {
-            ActivityLogger::record(ActivityLog::ACTION_UPDATED, 'Kategori', "Mengubah kategori \"{$category->name}\" (yang diubah: {$changed})");
+            ActivityLogger::record(ActivityLog::ACTION_UPDATED, 'Kategori', "Mengubah kategori \"{$category->name}\" (yang diubah: {$changed})", subject: $category);
         }
 
         return $this->redirectAfterSave($category, 'Kategori berhasil diperbarui.');

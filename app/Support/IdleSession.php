@@ -39,7 +39,7 @@ class IdleSession
         ActivityLogger::record(
             ActivityLog::ACTION_TIMEOUT,
             'Akun',
-            "Keluar otomatis karena tidak aktif selama {$minutes} menit",
+            "Keluar otomatis (tidak aktif selama {$minutes} menit)",
             $user,
         );
 

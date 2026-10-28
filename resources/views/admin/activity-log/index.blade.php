@@ -1,5 +1,14 @@
 @php
     $filtered = $search !== '' || $menu || $action || $from || $to;
+    $isDefault = $group === \App\Models\ActivityLog::DEFAULT_GROUP;
+    // Tab menyimpan pencarian dan tanggal; penyaring menu/aksi dikosongkan karena pilihannya beda per jenis.
+    $tabParams = fn (string $key) => array_filter([
+        'jenis' => $key === \App\Models\ActivityLog::DEFAULT_GROUP ? null : $key,
+        'q' => $search,
+        'dari' => $from,
+        'sampai' => $to,
+    ], fn ($value) => filled($value));
+    $showMenu = $groups[$group]['menus'] !== [];
     $hasDate = $from || $to;
 
     // Data untuk pemilih tanggal (satu tombol ikon): pintasan dan label rentang yang sedang aktif.
@@ -24,17 +33,43 @@
 <x-app-layout>
     <x-slot name="header">
         <h1 class="font-display text-2xl font-bold text-gray-900">Riwayat Aktivitas</h1>
-        <p class="mt-1 text-sm text-gray-500">Catatan aksi admin di dashboard: tambah, ubah, hapus, dan lainnya, beserta waktunya.</p>
+        <p class="mt-1 text-sm text-gray-500">Catatan perubahan konten dan akses akun admin di dashboard, beserta waktunya.</p>
     </x-slot>
 
     <div class="rounded-sm border border-gray-200 bg-white shadow-sm">
+        {{-- Jenis catatan: perubahan konten (awal), akses akun, atau semua --}}
+        <nav class="flex flex-wrap gap-1 border-b border-gray-200 bg-white px-3" aria-label="Jenis catatan">
+            @foreach ($groups as $key => $item)
+                @php($active = $group === $key)
+
+                <a
+                    href="{{ route('admin.activity-log.index', $tabParams($key)) }}"
+                    @if ($active) aria-current="page" @endif
+                    @class([
+                        '-mb-px inline-flex items-center gap-2 whitespace-nowrap border-b-2 px-3 py-3 text-sm transition-colors',
+                        'border-primary font-semibold text-gray-900' => $active,
+                        'border-transparent font-medium text-gray-500 hover:text-gray-800' => ! $active,
+                    ])
+                >
+                    {{ $item['label'] }}
+                    <span class="rounded-sm bg-gray-100 px-1.5 py-0.5 text-[11px] font-semibold text-gray-700">{{ $counts[$key] }}</span>
+                </a>
+            @endforeach
+        </nav>
+
         <form method="GET" action="{{ route('admin.activity-log.index') }}" class="flex flex-wrap items-center gap-2 border-b border-gray-200 bg-gray-50 px-4 py-3">
-            <x-select name="menu" class="w-full sm:w-48" onchange="this.form.submit()" aria-label="Filter menu">
-                <option value="">Semua menu</option>
-                @foreach ($menus as $item)
-                    <option value="{{ $item }}" @selected($menu === $item)>{{ $item }}</option>
-                @endforeach
-            </x-select>
+            @unless ($isDefault)
+                <input type="hidden" name="jenis" value="{{ $group }}">
+            @endunless
+
+            @if ($showMenu)
+                <x-select name="menu" class="w-full sm:w-48" onchange="this.form.submit()" aria-label="Filter menu">
+                    <option value="">Semua menu</option>
+                    @foreach ($menus as $item)
+                        <option value="{{ $item }}" @selected($menu === $item)>{{ $item }}</option>
+                    @endforeach
+                </x-select>
+            @endif
 
             <x-select name="action" class="w-full sm:w-44" onchange="this.form.submit()" aria-label="Filter aksi">
                 <option value="">Semua aksi</option>
@@ -140,7 +175,7 @@
 
             <div class="flex items-center gap-2 sm:ml-auto">
                 @if ($filtered)
-                    <a href="{{ route('admin.activity-log.index') }}" class="px-2 text-sm text-gray-500 hover:text-primary">Reset</a>
+                    <a href="{{ route('admin.activity-log.index', $isDefault ? [] : ['jenis' => $group]) }}" class="px-2 text-sm text-gray-500 hover:text-primary">Reset</a>
                 @endif
                 <span class="px-1 text-sm text-gray-500">{{ $logs->total() }} catatan</span>
             </div>
@@ -153,7 +188,9 @@
                         <th class="px-4 py-3">Tanggal &amp; jam</th>
                         <th class="px-4 py-3">Admin</th>
                         <th class="px-4 py-3">Aksi</th>
-                        <th class="px-4 py-3">Menu</th>
+                        @if ($showMenu)
+                            <th class="px-4 py-3">Menu</th>
+                        @endif
                         <th class="px-4 py-3">Keterangan</th>
                     </tr>
                 </thead>
@@ -172,16 +209,28 @@
                                     {{ $log->actionLabel() }}
                                 </span>
                             </td>
-                            <td class="px-4 py-3 text-center">
-                                <span class="inline-block whitespace-nowrap rounded-sm bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">{{ $log->menu }}</span>
+                            @if ($showMenu)
+                                <td class="px-4 py-3 text-center">
+                                    <span class="inline-block whitespace-nowrap rounded-sm bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">{{ $log->menu }}</span>
+                                </td>
+                            @endif
+                            <td class="min-w-64 px-4 py-3 text-center text-gray-700">
+                                @php([$main, $note] = $log->detailLines())
+                                <p>{{ $main }}</p>
+                                @if ($note)
+                                    <p class="mt-0.5 text-xs text-gray-500">{{ $note }}</p>
+                                @endif
                             </td>
-                            <td class="min-w-64 px-4 py-3 text-center text-gray-700">{{ $log->detail }}</td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-4 py-12 text-center text-gray-500">
+                            <td colspan="{{ $showMenu ? 5 : 4 }}" class="px-4 py-12 text-center text-gray-500">
                                 @if ($filtered)
                                     Tidak ada catatan yang cocok dengan penyaringan ini.
+                                @elseif ($group === 'konten')
+                                    Belum ada perubahan konten yang tercatat.
+                                @elseif ($group === 'akses')
+                                    Belum ada catatan akses akun.
                                 @else
                                     Belum ada aktivitas yang tercatat.
                                 @endif
