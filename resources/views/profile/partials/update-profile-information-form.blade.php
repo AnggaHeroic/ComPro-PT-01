@@ -4,7 +4,7 @@
         <p class="mt-1 text-sm text-gray-500">Perbarui nama dan alamat email akun admin.</p>
     </header>
 
-    <form method="post" action="{{ route('admin.profile.update') }}" class="mt-6 space-y-5">
+    <form method="post" action="{{ route('admin.profile.update') }}" class="mt-6 space-y-5" data-unsaved-guard {{ collect($errors->getBags())->contains(fn ($bag) => $bag->any()) ? 'data-unsaved-dirty' : '' }}>
         @csrf
         @method('patch')
 

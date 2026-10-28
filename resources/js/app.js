@@ -1,4 +1,5 @@
 import Alpine from 'alpinejs';
+import { setupUnsavedGuard } from './unsaved-guard';
 window.Alpine = Alpine;
 Alpine.data('documentationLightbox', (images = []) => ({
     images,
@@ -938,6 +939,7 @@ Alpine.data('idleGuard', ({ timeout, warning, pingUrl, warningUrl, logoutUrl, lo
             const response = await fetch(logoutUrl, { method: 'POST', headers: this.headers() });
 
             if (response.redirected) {
+                window.dispatchEvent(new Event('admin:allow-leave'));
                 window.location.href = response.url;
 
                 return;
@@ -955,8 +957,10 @@ Alpine.data('idleGuard', ({ timeout, warning, pingUrl, warningUrl, logoutUrl, lo
             }
 
             this.setFlag(false);
+            window.dispatchEvent(new Event('admin:allow-leave'));
             window.location.href = data.redirect ?? loginUrl;
         } catch {
+            window.dispatchEvent(new Event('admin:allow-leave'));
             window.location.href = loginUrl;
         }
     },
@@ -1078,5 +1082,7 @@ document.addEventListener(
     },
     true,
 );
+
+setupUnsavedGuard(Alpine);
 
 Alpine.start();

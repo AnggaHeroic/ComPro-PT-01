@@ -8,7 +8,7 @@
         <x-admin.back :href="route('admin.activities.index', array_filter(['category' => $activity->service_category_id]))" />
     </x-slot>
 
-    <form method="POST" action="{{ route('admin.activities.store') }}" enctype="multipart/form-data">
+    <form method="POST" action="{{ route('admin.activities.store') }}" enctype="multipart/form-data" data-unsaved-guard {{ collect($errors->getBags())->contains(fn ($bag) => $bag->any()) ? 'data-unsaved-dirty' : '' }}>
         @include('admin.activities._form')
     </form>
 </x-app-layout>

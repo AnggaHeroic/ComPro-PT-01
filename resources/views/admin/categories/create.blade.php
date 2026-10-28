@@ -8,7 +8,7 @@
         <x-admin.back :href="route('admin.categories.index')" />
     </x-slot>
 
-    <form method="POST" action="{{ route('admin.categories.store') }}" enctype="multipart/form-data">
+    <form method="POST" action="{{ route('admin.categories.store') }}" enctype="multipart/form-data" data-unsaved-guard {{ collect($errors->getBags())->contains(fn ($bag) => $bag->any()) ? 'data-unsaved-dirty' : '' }}>
         @include('admin.categories._form')
     </form>
 </x-app-layout>

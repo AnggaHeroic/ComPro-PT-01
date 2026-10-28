@@ -4,7 +4,7 @@
         <p class="mt-1 text-sm text-gray-500">Gunakan password yang panjang dan acak agar akun tetap aman.</p>
     </header>
 
-    <form method="post" action="{{ route('password.update') }}" class="mt-6 space-y-5">
+    <form method="post" action="{{ route('password.update') }}" class="mt-6 space-y-5" data-unsaved-guard {{ collect($errors->getBags())->contains(fn ($bag) => $bag->any()) ? 'data-unsaved-dirty' : '' }}>
         @csrf
         @method('put')
 
