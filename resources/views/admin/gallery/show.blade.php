@@ -21,7 +21,9 @@
     <x-slot name="actions">
         <x-secondary-button size="sm" :href="route('admin.activities.edit', $activity)">Edit aktivitas</x-secondary-button>
         @if ($publicUrl)
-            <x-secondary-button size="sm" :href="$publicUrl" target="_blank" rel="noopener">Lihat di website &nearr;</x-secondary-button>
+            <x-secondary-button size="sm" :href="$publicUrl" target="_blank" rel="noopener">Lihat di website
+                <x-admin.arrow direction="external" class="h-3.5 w-3.5" />
+            </x-secondary-button>
         @endif
         <x-admin.back :href="route('admin.gallery.index', ['category' => $activity->service_category_id])" />
     </x-slot>
@@ -32,6 +34,7 @@
             method="POST"
             action="{{ route('admin.gallery.store', $activity) }}"
             enctype="multipart/form-data"
+            data-unsaved-guard
             data-confirm-title="Unggah foto?"
             data-confirm-message="Foto yang dipilih akan ditambahkan ke galeri dan tampil di website."
             data-confirm-label="Ya, unggah"
@@ -138,7 +141,7 @@
                             class="group relative aspect-[4/3] cursor-zoom-in bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
                             title="Klik untuk pratinjau, seret untuk mengurutkan"
                         >
-                            <img src="{{ $image->image_url }}" alt="{{ $image->caption ?: 'Foto '.$loop->iteration }}" class="h-full w-full object-cover" loading="lazy" draggable="false" @click="openPhoto({{ $image->id }})">
+                            <img src="{{ $image->image_url }}" alt="{{ $image->caption ?: 'Foto '.$loop->iteration }}" class="absolute inset-0 h-full w-full object-cover" loading="lazy" draggable="false" @click="openPhoto({{ $image->id }})">
 
                             {{-- Ikon zoom saat hover (sama seperti dokumentasi di halaman publik) --}}
                             <span class="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/0 transition-colors duration-300 group-hover:bg-black/25">
@@ -159,7 +162,7 @@
                             </div>
                         </div>
 
-                        <div class="p-3" x-data="{ dirty: {{ $bag->any() ? 'true' : 'false' }}, fileName: '' }">
+                        <div class="mt-auto p-3" x-data="{ dirty: {{ $bag->any() ? 'true' : 'false' }}, fileName: '' }">
                             <form
                                 id="update-{{ $image->id }}"
                                 method="POST"
@@ -168,6 +171,8 @@
                                 data-confirm-label="Ya, simpan"
                                 action="{{ route('admin.gallery.update', [$activity, $image]) }}"
                                 enctype="multipart/form-data"
+                                data-unsaved-guard
+                                {{ $bag->any() ? 'data-unsaved-dirty' : '' }}
                             >
                                 @csrf
                                 @method('PATCH')
