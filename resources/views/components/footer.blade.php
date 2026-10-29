@@ -31,7 +31,7 @@
                 </a>
 
                 {{-- Description --}}
-                <p class="mt-6 max-w-md text-sm leading-7 text-slate-400">
+                <p class="mt-6 max-w-md text-sm leading-7 text-justify text-slate-400">
                     {{ $siteInfo('footer_description') }}
                 </p>
 
