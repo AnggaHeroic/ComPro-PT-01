@@ -1,11 +1,19 @@
-<footer class="border-t border-slate-800 bg-secondary-dark text-white">
+@php
+    // Footer menyesuaikan diri: <= 6 kategori satu kolom; 7-12 dua kolom;
+    // lebih dari 12 hanya 12 pertama + tautan ke semua bidang usaha.
+    $manyCategories = $navCategories->count() > 6;
+    $footerCategories = $navCategories->take(12);
+    $hiddenCategories = max(0, $navCategories->count() - 12);
+@endphp
+
+<footer{!! $siteInfo->mark('identity') !!} class="border-t border-slate-800 bg-secondary-dark text-white">
 
     {{-- Main Footer --}}
     <div class="container-site py-16 lg:py-20">
         <div class="grid gap-12 lg:grid-cols-12 lg:gap-16">
 
             {{-- Company + Contact --}}
-            <div class="lg:col-span-5">
+            <div @class(['lg:col-span-5' => ! $manyCategories, 'lg:col-span-4' => $manyCategories])>
 
                 {{-- Logo --}}
                 <a
@@ -15,18 +23,16 @@
                 >
                     <div class="rounded-lg bg-white px-3 py-2">
                         <img
-                            src="{{ asset('images/logo.png') }}"
-                            alt="PT. Putra Maju Sukses"
+                            src="{{ $siteInfo->image('company_logo') }}"
+                            alt="{{ $siteInfo('company_logo_alt') }}"
                             class="h-10 w-auto"
                         >
                     </div>
                 </a>
 
                 {{-- Description --}}
-                <p class="mt-6 max-w-md text-sm leading-7 text-slate-400">
-                    PT. Putra Maju Sukses merupakan perusahaan yang bergerak
-                    dalam berbagai bidang perdagangan dan layanan untuk
-                    memenuhi beragam kebutuhan pelanggan dan mitra bisnis.
+                <p class="mt-6 max-w-md text-sm leading-7 text-justify text-slate-400">
+                    {{ $siteInfo('footer_description') }}
                 </p>
 
                 {{-- Contact Information --}}
@@ -34,33 +40,33 @@
 
                     {{-- Phone --}}
                     <a
-                        href="tel:081130521216"
+                        href="{{ \App\Support\PageContents::telHref($siteInfo('contact_phone')) }}"
                         class="group flex items-center gap-3 text-sm text-slate-400 transition-colors hover:text-white"
                     >
                         <x-icons.phone
                             class="h-[18px] w-[18px] shrink-0 transition-colors group-hover:text-primary"
                         />
                         <span>
-                            081130521216
+                            {{ $siteInfo('contact_phone') }}
                         </span>
                     </a>
 
                     {{-- Email --}}
                     <a
-                        href="mailto:sputramaju@gmail.com"
+                        href="mailto:{{ $siteInfo('contact_email') }}"
                         class="group flex items-center gap-3 text-sm text-slate-400 transition-colors hover:text-white"
                     >
                         <x-icons.mail
                             class="h-[18px] w-[18px] shrink-0 transition-colors group-hover:text-primary"
                         />
                         <span>
-                            sputramaju@gmail.com
+                            {{ $siteInfo('contact_email') }}
                         </span>
                     </a>
 
                     {{-- Address --}}
                     <a
-                        href="https://www.google.com/maps/search/?api=1&query={{ urlencode('Jalan Tukad Batanghari Nomor 6, Panjer, Denpasar Selatan, Kota Denpasar') }}"
+                        href="{{ \App\Support\PageContents::mapsSearchUrl($siteInfo('contact_address')) }}"
                         target="_blank"
                         rel="noopener noreferrer"
                         class="group flex items-start gap-3 text-sm text-slate-400 transition-colors hover:text-white"
@@ -70,11 +76,7 @@
                             class="mt-0.5 h-[18px] w-[18px] shrink-0 transition-colors group-hover:text-primary"
                         />
                         <p class="max-w-md leading-6">
-                            Jalan Tukad Batanghari No. 6,
-                            Panjer, Denpasar Selatan,
-                            <span class="block">
-                                Kota Denpasar
-                            </span>
+                            {{ $siteInfo('contact_address') }}
                         </p>
                     </a>
                 </div>
@@ -122,53 +124,48 @@
             </div>
 
             {{-- Business Categories --}}
-            <div class="lg:col-span-4">
+            <div @class(['lg:col-span-4' => ! $manyCategories, 'lg:col-span-5' => $manyCategories])>
                 <h3 class="font-display text-xs font-semibold uppercase tracking-[0.16em] text-white">
                     Bidang Usaha
                 </h3>
 
-                <ul class="mt-6 space-y-4">
-                    <li>
-                        <a
-                            href="{{ route('services.category', 'technology-digital') }}"
-                            class="font-body text-sm text-slate-400 transition hover:text-white"
-                        >
-                            Technology & Digital
-                        </a>
-                    </li>
-                    <li>
-                        <a
-                            href="{{ route('services.category', 'home-lifestyle') }}"
-                            class="font-body text-sm text-slate-400 transition hover:text-white"
-                        >
-                            Home & Lifestyle
-                        </a>
-                    </li>
-                    <li>
-                        <a
-                            href="{{ route('services.category', 'sports-music') }}"
-                            class="font-body text-sm text-slate-400 transition hover:text-white"
-                        >
-                            Sports & Music
-                        </a>
-                    </li>
-                    <li>
-                        <a
-                            href="{{ route('services.category', 'industrial-machinery') }}"
-                            class="font-body text-sm text-slate-400 transition hover:text-white"
-                        >
-                            Industrial & Machinery
-                        </a>
-                    </li>
-                    <li>
-                        <a
-                            href="{{ route('services.category', 'construction-supplies') }}"
-                            class="font-body text-sm text-slate-400 transition hover:text-white"
-                        >
-                            Construction & Supplies
-                        </a>
-                    </li>
+                {{-- <= 6: satu kolom polos. > 6: dua kolom yang dibaca turun ke bawah, bernomor, dengan garis pemisah halus. --}}
+                <ul @class([
+                    'mt-6',
+                    'space-y-4' => ! $manyCategories,
+                    'columns-1 gap-x-10 sm:columns-2 [column-rule:1px_solid_rgb(255_255_255/0.08)]' => $manyCategories,
+                ])>
+                    @foreach ($footerCategories as $navCategory)
+                        <li @if ($manyCategories) class="break-inside-avoid pb-3.5" @endif>
+                            <a
+                                href="{{ route('services.category', $navCategory->slug) }}"
+                                @class([
+                                    'font-body text-sm text-slate-400 transition hover:text-white',
+                                    'group flex items-baseline gap-3 leading-snug' => $manyCategories,
+                                ])
+                            >
+                                @if ($manyCategories)
+                                    <span class="font-display w-5 shrink-0 text-[11px] font-bold text-slate-500 transition-colors group-hover:text-primary" aria-hidden="true">
+                                        {{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}
+                                    </span>
+                                    <span>{{ $navCategory->name }}</span>
+                                @else
+                                    {{ $navCategory->name }}
+                                @endif
+                            </a>
+                        </li>
+                    @endforeach
                 </ul>
+
+                @if ($hiddenCategories > 0)
+                    <a
+                        href="{{ route('services') }}"
+                        class="font-display group mt-4 inline-flex items-center gap-2 border border-white/20 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:border-primary"
+                    >
+                        Lihat semua {{ $navCategories->count() }} bidang usaha
+                        <span class="transition-transform duration-200 group-hover:translate-x-1" aria-hidden="true">→</span>
+                    </a>
+                @endif
             </div>
         </div>
     </div>

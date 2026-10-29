@@ -1,0 +1,591 @@
+<?php
+
+namespace App\Support;
+
+use App\Models\PageContent;
+use App\Models\PageContentDefault;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\HtmlString;
+
+/**
+ * Daftar teks halaman yang boleh diubah admin beserta teks bawaannya.
+ *
+ * Tata letak tetap ada di file Blade; admin hanya mengganti isi teks. Tiap
+ * halaman publik memanggil objek ini sebagai $content('kunci') dan memakai
+ * teks bawaan bila admin belum mengubahnya.
+ */
+class PageContents
+{
+    /** @var array<string, string>|null */
+    private ?array $stored = null;
+
+    /** Setelan default kustom yang ditetapkan admin (lapisan di antara isi tersimpan dan teks bawaan sistem). @var array<string, string>|null */
+    private ?array $defaults = null;
+
+    /** Nilai yang belum disimpan, hanya dipakai saat pratinjau bagian dirender (tidak pernah ke database). @var array<string, array<string, string>> */
+    private static array $overrides = [];
+
+    private static bool $previewing = false;
+
+    public function __construct(private readonly string $page)
+    {
+    }
+
+    public static function for(string $page): self
+    {
+        return new self($page);
+    }
+
+    /**
+     * @return array<string, array<string, mixed>>
+     */
+    public static function definitions(): array
+    {
+        return [
+            'home' => [
+                'label' => 'Beranda',
+                'description' => 'Teks pada halaman utama website.',
+                'sections' => [
+                    'hero' => [
+                        'label' => 'Bagian utama',
+                        'description' => 'Bagian paling atas halaman. Warnai kata pada judul dengan tombol Warnai merah.',
+                        'fields' => [
+                            'hero_eyebrow' => ['label' => 'Teks kecil di atas judul', 'default' => 'PT. Putra Maju Sukses', 'max' => 80],
+                            'hero_title' => ['label' => 'Judul', 'type' => 'title', 'default' => "Produk dan *Solusi* untuk Berbagai Kebutuhan Bisnis.", 'max' => 200],
+                            'hero_description' => ['label' => 'Deskripsi', 'default' => 'PT. Putra Maju Sukses bergerak dalam berbagai bidang perdagangan dan layanan, mencakup teknologi informasi, kebutuhan rumah tangga, olahraga, peralatan industri, konstruksi, dan berbagai kebutuhan lainnya.', 'type' => 'textarea', 'max' => 400],
+                            'hero_button_primary' => ['label' => 'Tombol utama', 'default' => 'Tentang Kami', 'max' => 30, 'hint' => 'Tautan tombol tetap ke halaman Tentang Kami.'],
+                            'hero_button_secondary' => ['label' => 'Tombol kedua', 'default' => 'Layanan & Jasa', 'max' => 30, 'hint' => 'Tautan tombol tetap ke halaman Layanan & Jasa.'],
+                        ],
+                    ],
+                    'intro' => [
+                        'label' => 'Tentang perusahaan',
+                        'fields' => [
+                            'intro_label' => ['label' => 'Label kecil', 'default' => 'Tentang Perusahaan', 'max' => 50],
+                            'intro_title' => ['label' => 'Judul', 'type' => 'title', 'default' => "Beragam bidang.\n*Satu perusahaan.*", 'max' => 120],
+                            'intro_description' => ['label' => 'Deskripsi', 'default' => 'PT. Putra Maju Sukses merupakan perusahaan yang bergerak dalam berbagai bidang perdagangan dan layanan, mulai dari kebutuhan rumah tangga, teknologi informasi, peralatan industri, olahraga, hingga berbagai kebutuhan lainnya.', 'type' => 'textarea', 'max' => 500],
+                            'intro_link' => ['label' => 'Tautan', 'default' => 'Mengenal perusahaan', 'max' => 40, 'hint' => 'Mengarah ke halaman Tentang Kami.'],
+                            'intro_stat_number' => ['label' => 'Angka statistik', 'default' => '14', 'max' => 10],
+                            'intro_stat_label' => ['label' => 'Judul statistik', 'default' => 'Bidang usaha', 'max' => 40],
+                            'intro_stat_description' => ['label' => 'Keterangan statistik', 'default' => 'dalam berbagai sektor perdagangan dan layanan.', 'max' => 100],
+                        ],
+                    ],
+                    'services' => [
+                        'label' => 'Bidang usaha',
+                        'description' => 'Kartu kategori di bawah judul ini diatur lewat menu Kategori.',
+                        'fields' => [
+                            'services_label' => ['label' => 'Label kecil', 'default' => 'Bidang Usaha', 'max' => 50],
+                            'services_title' => ['label' => 'Judul', 'type' => 'title', 'default' => "Beragam produk.\n*Beragam kebutuhan.*", 'max' => 120],
+                            'services_description' => ['label' => 'Deskripsi', 'default' => 'PT. Putra Maju Sukses menyediakan berbagai produk dan layanan untuk mendukung kebutuhan perdagangan, teknologi, industri, dan perlengkapan lainnya.', 'type' => 'textarea', 'max' => 400],
+                            'services_link_services' => ['label' => 'Tautan pertama', 'default' => 'Lihat seluruh layanan', 'max' => 40, 'hint' => 'Mengarah ke halaman Layanan & Jasa.'],
+                            'services_link_contact' => ['label' => 'Tautan kedua', 'default' => 'Hubungi kami', 'max' => 40, 'hint' => 'Mengarah ke halaman Kontak Kami.'],
+                        ],
+                    ],
+                    'cta' => [
+                        'label' => 'CTA',
+                        'description' => 'Telepon, email, dan alamat pada bagian ini belum bisa diubah dari sini.',
+                        'fields' => [
+                            'cta_label' => ['label' => 'Label kecil', 'default' => 'Terhubung Dengan Kami', 'max' => 50],
+                            'cta_title' => ['label' => 'Judul', 'type' => 'title', 'default' => "Punya kebutuhan bisnis? *Mari berdiskusi.*", 'max' => 140],
+                            'cta_description' => ['label' => 'Deskripsi', 'default' => 'Hubungi PT. Putra Maju Sukses untuk mendapatkan informasi mengenai produk, layanan, dan kebutuhan bisnis Anda.', 'type' => 'textarea', 'max' => 300],
+                            'cta_button' => ['label' => 'Tombol', 'default' => 'Hubungi Kami', 'max' => 30, 'hint' => 'Mengarah ke halaman Kontak Kami.'],
+                        ],
+                    ],
+                    'seo' => [
+                        'label' => 'Mesin pencari',
+                        'fields' => [
+                            'seo_description' => ['label' => 'Deskripsi singkat untuk Google', 'default' => 'PT. Putra Maju Sukses merupakan perusahaan yang bergerak dalam berbagai bidang perdagangan dan layanan.', 'type' => 'textarea', 'max' => 200, 'hint' => 'Tidak tampil di halaman; dipakai mesin pencari.'],
+                        ],
+                    ],
+                ],
+            ],
+            'about' => [
+                'label' => 'Tentang Kami',
+                'description' => 'Teks dan gambar pada halaman Tentang Kami.',
+                'sections' => [
+                    'hero' => [
+                        'label' => 'Bagian utama',
+                        'description' => 'Warnai kata pada judul dengan tombol Warnai merah; Enter untuk pindah baris.',
+                        'fields' => [
+                            'hero_label' => ['label' => 'Label kecil', 'default' => 'Tentang Kami', 'max' => 50],
+                            'hero_title' => ['label' => 'Judul', 'type' => 'title', 'default' => "Mengenal\n*PT. Putra Maju Sukses*\nlebih dekat.", 'max' => 140],
+                            'hero_description' => ['label' => 'Deskripsi', 'default' => 'PT. Putra Maju Sukses merupakan perusahaan yang bergerak dalam berbagai bidang perdagangan dan layanan untuk memenuhi kebutuhan pelanggan serta mitra bisnis.', 'type' => 'textarea', 'max' => 400],
+                            'hero_image' => ['label' => 'Foto', 'type' => 'image', 'default' => 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1200&q=85', 'hint' => 'Tampil dengan rasio 4:3; sisi gambar dapat terpotong.'],
+                            'hero_image_alt' => ['label' => 'Keterangan foto (untuk pembaca layar)', 'default' => 'Lingkungan kerja perusahaan', 'max' => 120],
+                            'hero_caption_left' => ['label' => 'Teks bawah foto: kiri', 'default' => 'PT. Putra Maju Sukses', 'max' => 40],
+                            'hero_caption_right' => ['label' => 'Teks bawah foto: kanan', 'default' => 'Denpasar, Bali', 'max' => 40],
+                        ],
+                    ],
+                    'profile' => [
+                        'label' => 'Mengenal perusahaan',
+                        'fields' => [
+                            'profile_label' => ['label' => 'Label kecil', 'default' => 'Mengenal Perusahaan', 'max' => 50],
+                            'profile_title' => ['label' => 'Judul', 'type' => 'title', 'default' => "Beragam bidang,\n*satu perusahaan*\nyang terus berkembang.", 'max' => 150],
+                            'profile_paragraph_1' => ['label' => 'Paragraf 1', 'default' => 'PT. Putra Maju Sukses merupakan perusahaan yang bergerak dalam berbagai bidang perdagangan dan layanan untuk memenuhi kebutuhan pelanggan serta mitra bisnis.', 'type' => 'textarea', 'max' => 800],
+                            'profile_paragraph_2' => ['label' => 'Paragraf 2', 'default' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer tincidunt, justo vitae consequat efficitur, neque erat posuere lorem, sed tincidunt erat mauris vitae libero.', 'type' => 'textarea', 'max' => 800, 'optional' => true, 'hint' => 'Boleh dikosongkan; paragraf tidak akan tampil.'],
+                            'profile_paragraph_3' => ['label' => 'Paragraf 3', 'default' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse potenti. Praesent tincidunt, mauris non consectetur interdum, erat neque consequat libero.', 'type' => 'textarea', 'max' => 800, 'optional' => true, 'hint' => 'Boleh dikosongkan; paragraf tidak akan tampil.'],
+                            'profile_paragraph_4' => ['label' => 'Paragraf 4', 'default' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur tincidunt, mauris vitae consequat efficitur, neque libero posuere erat, sed tincidunt vestibulum sapien.', 'type' => 'textarea', 'max' => 800, 'optional' => true, 'hint' => 'Boleh dikosongkan; paragraf tidak akan tampil.'],
+                            'profile_image' => ['label' => 'Foto', 'type' => 'image', 'default' => 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1200&q=85'],
+                            'profile_image_alt' => ['label' => 'Keterangan foto (untuk pembaca layar)', 'default' => 'Lingkungan perusahaan', 'max' => 120],
+                        ],
+                    ],
+                    'facts' => [
+                        'label' => 'Data perusahaan',
+                        'description' => 'Ringkasan di bawah foto. Setiap data otomatis berisi judul dan isi.',
+                        'fields' => [
+                            'facts_items' => ['label' => 'Daftar data', 'type' => 'cards', 'item_label' => 'Data', 'single_line' => true, 'title_placeholder' => 'Judul, mis. Established', 'text_placeholder' => 'Isi, mis. 2015', 'default' => [
+                                ['title' => 'Established', 'text' => 'XXXX'],
+                                ['title' => 'Headquarters', 'text' => 'Denpasar, Bali, Indonesia'],
+                                ['title' => 'Business Activities', 'text' => '14 bidang usaha'],
+                                ['title' => 'Business Scope', 'text' => 'Perdagangan dan layanan'],
+                            ], 'max_title' => 40, 'max_text' => 100, 'min_items' => 1, 'max_items' => 8, 'hint' => 'Tambah, hapus, atau ubah urutan data. Tampilan kotak menyesuaikan jumlahnya.'],
+                        ],
+                    ],
+                    'direction' => [
+                        'label' => 'Visi & misi',
+                        'fields' => [
+                            'direction_label' => ['label' => 'Label bagian', 'default' => 'Visi & Misi', 'max' => 40],
+                            'direction_tagline' => ['label' => 'Kalimat pengantar', 'type' => 'title', 'default' => "Arah yang menjadi dasar *perjalanan perusahaan.*", 'max' => 160],
+                            'vision_label' => ['label' => 'Visi: label', 'default' => 'Visi Perusahaan', 'max' => 40],
+                            'vision_title' => ['label' => 'Visi: judul', 'default' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.', 'type' => 'textarea', 'max' => 200],
+                            'vision_text' => ['label' => 'Visi: uraian', 'default' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer tincidunt, justo vitae consequat efficitur, neque erat posuere lorem, sed tincidunt erat mauris vitae libero.', 'type' => 'textarea', 'max' => 500],
+                            'mission_label' => ['label' => 'Misi: label', 'default' => 'Misi Utama', 'max' => 40],
+                            'mission_items' => ['label' => 'Daftar misi', 'type' => 'list', 'item_label' => 'Misi', 'default' => [
+                                'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer tincidunt, justo vitae consequat efficitur.',
+                                'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse potenti. Praesent tincidunt mauris non consectetur interdum.',
+                                'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur tincidunt, mauris vitae consequat efficitur.',
+                            ], 'max' => 300, 'min_items' => 1, 'max_items' => 8, 'hint' => 'Tambah, hapus, atau ubah urutan misi. Tampilan kartu menyesuaikan jumlahnya.'],
+                        ],
+                    ],
+                    'objectives' => [
+                        'label' => 'Tujuan perusahaan',
+                        'fields' => [
+                            'objectives_label' => ['label' => 'Label kecil', 'default' => 'Tujuan Perusahaan', 'max' => 40],
+                            'objectives_title' => ['label' => 'Judul', 'type' => 'title', 'default' => "Membangun usaha yang *bernilai dan berkelanjutan.*", 'max' => 140],
+                            'objective_items' => ['label' => 'Daftar tujuan', 'type' => 'cards', 'item_label' => 'Tujuan', 'default' => [
+                                ['title' => 'Memenuhi Kebutuhan', 'text' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer tincidunt, justo vitae consequat efficitur.'],
+                                ['title' => 'Memberikan Layanan', 'text' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse potenti. Praesent tincidunt mauris non consectetur interdum.'],
+                                ['title' => 'Membangun Hubungan', 'text' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur tincidunt, mauris vitae consequat efficitur.'],
+                                ['title' => 'Mengembangkan Usaha', 'text' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vitae neque at libero facilisis consequat.'],
+                                ['title' => 'Menjaga Kualitas', 'text' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer tincidunt, justo vitae consequat efficitur.'],
+                                ['title' => 'Membuka Peluang', 'text' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus vitae augue sed neque malesuada consequat.'],
+                            ], 'max_title' => 40, 'max_text' => 250, 'min_items' => 1, 'max_items' => 12, 'hint' => 'Setiap tujuan tampil sebagai kartu bergaris merah di atasnya. Kartu baru otomatis bertambah ke bawah.'],
+                        ],
+                    ],
+                    'cta' => [
+                        'label' => 'CTA',
+                        'fields' => [
+                            'cta_label' => ['label' => 'Label kecil', 'default' => 'Lanjutkan Eksplorasi', 'max' => 40],
+                            'cta_title' => ['label' => 'Judul', 'default' => 'Kenali bidang usaha kami.', 'max' => 80],
+                            'cta_description' => ['label' => 'Deskripsi', 'default' => 'Lihat berbagai bidang usaha dan layanan PT. Putra Maju Sukses.', 'type' => 'textarea', 'max' => 200],
+                            'cta_button' => ['label' => 'Tombol', 'default' => 'Lihat Layanan', 'max' => 30, 'hint' => 'Mengarah ke halaman Layanan & Jasa.'],
+                        ],
+                    ],
+                    'seo' => [
+                        'label' => 'Mesin pencari',
+                        'fields' => [
+                            'seo_description' => ['label' => 'Deskripsi singkat untuk Google', 'default' => 'Mengenal PT. Putra Maju Sukses, profil perusahaan, perjalanan, visi, misi, dan informasi perusahaan.', 'type' => 'textarea', 'max' => 200, 'hint' => 'Tidak tampil di halaman; dipakai mesin pencari.'],
+                        ],
+                    ],
+                ],
+            ],
+            'services' => [
+                'label' => 'Layanan & Jasa',
+                'description' => 'Teks pada halaman utama Layanan & Jasa. Daftar kategori dan aktivitas usaha dikelola terpisah lewat menu Kategori dan Aktivitas Usaha.',
+                'sections' => [
+                    'hero' => [
+                        'label' => 'Bagian utama',
+                        'description' => 'Warnai kata pada judul dengan tombol Warnai merah; Enter untuk pindah baris.',
+                        'fields' => [
+                            'hero_label' => ['label' => 'Label kecil', 'default' => 'Layanan & Jasa', 'max' => 50],
+                            'hero_title' => ['label' => 'Judul', 'type' => 'title', 'default' => "Beragam bidang usaha.\n*Satu cakupan layanan.*", 'max' => 120],
+                            'hero_description' => ['label' => 'Deskripsi', 'default' => 'PT. Putra Maju Sukses memiliki berbagai bidang usaha yang mencakup kebutuhan teknologi, rumah tangga, olahraga, industri, konstruksi, dan berbagai kebutuhan lainnya.', 'type' => 'textarea', 'max' => 400],
+                        ],
+                    ],
+                    'categories' => [
+                        'label' => 'Daftar bidang usaha',
+                        'description' => 'Kartu di bawah judul ini berasal dari menu Kategori (nama, deskripsi, gambar, dan urutan diatur di sana).',
+                        'fields' => [
+                            'categories_label' => ['label' => 'Label kecil', 'default' => 'Bidang Usaha', 'max' => 50],
+                            'categories_title' => ['label' => 'Judul', 'default' => 'Pilih bidang yang ingin Anda lihat.', 'max' => 100],
+                            'categories_description' => ['label' => 'Deskripsi', 'default' => 'Jelajahi berbagai bidang usaha dan layanan yang tersedia di PT. Putra Maju Sukses.', 'type' => 'textarea', 'max' => 250],
+                            'categories_card_link' => ['label' => 'Teks tautan pada setiap kartu', 'default' => 'Lihat layanan', 'max' => 30, 'hint' => 'Sama untuk semua kartu; mengarah ke halaman kategori masing-masing.'],
+                        ],
+                    ],
+                    'cta' => [
+                        'label' => 'CTA',
+                        'fields' => [
+                            'cta_label' => ['label' => 'Label kecil', 'default' => 'Hubungi Kami', 'max' => 50],
+                            'cta_title' => ['label' => 'Judul', 'type' => 'title', 'default' => 'Kenali layanan kami *lebih lanjut.*', 'max' => 100],
+                            'cta_description' => ['label' => 'Deskripsi', 'default' => 'Hubungi PT. Putra Maju Sukses untuk mengetahui lebih lanjut mengenai bidang usaha dan layanan yang tersedia.', 'type' => 'textarea', 'max' => 250],
+                            'cta_button' => ['label' => 'Tombol', 'default' => 'Hubungi Kami', 'max' => 30, 'hint' => 'Mengarah ke halaman Kontak Kami.'],
+                        ],
+                    ],
+                    'seo' => [
+                        'label' => 'Mesin pencari',
+                        'fields' => [
+                            'seo_description' => ['label' => 'Deskripsi singkat untuk Google', 'default' => 'PT. Putra Maju Sukses merupakan perusahaan yang bergerak dalam berbagai bidang perdagangan dan layanan.', 'type' => 'textarea', 'max' => 200, 'hint' => 'Tidak tampil di halaman; dipakai mesin pencari.'],
+                        ],
+                    ],
+                ],
+            ],
+            'contact' => [
+                'label' => 'Kontak Kami',
+                'description' => 'Teks, foto, data kontak, logo, dan deskripsi footer. Telepon, email, dan alamat juga tampil di Beranda dan footer; logo tampil di navbar dan footer.',
+                'sections' => [
+                    'hero' => [
+                        'label' => 'Bagian utama',
+                        'description' => 'Warnai kata pada judul dengan tombol Warnai merah.',
+                        'fields' => [
+                            'hero_label' => ['label' => 'Label kecil', 'default' => 'Kontak Kami', 'max' => 50],
+                            'hero_title' => ['label' => 'Judul', 'type' => 'title', 'default' => 'Mari terhubung dengan *PT. Putra Maju Sukses.*', 'max' => 140],
+                            'hero_description' => ['label' => 'Deskripsi', 'default' => 'Hubungi kami untuk mendapatkan informasi lebih lanjut mengenai bidang usaha, produk, dan layanan yang tersedia.', 'type' => 'textarea', 'max' => 300],
+                            'hero_image' => ['label' => 'Foto', 'type' => 'image', 'default' => 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1600&q=80', 'hint' => 'Dipakai di bagian utama (latar di desktop, kotak foto di mobile) dan sebagai latar bagian "Ada pertanyaan?" di bawah.'],
+                            'hero_image_alt' => ['label' => 'Keterangan foto (untuk pembaca layar)', 'default' => 'Interior ruang kantor modern', 'max' => 120],
+                        ],
+                    ],
+                    'info' => [
+                        'label' => 'Informasi kontak',
+                        'description' => 'Email, telepon, dan alamat ini juga tampil di bagian kontak halaman Beranda dan di footer.',
+                        'fields' => [
+                            'info_label' => ['label' => 'Label kecil', 'default' => 'Informasi Kontak', 'max' => 50],
+                            'info_title' => ['label' => 'Judul', 'default' => 'Terhubung dengan kami.', 'max' => 80],
+                            'contact_email' => ['label' => 'Email', 'default' => 'sputramaju@gmail.com', 'max' => 120, 'rules' => ['email:rfc']],
+                            'email_description' => ['label' => 'Keterangan email', 'default' => 'Kirim email untuk pertanyaan umum dan informasi bisnis.', 'type' => 'textarea', 'max' => 160],
+                            'contact_phone' => ['label' => 'Telepon', 'default' => '081130521216', 'max' => 30, 'rules' => ['regex:/^[0-9+\-\s()]+$/'], 'hint' => 'Angka saja atau dengan tanda + - ( ). Tombol telepon memakai nomor ini.'],
+                            'phone_description' => ['label' => 'Keterangan telepon', 'default' => 'Hubungi kami pada jam operasional untuk respon lebih cepat.', 'type' => 'textarea', 'max' => 160],
+                            'contact_address' => ['label' => 'Alamat', 'default' => 'Jalan Tukad Batanghari Nomor 6, Panjer, Denpasar Selatan, Kota Denpasar', 'type' => 'textarea', 'max' => 250, 'hint' => 'Dipakai juga untuk tautan dan peta Google Maps.'],
+                            'address_description' => ['label' => 'Keterangan alamat', 'default' => 'Kunjungi kantor kami untuk diskusi lebih lanjut.', 'type' => 'textarea', 'max' => 160],
+                        ],
+                    ],
+                    'identity' => [
+                        'label' => 'Identitas perusahaan',
+                        'description' => 'Logo tampil di navbar, footer, panel admin, halaman login, dan sebagai favicon. Deskripsi singkat tampil di footer. Email, telepon, dan alamat di atas juga dipakai footer.',
+                        'fields' => [
+                            'company_logo' => ['label' => 'Logo', 'type' => 'image', 'default' => '/images/logo.png', 'hint' => 'Dipakai di navbar, footer, panel admin, halaman login, dan sebagai ikon tab browser (favicon). Tinggi tetap, lebar menyesuaikan. Gunakan logo berlatar transparan atau putih, karena di footer logo tampil di dalam kotak putih.'],
+                            'company_logo_alt' => ['label' => 'Nama perusahaan pada logo (untuk pembaca layar)', 'default' => 'PT. Putra Maju Sukses', 'max' => 80],
+                            'footer_description' => ['label' => 'Deskripsi singkat di bawah logo footer', 'default' => 'PT. Putra Maju Sukses merupakan perusahaan yang bergerak dalam berbagai bidang perdagangan dan layanan untuk memenuhi beragam kebutuhan pelanggan dan mitra bisnis.', 'type' => 'textarea', 'max' => 300],
+                        ],
+                    ],
+                    'location' => [
+                        'label' => 'Lokasi',
+                        'fields' => [
+                            'location_label' => ['label' => 'Label kecil', 'default' => 'Lokasi Kami', 'max' => 50],
+                            'location_title' => ['label' => 'Judul', 'default' => 'Temukan kami di sini.', 'max' => 80],
+                            'location_map_query' => ['label' => 'Kata kunci peta (opsional)', 'default' => '', 'max' => 250, 'optional' => true, 'hint' => 'Kosongkan untuk memakai alamat di atas. Isi bila peta kurang tepat, misalnya nama tempat atau koordinat.'],
+                        ],
+                    ],
+                    'cta' => [
+                        'label' => 'CTA',
+                        'fields' => [
+                            'cta_label' => ['label' => 'Label kecil', 'default' => 'Ada Pertanyaan?', 'max' => 50],
+                            'cta_title' => ['label' => 'Judul', 'default' => 'Kami siap membantu Anda.', 'max' => 80],
+                            'cta_description' => ['label' => 'Deskripsi', 'default' => 'Tim kami siap memberikan informasi lebih lanjut mengenai produk, layanan, dan peluang kerja sama dengan PT. Putra Maju Sukses.', 'type' => 'textarea', 'max' => 300],
+                            'cta_button' => ['label' => 'Tombol', 'default' => 'Kirim Email', 'max' => 30, 'hint' => 'Tombol membuka email ke alamat email di atas.'],
+                        ],
+                    ],
+                    'seo' => [
+                        'label' => 'Mesin pencari',
+                        'fields' => [
+                            'seo_description' => ['label' => 'Deskripsi singkat untuk Google', 'default' => 'PT. Putra Maju Sukses merupakan perusahaan yang bergerak dalam berbagai bidang perdagangan dan layanan.', 'type' => 'textarea', 'max' => 200, 'hint' => 'Tidak tampil di halaman; dipakai mesin pencari.'],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * Mulai mode pratinjau bagian: isian form yang belum disimpan dipakai sementara untuk
+     * merender halaman publik. Panggil endPreview() setelah selesai.
+     *
+     * @param  array<string, mixed>  $submitted  isian content[...] dari form admin
+     */
+    public static function beginPreview(string $page, array $submitted): void
+    {
+        $values = [];
+
+        foreach (self::fields($page) as $key => $field) {
+            $type = $field['type'] ?? 'text';
+
+            if ($type === 'image' || ! array_key_exists($key, $submitted)) {
+                continue;
+            }
+
+            $raw = $submitted[$key];
+
+            if ($type === 'list' && is_array($raw)) {
+                $items = array_values(array_filter(
+                    array_map(fn ($item) => is_string($item) ? trim($item) : '', $raw),
+                    fn (string $item) => $item !== '',
+                ));
+                $value = $items === [] ? null : json_encode($items, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            } elseif ($type === 'cards' && is_array($raw)) {
+                $cards = [];
+                foreach ($raw as $card) {
+                    $title = is_array($card) ? trim((string) ($card['title'] ?? '')) : '';
+                    $text = is_array($card) ? trim((string) ($card['text'] ?? '')) : '';
+
+                    if ($title !== '' || $text !== '') {
+                        $cards[] = ['title' => $title, 'text' => $text];
+                    }
+                }
+                $value = $cards === [] ? null : json_encode($cards, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            } elseif (is_string($raw)) {
+                $value = trim(str_replace(["\r\n", "\r"], "\n", $raw));
+                $value = mb_substr($value, 0, (int) ($field['max'] ?? 500));
+
+                // Kolom wajib yang sedang dikosongkan: pakai nilai tersimpan agar pratinjau tidak rusak.
+                if ($value === '' && ! ($field['optional'] ?? false)) {
+                    $value = null;
+                }
+            } else {
+                $value = null;
+            }
+
+            if ($value !== null) {
+                $values[$key] = $value;
+            }
+        }
+
+        self::$overrides[$page] = $values;
+        self::$previewing = true;
+    }
+
+    public static function endPreview(): void
+    {
+        self::$overrides = [];
+        self::$previewing = false;
+    }
+
+    public static function previewing(): bool
+    {
+        return self::$previewing;
+    }
+
+    /** Atribut penanda bagian; kosong di halaman publik biasa, hanya terisi saat pratinjau bagian. */
+    public function mark(string $section): HtmlString
+    {
+        if (! self::$previewing || ! isset(self::definitions()[$this->page]['sections'][$section])) {
+            return new HtmlString('');
+        }
+
+        return new HtmlString(' data-cms-section="'.e($section).'"');
+    }
+
+    /** Tautan telepon: hanya angka dan tanda + yang dipertahankan. */
+    public static function telHref(string $phone): string
+    {
+        return 'tel:'.preg_replace('/[^0-9+]/', '', $phone);
+    }
+
+    public static function mapsSearchUrl(string $query): string
+    {
+        return 'https://www.google.com/maps/search/?api=1&query='.rawurlencode($query);
+    }
+
+    public static function mapsEmbedUrl(string $query): string
+    {
+        return 'https://www.google.com/maps?q='.rawurlencode($query).'&output=embed';
+    }
+
+    public static function has(string $page): bool
+    {
+        return array_key_exists($page, self::definitions());
+    }
+
+    /**
+     * Semua kolom satu halaman dalam bentuk datar: kunci => definisi.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public static function fields(string $page): array
+    {
+        $fields = [];
+        foreach (self::definitions()[$page]['sections'] ?? [] as $section) {
+            $fields += $section['fields'];
+        }
+
+        return $fields;
+    }
+
+    /** Nilai yang dipakai: isi tersimpan, lalu setelan default kustom, lalu teks bawaan sistem. */
+    public function get(string $key): string
+    {
+        $this->load();
+
+        // Kolom opsional boleh disimpan kosong (artinya disembunyikan); selebihnya kosong = default.
+        if (array_key_exists($key, $this->stored)) {
+            return (string) $this->stored[$key];
+        }
+
+        $defaults = $this->loadDefaults();
+
+        return array_key_exists($key, $defaults)
+            ? (string) $defaults[$key]
+            : (string) (self::fields($this->page)[$key]['default'] ?? '');
+    }
+
+    public function list(string $key): array
+    {
+        $items = $this->decoded($key);
+
+        return is_array($items) && $items !== []
+            ? array_values(array_filter($items, 'is_string'))
+            : (array) (self::fields($this->page)[$key]['default'] ?? []);
+    }
+
+    public function cards(string $key): array
+    {
+        $items = $this->decoded($key);
+
+        if (is_array($items) && $items !== []) {
+            $cards = [];
+            foreach ($items as $item) {
+                if (is_array($item) && is_string($item['title'] ?? null) && is_string($item['text'] ?? null)) {
+                    $cards[] = ['title' => $item['title'], 'text' => $item['text']];
+                }
+            }
+
+            if ($cards !== []) {
+                return $cards;
+            }
+        }
+
+        return (array) (self::fields($this->page)[$key]['default'] ?? []);
+    }
+
+    /**
+     * Teks judul dengan penanda warna: *kata* tampil dengan $class, baris baru menjadi <br>.
+     * Teks di-escape lebih dulu, jadi HTML dari admin tidak pernah dieksekusi.
+     */
+    public function rich(string $key, string $class = 'text-primary'): HtmlString
+    {
+        $html = e(str_replace(["\r\n", "\r"], "\n", $this->get($key)));
+        $html = preg_replace('/\*(.+?)\*/s', '<span class="'.e($class).'">$1</span>', $html);
+
+        return new HtmlString(nl2br($html, false));
+    }
+
+    public function image(string $key): string
+    {
+        $custom = $this->customImagePath($key);
+
+        if ($custom !== null) {
+            return Storage::disk(config('images.disk'))->url($custom);
+        }
+
+        return $this->defaultImage($key);
+    }
+
+    public function defaultImage(string $key): string
+    {
+        $path = $this->loadDefaults()[$key] ?? null;
+
+        if (filled($path)) {
+            return Storage::disk(config('images.disk'))->url($path);
+        }
+
+        $default = (string) (self::fields($this->page)[$key]['default'] ?? '');
+
+        return str_starts_with($default, '/') ? asset(ltrim($default, '/')) : $default;
+    }
+
+    /** Path gambar unggahan admin (relatif terhadap disk), atau null bila memakai bawaan. */
+    public function customImagePath(string $key): ?string
+    {
+        $this->load();
+
+        return filled($this->stored[$key] ?? null) ? $this->stored[$key] : null;
+    }
+
+    /** Isi tersimpan + default kustom dimuat sekaligus (satu query) agar halaman publik tetap ringan. */
+    private function load(): void
+    {
+        if ($this->stored !== null && $this->defaults !== null) {
+            return;
+        }
+
+        $rows = DB::table('page_contents')
+            ->select(DB::raw("'v' as src"), 'key', 'value')
+            ->where('page', $this->page)
+            ->unionAll(
+                DB::table('page_content_defaults')
+                    ->select(DB::raw("'d' as src"), 'key', 'value')
+                    ->where('page', $this->page)
+            )
+            ->get();
+
+        $this->stored = array_merge(
+            $rows->where('src', 'v')->pluck('value', 'key')->all(),
+            self::$overrides[$this->page] ?? [],
+        );
+        $this->defaults = $rows->where('src', 'd')->pluck('value', 'key')->all();
+    }
+
+    /** @return array<string, string> */
+    private function loadDefaults(): array
+    {
+        $this->load();
+
+        return $this->defaults;
+    }
+
+    /** Isi daftar (list/cards): tersimpan, lalu default kustom; null bila keduanya tidak ada. */
+    private function decoded(string $key): mixed
+    {
+        $this->load();
+
+        $raw = $this->stored[$key] ?? $this->loadDefaults()[$key] ?? null;
+
+        return $raw === null ? null : json_decode($raw, true);
+    }
+
+    /** Baris isi tersimpan mentah (kunci => nilai), tanpa nilai pratinjau. @return array<string, string> */
+    public function storedValues(): array
+    {
+        return PageContent::where('page', $this->page)->pluck('value', 'key')->all();
+    }
+
+    /** Baris setelan default kustom mentah (kunci => nilai). @return array<string, string> */
+    public function defaultValues(): array
+    {
+        return $this->loadDefaults();
+    }
+
+    public function hasCustomDefaults(): bool
+    {
+        return $this->loadDefaults() !== [];
+    }
+
+    public function defaultsUpdatedAt(): ?\Illuminate\Support\Carbon
+    {
+        $last = PageContentDefault::where('page', $this->page)->max('updated_at');
+
+        return $last ? \Illuminate\Support\Carbon::parse($last) : null;
+    }
+
+    /**
+     * Nilai default yang berlaku untuk sebuah kolom: default kustom bila ada, selain itu bawaan sistem.
+     * Teks => string; list/cards => array; gambar => path (default kustom) atau URL/path bawaan.
+     */
+    public function defaultValue(string $key): mixed
+    {
+        $field = self::fields($this->page)[$key] ?? [];
+        $type = $field['type'] ?? 'text';
+        $custom = $this->loadDefaults()[$key] ?? null;
+
+        if ($type === 'list' || $type === 'cards') {
+            $decoded = $custom === null ? null : json_decode($custom, true);
+
+            return is_array($decoded) && $decoded !== [] ? $decoded : (array) ($field['default'] ?? []);
+        }
+
+        return $custom !== null ? (string) $custom : (string) ($field['default'] ?? '');
+    }
+
+    public function __invoke(string $key): string
+    {
+        return $this->get($key);
+    }
+}

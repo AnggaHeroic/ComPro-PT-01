@@ -2,14 +2,11 @@
 
 @section('title', 'Tentang Kami')
 
-@section(
-    'description',
-    'Mengenal PT. Putra Maju Sukses, profil perusahaan, perjalanan, visi, misi, dan informasi perusahaan.'
-)
+@section('description', $content('seo_description'))
 
 @section('content')
     {{-- Hero Section --}}
-    <section class="bg-white">
+    <section{!! $content->mark('hero') !!} class="bg-white">
         <div class="container-site">
             <div class="relative border-b border-slate-200">
 
@@ -18,7 +15,7 @@
                     <span
                         class="font-display text-xs font-bold uppercase tracking-[0.18em] text-primary"
                     >
-                        Tentang Kami
+                        {{ $content('hero_label') }}
                     </span>
                 </div>
 
@@ -32,22 +29,12 @@
                         <h1
                             class="font-display max-w-3xl text-[3rem] font-bold leading-[0.96] tracking-[-0.05em] text-secondary-dark sm:text-[3.5rem] lg:text-[4rem] xl:text-[4.35rem]"
                         >
-                            Mengenal
-                            <br>
-                            <span class="text-primary">
-                                PT. Putra Maju
-                                Sukses
-                            </span>
-                            <br>
-                            lebih dekat.
+                            {!! $content->rich('hero_title', 'text-primary') !!}
                         </h1>
                         <p
                             class="font-body mt-7 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base sm:leading-8"
                         >
-                            PT. Putra Maju Sukses merupakan perusahaan
-                            yang bergerak dalam berbagai bidang
-                            perdagangan dan layanan untuk memenuhi
-                            kebutuhan pelanggan serta mitra bisnis.
+                            {{ $content('hero_description') }}
                         </p>
                     </div>
 
@@ -73,8 +60,8 @@
                                 class="relative z-10 aspect-[4/3] overflow-hidden bg-slate-100"
                             >
                                 <img
-                                    src="https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1200&q=85"
-                                    alt="Lingkungan kerja perusahaan"
+                                    src="{{ $content->image('hero_image') }}"
+                                    alt="{{ $content('hero_image_alt') }}"
                                     class="h-full w-full object-cover"
                                 >
                             </div>
@@ -86,13 +73,13 @@
                                 <span
                                     class="font-display text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400"
                                 >
-                                    PT. Putra Maju Sukses
+                                    {{ $content('hero_caption_left') }}
                                 </span>
 
                                 <span
                                     class="font-display text-xs font-semibold text-primary"
                                 >
-                                    Denpasar, Bali
+                                    {{ $content('hero_caption_right') }}
                                 </span>
                             </div>
                         </div>
@@ -103,7 +90,7 @@
     </section>
 
     {{-- Tentang Perusahaan --}}
-    <section class="bg-white">
+    <section{!! $content->mark('profile') !!} class="bg-white">
         <div class="container-site">
             <div class="grid gap-12 border-b border-slate-200 py-20 lg:grid-cols-12 lg:gap-20 lg:py-24">
 
@@ -122,24 +109,14 @@
                             <span
                                 class="font-display text-xs font-bold uppercase tracking-[0.16em] text-primary"
                             >
-                                Mengenal Perusahaan
+                                {{ $content('profile_label') }}
                             </span>
 
                             {{-- Main Heading --}}
                             <h2
                                 class="font-display mt-7 max-w-2xl text-3xl font-semibold leading-[1.08] tracking-[-0.025em] text-secondary-dark sm:text-4xl lg:text-[2.75rem]"
                             >
-                                <span class="block">
-                                    Beragam bidang,
-                                </span>
-
-                                <span class="block text-primary">
-                                    satu perusahaan
-                                </span>
-
-                                <span class="block">
-                                    yang terus berkembang.
-                                </span>
+                                {!! $content->rich('profile_title', 'text-primary') !!}
                             </h2>
                         </div>
 
@@ -148,36 +125,29 @@
                             <p
                                 class="font-body text-sm leading-7 text-slate-600 sm:text-base sm:leading-8"
                             >
-                                PT. Putra Maju Sukses merupakan perusahaan
-                                yang bergerak dalam berbagai bidang perdagangan
-                                dan layanan untuk memenuhi kebutuhan pelanggan
-                                serta mitra bisnis.
+                                {{ $content('profile_paragraph_1') }}
                             </p>
-                            <p
-                                class="font-body mt-6 text-sm leading-7 text-slate-600 sm:text-base sm:leading-8"
-                            >
-                                Lorem ipsum dolor sit amet, consectetur
-                                adipiscing elit. Integer tincidunt, justo
-                                vitae consequat efficitur, neque erat posuere
-                                lorem, sed tincidunt erat mauris vitae libero.
-                            </p>
-                            <p
-                                class="font-body mt-6 text-sm leading-7 text-slate-600 sm:text-base sm:leading-8"
-                            >
-                                Lorem ipsum dolor sit amet, consectetur
-                                adipiscing elit. Suspendisse potenti.
-                                Praesent tincidunt, mauris non consectetur
-                                interdum, erat neque consequat libero.
-                            </p>
-                            <p
-                                class="font-body mt-6 text-sm leading-7 text-slate-600 sm:text-base sm:leading-8"
-                            >
-                                Lorem ipsum dolor sit amet, consectetur
-                                adipiscing elit. Curabitur tincidunt,
-                                mauris vitae consequat efficitur, neque
-                                libero posuere erat, sed tincidunt
-                                vestibulum sapien.
-                            </p>
+                            @if (filled($content('profile_paragraph_2')))
+                                <p
+                                    class="font-body mt-6 text-sm leading-7 text-slate-600 sm:text-base sm:leading-8"
+                                >
+                                    {{ $content('profile_paragraph_2') }}
+                                </p>
+                            @endif
+                            @if (filled($content('profile_paragraph_3')))
+                                <p
+                                    class="font-body mt-6 text-sm leading-7 text-slate-600 sm:text-base sm:leading-8"
+                                >
+                                    {{ $content('profile_paragraph_3') }}
+                                </p>
+                            @endif
+                            @if (filled($content('profile_paragraph_4')))
+                                <p
+                                    class="font-body mt-6 text-sm leading-7 text-slate-600 sm:text-base sm:leading-8"
+                                >
+                                    {{ $content('profile_paragraph_4') }}
+                                </p>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -186,45 +156,23 @@
                 <div class="lg:col-span-5">
                     <div class="overflow-hidden bg-slate-100">
                         <img
-                            src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1200&q=85"
-                            alt="Lingkungan perusahaan"
+                            src="{{ $content->image('profile_image') }}"
+                            alt="{{ $content('profile_image_alt') }}"
                             class="h-full min-h-[280px] w-full object-cover"
                         >
                     </div>
-                    <div class="mt-6 border border-slate-300 bg-white px-7 sm:px-8">
+                    <div{!! $content->mark('facts') !!} class="mt-6 border border-slate-300 bg-white px-7 sm:px-8">
                         <div class="divide-y divide-slate-200">
-                            <div class="py-5">
-                                <span class="font-display text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                                    Established
-                                </span>
-                                <p class="font-body mt-2 text-sm text-secondary-dark">
-                                    XXXX
-                                </p>
-                            </div>
-                            <div class="py-5">
-                                <span class="font-display text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                                    Headquarters
-                                </span>
-                                <p class="font-body mt-2 text-sm leading-6 text-secondary-dark">
-                                    Denpasar, Bali, Indonesia
-                                </p>
-                            </div>
-                            <div class="py-5">
-                                <span class="font-display text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                                    Business Activities
-                                </span>
-                                <p class="font-body mt-2 text-sm text-secondary-dark">
-                                    14 bidang usaha
-                                </p>
-                            </div>
-                            <div class="py-5">
-                                <span class="font-display text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                                    Business Scope
-                                </span>
-                                <p class="font-body mt-2 text-sm leading-6 text-secondary-dark">
-                                    Perdagangan dan layanan
-                                </p>
-                            </div>
+                            @foreach ($content->cards('facts_items') as $fact)
+                                <div class="py-5">
+                                    <span class="font-display text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+                                        {{ $fact['title'] }}
+                                    </span>
+                                    <p class="font-body mt-2 text-sm leading-6 text-secondary-dark">
+                                        {{ $fact['text'] }}
+                                    </p>
+                                </div>
+                            @endforeach
                         </div>
                     </div>
                 </div>
@@ -234,27 +182,24 @@
     </section>
 
     {{-- Visi & Misi --}}
-    <section class="border-t border-slate-200 bg-surface">
+    <section{!! $content->mark('direction') !!} class="border-t border-slate-200 bg-surface">
 
         {{-- Section Heading --}}
         <div class="border-y border-primary bg-secondary-dark">
             <div class="container-site py-10 sm:py-12 lg:py-14">
                 <div
-                    class="mx-auto mb-4 h-0.5 w-200 bg-primary-alt"
+                    class="mx-auto mb-4 h-0.5 w-200 max-w-full bg-primary-alt"
                 ></div>
                 <div class="mx-auto max-w-3xl text-center">
                     <span
                         class="font-display text-xs font-bold uppercase tracking-[0.18em] text-primary-vibrant"
                     >
-                        Visi & Misi
+                        {{ $content('direction_label') }}
                     </span>
                     <p
                         class="font-display mt-3 text-base font-medium leading-relaxed tracking-[-0.01em] text-white/70 sm:text-lg"
                     >
-                        Arah yang menjadi dasar
-                        <span class="text-primary-alt">
-                            perjalanan perusahaan.
-                        </span>
+                        {!! $content->rich('direction_tagline', 'text-primary-alt') !!}
                     </p>
                 </div>
             </div>
@@ -277,7 +222,7 @@
                         <span
                             class="font-display text-xs font-bold uppercase tracking-[0.16em] text-primary"
                         >
-                            Visi Perusahaan
+                            {{ $content('vision_label') }}
                         </span>
                     </div>
 
@@ -286,8 +231,7 @@
                         <h3
                             class="font-display text-xl font-semibold leading-[1.18] tracking-[-0.025em] text-secondary-dark sm:text-2xl"
                         >
-                            Lorem ipsum dolor sit amet,
-                            consectetur adipiscing elit.
+                            {{ $content('vision_title') }}
                         </h3>
                         <div
                             class="mt-4 h-px w-10 bg-primary"
@@ -296,9 +240,7 @@
                         <p
                             class="font-body mt-4 text-sm leading-6 text-slate-500"
                         >
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                            Integer tincidunt, justo vitae consequat efficitur, neque
-                            erat posuere lorem, sed tincidunt erat mauris vitae libero.
+                            {{ $content('vision_text') }}
                         </p>
                     </div>
                 </article>
@@ -318,62 +260,28 @@
                         <span
                             class="font-display text-xs font-bold uppercase tracking-[0.16em] text-primary"
                         >
-                            Misi Utama
+                            {{ $content('mission_label') }}
                         </span>
                     </div>
 
-                    {{-- Mission List --}}
+                    {{-- Mission List: jumlah butir mengikuti isi dari admin --}}
                     <div class="mt-4">
-
-                        {{-- Mission 01 --}}
-                        <div
-                            class="flex items-start gap-3 border-t border-slate-200 py-3.5"
-                        >
-                            <span
-                                class="mt-[8px] h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
-                                aria-hidden="true"
-                            ></span>
-
-                            <p
-                                class="font-body text-sm leading-6 text-secondary-dark"
+                        @foreach ($content->list('mission_items') as $mission)
+                            <div
+                                class="flex items-start gap-3 border-t border-slate-200 py-3.5 last:border-b"
                             >
-                                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                                Integer tincidunt, justo vitae consequat efficitur.
-                            </p>
-                        </div>
+                                <span
+                                    class="mt-[8px] h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
+                                    aria-hidden="true"
+                                ></span>
 
-                        {{-- Mission 02 --}}
-                        <div
-                            class="flex items-start gap-3 border-t border-slate-200 py-3.5"
-                        >
-                            <span
-                                class="mt-[8px] h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
-                                aria-hidden="true"
-                            ></span>
-                            <p
-                                class="font-body text-sm leading-6 text-secondary-dark"
-                            >
-                                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                                Suspendisse potenti. Praesent tincidunt mauris non
-                                consectetur interdum.
-                            </p>
-                        </div>
-
-                        {{-- Mission 03 --}}
-                        <div
-                            class="flex items-start gap-3 border-y border-slate-200 py-3.5"
-                        >
-                            <span
-                                class="mt-[8px] h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
-                                aria-hidden="true"
-                            ></span>
-                            <p
-                                class="font-body text-sm leading-6 text-secondary-dark"
-                            >
-                                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                                Curabitur tincidunt, mauris vitae consequat efficitur.
-                            </p>
-                        </div>
+                                <p
+                                    class="font-body text-sm leading-6 text-secondary-dark"
+                                >
+                                    {{ $mission }}
+                                </p>
+                            </div>
+                        @endforeach
                     </div>
                 </article>
             </div>
@@ -381,7 +289,7 @@
     </section>
 
     {{-- Tujuan Perusahaan --}}
-    <section class="bg-white">
+    <section{!! $content->mark('objectives') !!} class="bg-white">
         <div class="container-site">
             <div class="border-y border-slate-200 py-14 sm:py-16 lg:py-20">
 
@@ -390,115 +298,35 @@
                     <span
                         class="font-display text-xs font-bold uppercase tracking-[0.18em] text-primary"
                     >
-                        Tujuan Perusahaan
+                        {{ $content('objectives_label') }}
                     </span>
                     <h2
                         class="font-display mt-5 max-w-2xl text-4xl font-bold leading-[1.05] tracking-[-0.04em] text-secondary-dark sm:text-[2.75rem] lg:text-5xl"
                     >
-                        Membangun usaha yang
-                        <span class="text-primary">
-                            bernilai dan berkelanjutan.
-                        </span>
+                        {!! $content->rich('objectives_title', 'text-primary') !!}
                     </h2>
                 </div>
 
-                {{-- Objective Grid --}}
+                {{-- Objective Grid: kartu bertambah ke bawah mengikuti isi dari admin --}}
                 <div class="mt-10 grid grid-cols-1 gap-x-8 sm:grid-cols-2 lg:grid-cols-3">
-
-                    {{-- Memenuhi Kebutuhan --}}
-                    <article class="border-t border-slate-300 py-7 sm:py-8">
-                        <h3
-                            class="font-display text-lg font-semibold tracking-tight text-secondary-dark sm:text-xl"
-                        >
-                            Memenuhi Kebutuhan
-                        </h3>
-                        <p
-                            class="font-body mt-3 max-w-sm text-sm leading-7 text-slate-600"
-                        >
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                            Integer tincidunt, justo vitae consequat efficitur.
-                        </p>
-                    </article>
-
-                    {{-- Memberikan Layanan --}}
-                    <article class="border-t border-slate-300 py-7 sm:py-8">
-                        <h3
-                            class="font-display text-lg font-semibold tracking-tight text-secondary-dark sm:text-xl"
-                        >
-                            Memberikan Layanan
-                        </h3>
-                        <p
-                            class="font-body mt-3 max-w-sm text-sm leading-7 text-slate-600"
-                        >
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                            Suspendisse potenti. Praesent tincidunt mauris non
-                            consectetur interdum.
-                        </p>
-                    </article>
-
-                    {{-- Membangun Hubungan --}}
-                    <article class="border-t border-slate-300 py-7 sm:py-8">
-                        <h3
-                            class="font-display text-lg font-semibold tracking-tight text-secondary-dark sm:text-xl"
-                        >
-                            Membangun Hubungan
-                        </h3>
-                        <p
-                            class="font-body mt-3 max-w-sm text-sm leading-7 text-slate-600"
-                        >
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                            Curabitur tincidunt, mauris vitae consequat efficitur.
-                        </p>
-                    </article>
-
-                    {{-- Mengembangkan Usaha --}}
-                    <article class="border-t border-slate-300 py-7 sm:py-8">
-                        <h3
-                            class="font-display text-lg font-semibold tracking-tight text-secondary-dark sm:text-xl"
-                        >
-                            Mengembangkan Usaha
-                        </h3>
-                        <p
-                            class="font-body mt-3 max-w-sm text-sm leading-7 text-slate-600"
-                        >
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                            Donec vitae neque at libero facilisis consequat.
-                        </p>
-                    </article>
-
-                    {{-- Menjaga Kualitas --}}
-                    <article class="border-t border-slate-300 py-7 sm:py-8">
-                        <h3
-                            class="font-display text-lg font-semibold tracking-tight text-secondary-dark sm:text-xl"
-                        >
-                            Menjaga Kualitas
-                        </h3>
-                        <p
-                            class="font-body mt-3 max-w-sm text-sm leading-7 text-slate-600"
-                        >
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                            Integer tincidunt, justo vitae consequat efficitur.
-                        </p>
-                    </article>
-
-                    {{-- Membuka Peluang --}}
-                    <article class="border-t border-slate-300 py-7 sm:py-8">
-                        <h3
-                            class="font-display text-lg font-semibold tracking-tight text-secondary-dark sm:text-xl"
-                        >
-                            Membuka Peluang
-                        </h3>
-                        <p
-                            class="font-body mt-3 max-w-sm text-sm leading-7 text-slate-600"
-                        >
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                            Phasellus vitae augue sed neque malesuada consequat.
-                        </p>
-                    </article>
+                    @foreach ($content->cards('objective_items') as $objective)
+                        <article class="border-t border-slate-300 py-7 sm:py-8">
+                            <h3
+                                class="font-display text-lg font-semibold tracking-tight text-secondary-dark sm:text-xl"
+                            >
+                                {{ $objective['title'] }}
+                            </h3>
+                            <p
+                                class="font-body mt-3 max-w-sm text-sm leading-7 text-slate-600"
+                            >
+                                {{ $objective['text'] }}
+                            </p>
+                        </article>
+                    @endforeach
                 </div>
             </div>
         </div>
-        <section class="bg-surface">
+        <section{!! $content->mark('cta') !!} class="bg-surface">
             <div class="container-site">
                 <div class="border-y border-slate-200 py-14 sm:py-16 lg:py-20">
                     <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
@@ -506,22 +334,21 @@
                             <span
                                 class="font-display text-xs font-bold uppercase tracking-[0.18em] text-primary"
                             >
-                                Lanjutkan Eksplorasi
+                                {{ $content('cta_label') }}
                             </span>
                             <h2
                                 class="font-display mt-3 text-2xl font-bold tracking-tight text-secondary-dark sm:text-3xl"
                             >
-                                Kenali bidang usaha kami.
+                                {{ $content('cta_title') }}
                             </h2>
                             <p
                                 class="font-body mt-2 max-w-xl text-sm leading-7 text-slate-600"
                             >
-                                Lihat berbagai bidang usaha dan layanan
-                                PT. Putra Maju Sukses.
+                                {{ $content('cta_description') }}
                             </p>
                         </div>
                         <x-button href="{{ route('services') }}">
-                            Lihat Layanan
+                            {{ $content('cta_button') }}
                             <x-icons.arrow-right class="h-4 w-4" />
                         </x-button>
                     </div>

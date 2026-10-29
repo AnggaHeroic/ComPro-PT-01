@@ -2,14 +2,18 @@
 
 @section('title', 'Kontak Kami')
 
+@section('description', $content('seo_description'))
+
 @section('content')
 
     @php
-        $contactImage = 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1600&q=80';
+        $contactImage = $content->image('hero_image');
+        $contactEmail = $content('contact_email');
+        $mapQuery = filled($content('location_map_query')) ? $content('location_map_query') : $content('contact_address');
     @endphp
 
     {{-- Contact Hero --}}
-    <section class="relative overflow-hidden bg-white lg:min-h-[calc(100svh-5.75rem)]">
+    <section{!! $content->mark('hero') !!} class="relative overflow-hidden bg-white lg:min-h-[calc(100svh-5.75rem)]">
 
         {{-- Desktop Background Image --}}
         <div
@@ -47,7 +51,7 @@
                     <span
                         class="font-display text-xs font-bold uppercase tracking-[0.18em] text-primary"
                     >
-                        Kontak Kami
+                        {{ $content('hero_label') }}
                     </span>
 
                     {{-- Heading --}}
@@ -58,10 +62,7 @@
                             sm:mt-6 sm:text-5xl
                             lg:mt-6 lg:text-7xl lg:leading-[1.02]"
                     >
-                        Mari terhubung dengan
-                        <span class="text-primary">
-                            PT. Putra Maju Sukses.
-                        </span>
+                        {!! $content->rich('hero_title') !!}
                     </h1>
 
                     {{-- Description --}}
@@ -69,8 +70,7 @@
                         class="font-body mt-5 max-w-2xl text-sm leading-7 text-slate-600
                             sm:mt-7 sm:text-base sm:leading-8"
                     >
-                        Hubungi kami untuk mendapatkan informasi lebih lanjut
-                        mengenai bidang usaha, produk, dan layanan yang tersedia.
+                        {{ $content('hero_description') }}
                     </p>
                 </div>
             </div>
@@ -83,7 +83,7 @@
                     <div class="relative aspect-[4/3] overflow-hidden bg-surface">
                         <img
                             src="{{ $contactImage }}"
-                            alt="Interior ruang kantor modern"
+                            alt="{{ $content('hero_image_alt') }}"
                             loading="eager"
                             fetchpriority="high"
                             class="h-full w-full object-cover object-center"
@@ -106,20 +106,20 @@
             <div class="grid gap-14 lg:grid-cols-12 lg:gap-0">
 
                 {{-- Contact Details --}}
-                <div class="lg:col-span-5 lg:pr-16">
+                <div{!! $content->mark('info') !!} class="lg:col-span-5 lg:pr-16">
 
                     {{-- Section Label --}}
                     <span
                         class="font-display text-xs font-bold uppercase tracking-[0.18em] text-primary"
                     >
-                        Informasi Kontak
+                        {{ $content('info_label') }}
                     </span>
 
                     {{-- Heading --}}
                     <h2
                         class="font-display mt-4 text-3xl font-bold leading-[1.08] tracking-[-0.035em] text-secondary-dark sm:text-4xl"
                     >
-                        Terhubung dengan kami.
+                        {{ $content('info_title') }}
                     </h2>
 
                     {{-- Accent --}}
@@ -135,47 +135,47 @@
                         <x-contact-card
                             type="email"
                             title="Email"
-                            value="sputramaju@gmail.com"
-                            description="Kirim email untuk pertanyaan umum dan informasi bisnis."
-                            href="mailto:sputramaju@gmail.com"
+                            :value="$contactEmail"
+                            :description="$content('email_description')"
+                            :href="'mailto:'.$contactEmail"
                         />
 
                         {{-- Phone --}}
                         <x-contact-card
                             type="phone"
                             title="Telepon"
-                            value="081130521216"
-                            description="Hubungi kami pada jam operasional untuk respon lebih cepat."
-                            href="tel:081130521216"
+                            :value="$content('contact_phone')"
+                            :description="$content('phone_description')"
+                            :href="\App\Support\PageContents::telHref($content('contact_phone'))"
                         />
 
                         {{-- Address --}}
                         <x-contact-card
                             type="location"
                             title="Alamat"
-                            value="Jalan Tukad Batanghari Nomor 6, Panjer, Denpasar Selatan, Kota Denpasar"
-                            description="Kunjungi kantor kami untuk diskusi lebih lanjut."
-                            href="https://www.google.com/maps/search/?api=1&query=Jalan%20Tukad%20Batanghari%20Nomor%206%2C%20Panjer%2C%20Denpasar%20Selatan%2C%20Kota%20Denpasar"
+                            :value="$content('contact_address')"
+                            :description="$content('address_description')"
+                            :href="\App\Support\PageContents::mapsSearchUrl($content('contact_address'))"
                             :border="false"
                         />
                     </div>
                 </div>
 
                 {{-- Location --}}
-                <div class="lg:col-span-7 lg:pl-16">
+                <div{!! $content->mark('location') !!} class="lg:col-span-7 lg:pl-16">
 
                     {{-- Section Label --}}
                     <span
                         class="font-display text-xs font-bold uppercase tracking-[0.18em] text-primary"
                     >
-                        Lokasi Kami
+                        {{ $content('location_label') }}
                     </span>
 
                     {{-- Heading --}}
                     <h2
                         class="font-display mt-4 text-3xl font-bold leading-[1.08] tracking-[-0.035em] text-secondary-dark sm:text-4xl"
                     >
-                        Temukan kami di sini.
+                        {{ $content('location_title') }}
                     </h2>
 
                     {{-- Accent --}}
@@ -190,7 +190,7 @@
                     >
                         <div class="aspect-[4/3] lg:aspect-[16/9.5]">
                             <iframe
-                                src="https://www.google.com/maps?q=Jalan%20Tukad%20Batanghari%20Nomor%206%2C%20Panjer%2C%20Denpasar%20Selatan%2C%20Kota%20Denpasar&output=embed"
+                                src="{{ \App\Support\PageContents::mapsEmbedUrl($mapQuery) }}"
                                 class="h-full w-full border-0 grayscale-[15%]"
                                 loading="lazy"
                                 allowfullscreen
@@ -209,8 +209,7 @@
                         <p
                             class="font-body max-w-xl text-xs leading-5 text-slate-500"
                         >
-                            Jalan Tukad Batanghari Nomor 6, Panjer,
-                            Denpasar Selatan, Kota Denpasar.
+                            {{ rtrim($content('contact_address'), '.') }}.
                         </p>
                     </div>
                 </div>
@@ -219,7 +218,7 @@
     </section>
 
     {{-- Contact CTA --}}
-    <section class="relative overflow-hidden bg-secondary-dark">
+    <section{!! $content->mark('cta') !!} class="relative overflow-hidden bg-secondary-dark">
 
         {{-- Background Image --}}
         <div class="absolute inset-0">
@@ -246,29 +245,27 @@
                     <span
                         class="font-display text-xs font-bold uppercase tracking-[0.18em] text-primary-vibrant"
                     >
-                        Ada Pertanyaan?
+                        {{ $content('cta_label') }}
                     </span>
 
                     <h2
                         class="font-display mt-4 text-3xl font-bold leading-[1.05] tracking-[-0.04em] text-white sm:text-4xl lg:text-5xl"
                     >
-                        Kami siap membantu Anda.
+                        {{ $content('cta_title') }}
                     </h2>
 
                     <p
                         class="font-body mt-4 max-w-2xl text-sm leading-7 text-white/70 sm:text-base sm:leading-8"
                     >
-                        Tim kami siap memberikan informasi lebih lanjut mengenai
-                        produk, layanan, dan peluang kerja sama dengan
-                        PT. Putra Maju Sukses.
+                        {{ $content('cta_description') }}
                     </p>
                 </div>
                 <div class="shrink-0">
                     <x-button
-                        href="mailto:sputramaju@gmail.com"
+                        href="mailto:{{ $contactEmail }}"
                         class="w-full bg-primary text-white hover:bg-primary-dark sm:w-auto"
                     >
-                        Kirim Email
+                        {{ $content('cta_button') }}
                         <x-icons.arrow-right class="h-4 w-4" />
                     </x-button>
                 </div>

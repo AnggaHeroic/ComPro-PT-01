@@ -1,0 +1,404 @@
+<?php
+
+namespace Tests\Feature\Admin;
+
+use App\Models\PageContent;
+use App\Models\User;
+use App\Support\PageContents;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+use Tests\TestCase;
+
+class AboutPageContentTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Storage::fake('public');
+        $this->actingAs(User::factory()->create());
+    }
+
+    /** @return array<string, string> */
+    private function texts(array $overrides = []): array
+    {
+        $texts = [];
+        foreach (PageContents::fields('about') as $key => $field) {
+            if (($field['type'] ?? 'text') !== 'image') {
+                $texts[$key] = $field['default'];
+            }
+        }
+
+        return ['content' => array_merge($texts, $overrides)];
+    }
+
+    public function test_about_page_is_listed_and_shows_defaults(): void
+    {
+        $this->get('/admin/pages')->assertSee('Tentang Kami');
+        $this->get('/admin/pages/about')->assertOk()->assertSee('name="image_hero_image"', false);
+
+        auth()->logout();
+        $this->get('/tentang-kami')
+            ->assertOk()
+            ->assertSee('Mengenal')
+            ->assertSee('Established')
+            ->assertSee('Misi Utama')
+            ->assertSee('Kenali bidang usaha kami.')
+            ->assertSee('Membuka Peluang')
+            ->assertSee('Phasellus vitae augue sed neque malesuada consequat.')
+            ->assertSee('Memenuhi Kebutuhan')
+            ->assertSee('photo-1497366811353', false);
+    }
+
+    public function test_text_changes_appear_on_the_about_page(): void
+    {
+        $this->put('/admin/pages/about', $this->texts([
+            'hero_title' => "Mengenal
+*CV. Maju Jaya*
+lebih dekat.",
+            'facts_items' => [['title' => 'Established', 'text' => '2015'], ['title' => 'Headquarters', 'text' => 'Denpasar, Bali, Indonesia']],
+            'mission_items' => ['Misi pertama.', 'Misi kedua yang baru.'],
+        ]))->assertSessionHasNoErrors();
+
+        auth()->logout();
+        $this->get('/tentang-kami')->assertSee('CV. Maju Jaya')->assertSee('2015')->assertSee('Misi kedua yang baru.');
+    }
+
+    public function test_optional_paragraphs_can_be_hidden_but_required_fields_cannot_be_blank(): void
+    {
+        $this->put('/admin/pages/about', $this->texts(['profile_paragraph_3' => '', 'profile_paragraph_4' => '']))
+            ->assertSessionHasNoErrors();
+
+        auth()->logout();
+        $html = $this->get('/tentang-kami')->getContent();
+        $this->assertStringNotContainsString('erat neque consequat libero', $html);
+        $this->assertStringNotContainsString('vestibulum sapien', $html);
+        $this->assertStringContainsString('Integer tincidunt, justo', $html);
+
+        $this->actingAs(User::first());
+        $this->put('/admin/pages/about', $this->texts(['profile_paragraph_1' => '']))
+            ->assertSessionHasErrors('content.profile_paragraph_1');
+    }
+
+    public function test_uploaded_images_are_converted_to_webp_and_shown_on_the_page(): void
+    {
+        $this->put('/admin/pages/about', $this->texts() + [
+            'image_hero_image' => UploadedFile::fake()->image('hero.jpg', 3000, 2000),
+        ])->assertSessionHasNoErrors();
+
+        $path = PageContent::where(['page' => 'about', 'key' => 'hero_image'])->value('value');
+        $this->assertStringStartsWith('pages/', $path);
+        $this->assertStringEndsWith('.webp', $path);
+        Storage::disk('public')->assertExists($path);
+
+        auth()->logout();
+        $this->get('/tentang-kami')
+            ->assertSee(Storage::disk('public')->url($path), false)
+            ->assertDontSee('photo-1497366811353', false)
+            ->assertSee('photo-1497366754035', false);
+    }
+
+    public function test_replacing_and_restoring_an_image_removes_the_old_file(): void
+    {
+        $this->put('/admin/pages/about', $this->texts() + ['image_hero_image' => UploadedFile::fake()->image('a.jpg')]);
+        $first = PageContent::where('key', 'hero_image')->value('value');
+
+        $this->put('/admin/pages/about', $this->texts() + ['image_hero_image' => UploadedFile::fake()->image('b.png')]);
+        $second = PageContent::where('key', 'hero_image')->value('value');
+
+        $this->assertNotSame($first, $second);
+        Storage::disk('public')->assertMissing($first);
+        Storage::disk('public')->assertExists($second);
+
+        $this->put('/admin/pages/about', $this->texts() + ['remove_image_hero_image' => 1])->assertSessionHasNoErrors();
+
+        $this->assertNull(PageContent::where('key', 'hero_image')->first());
+        Storage::disk('public')->assertMissing($second);
+        auth()->logout();
+        $this->get('/tentang-kami')->assertSee('photo-1497366811353', false);
+    }
+
+    public function test_invalid_image_files_are_rejected(): void
+    {
+        $this->put('/admin/pages/about', $this->texts() + [
+            'image_hero_image' => UploadedFile::fake()->createWithContent('logo.svg', '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>'),
+        ])->assertSessionHasErrors('image_hero_image');
+
+        $this->assertSame(0, PageContent::count());
+    }
+
+    public function test_reset_removes_texts_and_uploaded_images(): void
+    {
+        $this->put('/admin/pages/about', $this->texts(['hero_title' => "Mengenal
+*CV. Maju Jaya*
+lebih dekat."]) + [
+            'image_profile_image' => UploadedFile::fake()->image('p.jpg'),
+        ]);
+        $path = PageContent::where('key', 'profile_image')->value('value');
+        Storage::disk('public')->assertExists($path);
+
+        $this->delete('/admin/pages/about')->assertRedirect('/admin/pages/about');
+
+        $this->assertSame(0, PageContent::count());
+        Storage::disk('public')->assertMissing($path);
+    }
+
+    public function test_about_markup_does_not_change_when_only_texts_are_edited(): void
+    {
+        $normalize = fn (string $html) => preg_replace('/\s+/', ' ', preg_replace('/>\s+</', '><', $html));
+        auth()->logout();
+        $before = $normalize($this->get('/tentang-kami')->getContent());
+
+        $this->actingAs(User::first());
+        $this->put('/admin/pages/about', $this->texts(['hero_title' => "Mengenal
+*CV. Maju Jaya*
+lebih dekat.", 'cta_button' => 'Lihat Semua']));
+
+        auth()->logout();
+        $after = $normalize($this->get('/tentang-kami')->getContent());
+
+        $this->assertSame($before, str_replace(['CV. Maju Jaya', 'Lihat Semua'], ['PT. Putra Maju Sukses', 'Lihat Layanan'], $after));
+    }
+
+    public function test_missions_are_a_list_that_can_grow_shrink_and_be_reordered(): void
+    {
+        $five = ['Misi A', 'Misi B', 'Misi C', 'Misi D', 'Misi E'];
+        $this->put('/admin/pages/about', $this->texts(['mission_items' => $five]))->assertSessionHasNoErrors();
+
+        auth()->logout();
+        $html = $this->get('/tentang-kami')->getContent();
+        $this->assertSame(5, preg_match_all('/<span\s+class="mt-\[8px\] h-1\.5 w-1\.5 shrink-0 rounded-full bg-primary"/', $html));
+        $this->assertLessThan(strpos($html, 'Misi B'), strpos($html, 'Misi A'));
+
+        $this->actingAs(User::first());
+        $this->put('/admin/pages/about', $this->texts(['mission_items' => ['Misi E', 'Misi A']]))->assertSessionHasNoErrors();
+
+        auth()->logout();
+        $html = $this->get('/tentang-kami')->getContent();
+        $this->assertSame(2, preg_match_all('/<span\s+class="mt-\[8px\] h-1\.5 w-1\.5 shrink-0 rounded-full bg-primary"/', $html));
+        $this->assertLessThan(strpos($html, 'Misi A'), strpos($html, 'Misi E'));
+        $this->assertStringNotContainsString('Misi C', $html);
+    }
+
+    public function test_blank_mission_rows_are_dropped_and_limits_are_enforced(): void
+    {
+        $this->put('/admin/pages/about', $this->texts(['mission_items' => ['Satu', '', '   ', 'Dua']]))->assertSessionHasNoErrors();
+        $this->assertSame(['Satu', 'Dua'], PageContents::for('about')->list('mission_items'));
+
+        $this->put('/admin/pages/about', $this->texts(['mission_items' => ['', ' ']]))
+            ->assertSessionHasErrors('content.mission_items');
+
+        $this->put('/admin/pages/about', $this->texts(['mission_items' => array_fill(0, 9, 'x')]))
+            ->assertSessionHasErrors('content.mission_items');
+
+        $this->put('/admin/pages/about', $this->texts(['mission_items' => [str_repeat('a', 301)]]))
+            ->assertSessionHasErrors('content.mission_items.0');
+
+        // Setelah gagal validasi, daftar tersimpan tidak berubah.
+        $this->assertSame(['Satu', 'Dua'], PageContents::for('about')->list('mission_items'));
+    }
+
+    public function test_default_missions_are_not_stored_and_the_form_lists_them(): void
+    {
+        $this->put('/admin/pages/about', $this->texts())->assertSessionHasNoErrors();
+        $this->assertNull(PageContent::where('key', 'mission_items')->first());
+
+        $this->get('/admin/pages/about')
+            ->assertSee('name="content[mission_items][]"', false)
+            ->assertSee('Tambah Misi');
+    }
+
+    public function test_mission_text_is_escaped(): void
+    {
+        $this->put('/admin/pages/about', $this->texts(['mission_items' => ['<script>alert(1)</script>']]));
+
+        auth()->logout();
+        $this->get('/tentang-kami')->assertDontSee('<script>alert(1)</script>', false)->assertSee('&lt;script&gt;', false);
+    }
+
+    public function test_objectives_are_cards_that_can_be_added_removed_and_reordered(): void
+    {
+        $this->put('/admin/pages/about', $this->texts(['objective_items' => [
+            ['title' => 'Tujuan Satu', 'text' => 'Uraian satu.'],
+            ['title' => 'Tujuan Dua', 'text' => 'Uraian dua.'],
+            ['title' => 'Tujuan Tiga', 'text' => 'Uraian tiga.'],
+            ['title' => 'Tujuan Empat', 'text' => 'Uraian empat.'],
+            ['title' => 'Tujuan Lima', 'text' => 'Uraian lima.'],
+            ['title' => 'Tujuan Enam', 'text' => 'Uraian enam.'],
+            ['title' => 'Tujuan Tujuh', 'text' => 'Uraian tujuh.'],
+            ['title' => 'Tujuan Delapan', 'text' => 'Uraian delapan.'],
+        ]]))->assertSessionHasNoErrors();
+
+        auth()->logout();
+        $html = $this->get('/tentang-kami')->getContent();
+        // Setiap kartu membawa garis atas yang sama.
+        $this->assertSame(8, substr_count($html, '<article class="border-t border-slate-300 py-7 sm:py-8">'));
+        $this->assertStringContainsString('Uraian delapan.', $html);
+        $this->assertStringNotContainsString('Memenuhi Kebutuhan', $html);
+
+        $this->actingAs(User::first());
+        $this->put('/admin/pages/about', $this->texts(['objective_items' => [
+            ['title' => 'Tujuan Dua', 'text' => 'Uraian dua.'],
+            ['title' => 'Tujuan Satu', 'text' => 'Uraian satu.'],
+        ]]))->assertSessionHasNoErrors();
+
+        auth()->logout();
+        $html = $this->get('/tentang-kami')->getContent();
+        $this->assertSame(2, substr_count($html, '<article class="border-t border-slate-300 py-7 sm:py-8">'));
+        $this->assertLessThan(strpos($html, 'Tujuan Satu'), strpos($html, 'Tujuan Dua'));
+    }
+
+    public function test_objective_cards_are_validated_and_empty_cards_are_dropped(): void
+    {
+        $this->put('/admin/pages/about', $this->texts(['objective_items' => [
+            ['title' => 'Satu', 'text' => 'Uraian'],
+            ['title' => '', 'text' => ''],
+        ]]))->assertSessionHasNoErrors();
+        $this->assertCount(1, PageContents::for('about')->cards('objective_items'));
+
+        $this->put('/admin/pages/about', $this->texts(['objective_items' => [['title' => 'Tanpa uraian', 'text' => '']]]))
+            ->assertSessionHasErrors('content.objective_items.0.text');
+
+        $this->put('/admin/pages/about', $this->texts(['objective_items' => [['title' => str_repeat('a', 41), 'text' => 'x']]]))
+            ->assertSessionHasErrors('content.objective_items.0.title');
+
+        $this->put('/admin/pages/about', $this->texts(['objective_items' => []]))
+            ->assertSessionHasErrors('content.objective_items');
+
+        $this->put('/admin/pages/about', $this->texts(['objective_items' => array_fill(0, 13, ['title' => 't', 'text' => 'x'])]))
+            ->assertSessionHasErrors('content.objective_items');
+
+        $this->assertSame('Satu', PageContents::for('about')->cards('objective_items')[0]['title']);
+    }
+
+    public function test_default_objectives_are_not_stored_escaped_output_and_form_lists_them(): void
+    {
+        $this->put('/admin/pages/about', $this->texts())->assertSessionHasNoErrors();
+        $this->assertNull(PageContent::where('key', 'objective_items')->first());
+
+        $this->get('/admin/pages/about')
+            ->assertSee('Tambah Tujuan')
+            ->assertSee('Memenuhi Kebutuhan');
+
+        $this->put('/admin/pages/about', $this->texts(['objective_items' => [['title' => '<b>x</b>', 'text' => '<i>y</i>']]]));
+        auth()->logout();
+        $this->get('/tentang-kami')->assertDontSee('<b>x</b>', false)->assertSee('&lt;b&gt;x&lt;/b&gt;', false);
+    }
+
+    public function test_titles_use_markers_for_red_words_and_keep_line_breaks(): void
+    {
+        $this->put('/admin/pages/about', $this->texts([
+            'hero_title' => "Baris satu\n*dua kata* merah\n*tiga*",
+            'direction_tagline' => 'Arah *tujuan* kami',
+        ]))->assertSessionHasNoErrors();
+
+        auth()->logout();
+        $html = $this->get('/tentang-kami')->getContent();
+        $this->assertStringContainsString("Baris satu<br>\n<span class=\"text-primary\">dua kata</span> merah<br>\n<span class=\"text-primary\">tiga</span>", $html);
+        // Kalimat pengantar di latar gelap memakai warna aksen yang berbeda.
+        $this->assertStringContainsString('<span class="text-primary-alt">tujuan</span>', $html);
+    }
+
+    public function test_title_markers_must_be_paired_and_html_is_escaped(): void
+    {
+        $this->put('/admin/pages/about', $this->texts(['hero_title' => 'Judul *tidak berpasangan']))
+            ->assertSessionHasErrors('content.hero_title');
+        $this->assertNull(PageContent::where('key', 'hero_title')->first());
+
+        $this->put('/admin/pages/about', $this->texts(['hero_title' => '<b>tebal</b> *<i>miring</i>*']))
+            ->assertSessionHasNoErrors();
+
+        auth()->logout();
+        $html = $this->get('/tentang-kami')->getContent();
+        $this->assertStringContainsString('&lt;b&gt;tebal&lt;/b&gt;', $html);
+        $this->assertStringContainsString('<span class="text-primary">&lt;i&gt;miring&lt;/i&gt;</span>', $html);
+        $this->assertStringNotContainsString('<b>tebal</b>', $html);
+    }
+
+    public function test_title_editor_is_shown_in_the_form_and_default_titles_are_not_stored(): void
+    {
+        $this->get('/admin/pages/about')
+            ->assertSee('Warnai merah')
+            ->assertSee('name="content[hero_title]"', false);
+
+        $this->put('/admin/pages/about', $this->texts())->assertSessionHasNoErrors();
+        $this->assertNull(PageContent::where('key', 'hero_title')->first());
+    }
+
+    public function test_company_data_is_a_list_where_each_item_already_has_a_title_and_a_value(): void
+    {
+        // Form: tiap data satu blok berisi judul + isi; tidak ada lagi "Baris 1: judul" / "Baris 1: isi".
+        $html = $this->get('/admin/pages/about')->assertOk()
+            ->assertDontSee('Baris 1: judul')->assertDontSee('Baris 1: isi')
+            ->assertSee('Setiap data otomatis berisi judul dan isi.')
+            ->assertSee('Tambah Data')
+            ->getContent();
+        $this->assertStringContainsString("'content[facts_items][' + index + '][title]'", $html);
+        $this->assertStringContainsString("'content[facts_items][' + index + '][text]'", $html);
+        // Isi data pendek: kolom teks satu baris, bukan kotak teks besar.
+        $this->assertStringContainsString('placeholder="Isi, mis. 2015"', $html);
+        $this->assertMatchesRegularExpression('/<input\s+type="text"\s+:name="[^"]*facts_items/', $html);
+
+        // Halaman publik: empat data bawaan.
+        auth()->logout();
+        $default = $this->get('/tentang-kami')->getContent();
+        foreach (['Established', 'XXXX', 'Headquarters', 'Denpasar, Bali, Indonesia', 'Business Activities', '14 bidang usaha', 'Business Scope', 'Perdagangan dan layanan'] as $text) {
+            $this->assertStringContainsString($text, $default);
+        }
+
+        // Tambah, ubah, dan hapus: jumlah data di halaman publik mengikuti.
+        $this->actingAs(User::first());
+        $this->put('/admin/pages/about', $this->texts(['facts_items' => [
+            ['title' => 'Didirikan', 'text' => '2015'],
+            ['title' => 'Karyawan', 'text' => '120 orang'],
+            ['title' => 'Cabang', 'text' => '3 kota'],
+        ]]))->assertSessionHasNoErrors();
+
+        auth()->logout();
+        $html = $this->get('/tentang-kami')->getContent();
+        foreach (['Didirikan', '2015', 'Karyawan', '120 orang', 'Cabang', '3 kota'] as $text) {
+            $this->assertStringContainsString($text, $html);
+        }
+        $this->assertStringNotContainsString('Established', $html);
+        $this->assertStringNotContainsString('Business Scope', $html);
+    }
+
+    public function test_company_data_items_are_validated_like_other_card_lists(): void
+    {
+        $this->put('/admin/pages/about', $this->texts(['facts_items' => [['title' => 'Judul saja', 'text' => '']]]))
+            ->assertSessionHasErrors('content.facts_items.0.text');
+
+        $this->put('/admin/pages/about', $this->texts(['facts_items' => [['title' => str_repeat('a', 41), 'text' => 'x']]]))
+            ->assertSessionHasErrors('content.facts_items.0.title');
+
+        $this->put('/admin/pages/about', $this->texts(['facts_items' => [['title' => 'x', 'text' => str_repeat('b', 101)]]]))
+            ->assertSessionHasErrors('content.facts_items.0.text');
+
+        $this->put('/admin/pages/about', $this->texts(['facts_items' => []]))->assertSessionHasErrors('content.facts_items');
+        $this->put('/admin/pages/about', $this->texts(['facts_items' => array_fill(0, 9, ['title' => 't', 'text' => 'x'])]))->assertSessionHasErrors('content.facts_items');
+
+        // Baris kosong total dibuang; yang sama dengan bawaan tidak disimpan.
+        $this->put('/admin/pages/about', $this->texts(['facts_items' => [['title' => 'A', 'text' => 'B'], ['title' => '', 'text' => '']]]))->assertSessionHasNoErrors();
+        $this->assertCount(1, PageContents::for('about')->cards('facts_items'));
+    }
+
+    public function test_old_separate_facts_rows_are_moved_into_the_list_by_the_migration(): void
+    {
+        PageContent::insert([
+            ['page' => 'about', 'key' => 'facts_1_value', 'value' => '2015', 'created_at' => now(), 'updated_at' => now()],
+            ['page' => 'about', 'key' => 'facts_2_label', 'value' => 'Kantor Pusat', 'created_at' => now(), 'updated_at' => now()],
+        ]);
+
+        (require database_path('migrations/2026_10_22_000000_move_about_facts_into_a_list.php'))->up();
+
+        $this->assertSame(0, PageContent::where('key', 'like', 'facts\_%\_%')->count());
+        $items = PageContents::for('about')->cards('facts_items');
+        $this->assertCount(4, $items);
+        $this->assertSame(['title' => 'Established', 'text' => '2015'], $items[0]);
+        $this->assertSame(['title' => 'Kantor Pusat', 'text' => 'Denpasar, Bali, Indonesia'], $items[1]);
+        $this->assertSame('Business Scope', $items[3]['title']);
+    }
+}

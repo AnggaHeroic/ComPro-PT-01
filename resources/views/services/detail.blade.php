@@ -10,8 +10,8 @@
             >
                 {{-- Back Navigation --}}
                 <a
-                    href="{{ route('services.category', $category['slug']) }}"
-                    aria-label="Kembali ke {{ $category['title'] }}"
+                    href="{{ route('services.category', $category->slug) }}"
+                    aria-label="Kembali ke {{ $category->name }}"
                     class="absolute left-0 top-8 z-10 inline-flex h-10 w-10 items-center justify-center text-slate-400 transition-all duration-200 hover:-translate-x-1 hover:text-primary lg:top-10"
                 >
                     <x-icons.arrow-left />
@@ -24,7 +24,7 @@
                         <span
                             class="font-display text-xs font-bold uppercase tracking-[0.18em] text-primary"
                         >
-                            {{ $category['title'] }}
+                            {{ $category->name }}
                         </span>
 
                         <span
@@ -45,14 +45,14 @@
                     <h1
                         class="font-display mt-7 max-w-5xl text-4xl font-bold leading-[1.02] tracking-[-0.045em] text-secondary-dark sm:text-5xl lg:text-7xl"
                     >
-                        {{ $activity['title'] }}
+                        {{ $activity->name }}
                     </h1>
 
                     {{-- Description --}}
                     <p
                         class="font-body mt-7 max-w-3xl text-sm leading-7 text-slate-600 sm:text-base sm:leading-8"
                     >
-                        {{ $activity['description'] }}
+                        {{ $activity->description }}
                     </p>
 
                     {{-- Accent --}}
@@ -73,8 +73,8 @@
                 <div class="lg:col-span-5">
                     <div class="aspect-[4/3] overflow-hidden bg-slate-200">
                         <img
-                            src="{{ $activity['image'] }}"
-                            alt="{{ $activity['title'] }}"
+                            src="{{ $activity->image_url }}"
+                            alt="{{ $activity->name }}"
                             class="h-full w-full object-cover"
                         >
                     </div>
@@ -138,7 +138,7 @@
 
                 get pages() {
                     return Math.ceil(
-                        {{ count($activity['gallery'] ?? []) }} / 6
+                        {{ count($gallery) }} / 6
                     );
                 },
 
@@ -212,7 +212,7 @@
             {{-- Documentation Grid --}}
             <div class="mt-8 overflow-hidden">
 
-                @foreach(array_chunk($activity['gallery'] ?? [], 6) as $pageIndex => $galleryPage)
+                @foreach(array_chunk($gallery, 6) as $pageIndex => $galleryPage)
 
                     <div
                         x-show="currentPage === {{ $pageIndex }}"
@@ -261,7 +261,7 @@
 
             {{-- Image Lightbox --}}
             <x-img-lightbox
-                :images="$activity['gallery'] ?? []"
+                :images="$gallery"
             />
 
         </div>

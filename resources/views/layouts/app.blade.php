@@ -16,7 +16,7 @@
     <meta name="theme-color" content="#cb1e1b">
 
     {{-- Favicon --}}
-    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
+    <x-favicon />
 
     {{-- Page Title --}}
     <title>@yield('title', 'PT. Putra Maju Sukses')</title>
