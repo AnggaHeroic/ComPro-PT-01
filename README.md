@@ -1,58 +1,112 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# ComPro PT. Putra Maju Sukses
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Situs profil perusahaan PT. Putra Maju Sukses beserta CMS admin untuk mengelola konten halaman, kategori usaha, aktivitas usaha, dan galeri. Dibangun dengan Laravel 13, Blade, Tailwind CSS v4, dan Alpine.js.
 
-## About Laravel
+## Kebutuhan
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+| Perangkat | Versi |
+|---|---|
+| PHP | 8.3 atau lebih baru (ekstensi `pdo_mysql`, `mbstring`, `gd` dengan dukungan WebP) |
+| Composer | 2.x |
+| Node.js dan npm | Node.js 20.19 atau lebih baru |
+| Database | MySQL 8 |
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Pengguna Laragon sudah mendapat PHP, Composer, Node.js, dan MySQL sekaligus.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Instalasi
 
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+### 1. Ambil kode dan pasang dependensi
 
 ```bash
-composer require laravel/boost --dev
+git clone <alamat-repositori> ComPro-PT
+cd ComPro-PT
 
-php artisan boost:install
+composer install
+npm install
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### 2. Buat berkas `.env`
 
-## Contributing
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Di Windows PowerShell, ganti `cp` dengan `copy`.
 
-## Code of Conduct
+### 3. Siapkan database
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Nyalakan MySQL (di Laragon: **Start All**), lalu buat database kosong, misalnya lewat phpMyAdmin, bernama `compro_pt1` dengan collation `utf8mb4_unicode_ci`. Setelah itu cocokkan isian ini di `.env` dengan nama database, pengguna, dan password MySQL kamu:
 
-## Security Vulnerabilities
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=compro_pt1
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Nilai ini sudah menjadi bawaan `.env.example`. Ubah `DB_DATABASE` bila kamu memakai nama database lain.
 
-## License
+### 4. Atur akun admin
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Isi data login admin di `.env`. Akun dibuat otomatis saat migrasi:
+
+```env
+ADMIN_NAME=Admin
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=ganti-dengan-password-anda
+```
+
+`ADMIN_EMAIL` dan `ADMIN_PASSWORD` wajib terisi. Jika kosong, migrasi berhenti dengan pesan yang jelas.
+
+### 5. Jalankan migrasi
+
+```bash
+php artisan migrate
+```
+
+Selain membuat tabel, perintah ini mengisi akun admin dan katalog bawaan (5 kategori dan 14 aktivitas usaha). Bagian yang sudah ada tidak ditimpa, jadi aman dijalankan ulang.
+
+### 6. Tautkan folder unggahan
+
+```bash
+php artisan storage:link
+```
+
+Foto galeri dan gambar halaman yang diunggah admin tersimpan di `storage/app/public`. Perintah ini membuatnya dapat diakses dari browser.
+
+### 7. Jalankan aplikasi
+
+Buka dua terminal.
+
+**Terminal 1: aset (CSS dan JavaScript).**
+
+```bash
+npm run dev
+```
+
+**Terminal 2: server Laravel.**
+
+```bash
+php artisan serve
+```
+
+Buka [http://localhost:8000](http://localhost:8000) untuk situs publik. Halaman login admin ada di [http://localhost:8000/login](http://localhost:8000/login), memakai `ADMIN_EMAIL` dan `ADMIN_PASSWORD` dari langkah 4. Setelah masuk, dashboard ada di `/admin`.
+
+Jika hanya ingin melihat hasilnya tanpa mengembangkan, jalankan `npm run build` sekali sebagai ganti `npm run dev`, lalu cukup `php artisan serve`.
+
+## Masalah yang sering muncul
+
+- **Halaman tampil tanpa gaya (CSS tidak termuat).** `npm run dev` belum jalan. Jalankan, atau hapus berkas `public/hot` lalu jalankan `npm run build`.
+- **Perubahan `.env` tidak terbaca.** Jalankan `php artisan config:clear`. Jika memakai `php artisan serve`, matikan servernya lalu jalankan ulang.
+- **Galat `SQLSTATE[HY000] [2002]` atau `Access denied`.** MySQL belum menyala, atau `DB_*` di `.env` tidak cocok. Periksa nama database, pengguna, dan password, lalu `php artisan config:clear`.
+- **Galat `could not find driver`.** Ekstensi PHP `pdo_mysql` belum aktif di `php.ini`.
+- **Galat `No application encryption key has been specified`.** Jalankan `php artisan key:generate`.
+- **Foto yang diunggah tidak tampil.** Jalankan `php artisan storage:link`.
+
+## Lanjut
+
+- Men-deploy ke server: lihat [docs/pindah-ke-mysql.md](docs/pindah-ke-mysql.md).
+- Menjalankan tes: `php artisan test`.

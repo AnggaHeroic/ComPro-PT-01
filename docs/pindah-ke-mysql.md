@@ -12,7 +12,7 @@ Di phpMyAdmin (atau hosting) buat database kosong, mis. `compro_pt`, collation `
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=compro_pt
+DB_DATABASE=compro_pt1
 DB_USERNAME=...
 DB_PASSWORD=...
 
