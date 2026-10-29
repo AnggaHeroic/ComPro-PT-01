@@ -13,7 +13,7 @@
         <h1 class="font-display font-bold text-gray-900" title="{{ $activity->name }}">{{ $activity->name }}</h1>
         <p class="text-gray-500">
             {{ $activity->category->name }}
-            &middot; {{ $images->count() }} dari {{ $maxPerActivity }} foto
+            &middot; {{ $images->count() }} foto (maksimal {{ $maxPerActivity }})
             @if ($activity->kbli_code) &middot; KBLI <span class="font-mono">{{ $activity->kbli_code }}</span> @endif
         </p>
     </x-slot>
